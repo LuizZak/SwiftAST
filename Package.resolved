@@ -1,13 +1,13 @@
 {
-  "originHash" : "ec33854fb11cb7893d13fda9a2a0e53d2147eea1bc3d806356fd20e207322912",
+  "originHash" : "bdb3df9a91973dc7160c26966c15c8541363ffdc0641288ebcbed31ffd21feb5",
   "pins" : [
     {
       "identity" : "minilexer",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/LuizZak/MiniLexer.git",
       "state" : {
-        "branch" : "master",
-        "revision" : "02f403fc4616a7399d5d51c1cdd42866ad3c379a"
+        "revision" : "71cc272f4613d1e45e1eacab33fa2f77c6311007",
+        "version" : "0.10.0"
       }
     }
   ],

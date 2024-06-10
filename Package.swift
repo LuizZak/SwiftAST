@@ -10,7 +10,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/LuizZak/MiniLexer.git", branch: "master"),
+        .package(url: "https://github.com/LuizZak/MiniLexer.git", exact: "0.10.0"),
     ],
     targets: [
         .target(
