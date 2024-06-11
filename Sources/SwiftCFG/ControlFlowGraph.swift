@@ -171,7 +171,7 @@ extension ControlFlowGraph {
     /// reference identities.
     func deepCopy() -> ControlFlowGraph {
         let copy = ControlFlowGraph(entry: entry, exit: exit)
-        copy.nodes = nodes
+        copy.nodes = Set(nodes.map({ $0.copy() }))
 
         for edge in edges {
             let edgeCopy = copy.addEdge(from: edge.start, to: edge.end)
