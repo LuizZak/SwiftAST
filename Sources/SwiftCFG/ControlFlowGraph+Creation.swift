@@ -57,6 +57,39 @@ public extension ControlFlowGraph {
         return graph
     }
 
+    /// Returns a `CFGVisitResult` object containing information about a given
+    /// function body.
+    ///
+    /// The resulting CFG can optionally be left with unresolved top-level jumps
+    /// so they can be analyzed at a later point.
+    static func forFunctionBody(
+        _ body: CompoundStatement,
+        keepUnresolvedJumps: Bool,
+        options: GenerationOptions = .default
+    ) -> CFGVisitResult {
+
+        var counter = 1
+        let visitor = CFGVisitor(options: options, nextId: {
+            defer { counter += 1 }
+            return counter
+        })
+        var result = visitor.visitCompound(body)
+
+        if !keepUnresolvedJumps {
+            result = _finalizeGraph(result, entry: body)
+        } else {
+            result = _adjustEntryExitPoint(in: result, entry: body)
+        }
+
+        result.graph.markBackEdges()
+
+        if options.pruneUnreachable {
+            result.graph.prune()
+        }
+
+        return result
+    }
+
     /// Creates a control flow graph for a given expression.
     /// The entry and exit points for the resulting graph will be the expression
     /// itself, with its inner nodes being the sub expressions contained within.
