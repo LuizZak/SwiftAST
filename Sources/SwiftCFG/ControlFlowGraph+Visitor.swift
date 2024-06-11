@@ -85,6 +85,19 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             .finalized()
     }
 
+    func visitGuard(_ stmt: GuardStatement) -> CFGVisitResult {
+        let exp = stmt.exp.accept(self)
+        let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
+
+        let elseBody = stmt.elseBody.accept(self)
+
+        return exp
+            .then(node)
+            .then(elseBody)
+            .branching(from: node.exit, to: elseBody.exit)
+            .finalized()
+    }
+
     func visitIf(_ stmt: IfStatement) -> CFGVisitResult {
         let exp = stmt.exp.accept(self)
         let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())

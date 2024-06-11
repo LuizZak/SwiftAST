@@ -97,9 +97,12 @@ class SwiftASTSerializerTests: XCTestCase {
                     .expression(.binary(lhs: .identifier("a"), op: .lessThan, rhs: .constant(2)))
                 ]
             ),
+            .guard(.identifier("a"), else: [
+                .return(nil),
+            ]),
             .expression(
                 .try(.identifier("a"))
-            )
+            ),
         ]
 
         let encoder = JSONEncoder()

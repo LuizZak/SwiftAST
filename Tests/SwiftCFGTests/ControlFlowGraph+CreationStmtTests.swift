@@ -862,6 +862,100 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
     }
 
+    func testGuard() {
+        let stmt: CompoundStatement = [
+            Statement.guard(
+                .identifier("predicate"),
+                else: [
+                    .expression(.identifier("guardBody")),
+                ]
+            ),
+        ]
+
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="predicate"]
+                    n4 [label="GuardStatement"]
+                    n5 [label="{compound}"]
+                    n6 [label="{exp}"]
+                    n7 [label="guardBody"]
+                    n8 [label="exit"]
+
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                    n6 -> n7
+                    n4 -> n8
+                    n7 -> n8
+                }
+                """
+        )
+        XCTAssert(graph.entry.node === stmt)
+        XCTAssert(graph.exit.node === stmt)
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
+    func testGuard_controlFlowBreak() {
+        let stmt: CompoundStatement = [
+            Statement.guard(
+                .identifier("predicate"),
+                else: [
+                    .expression(.identifier("guardBody")),
+                    .return(nil),
+                ]
+            ),
+            Statement.expression(.identifier("postGuard"))
+        ]
+
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="predicate"]
+                    n4 [label="GuardStatement"]
+                    n5 [label="{compound}"]
+                    n6 [label="{exp}"]
+                    n7 [label="{exp}"]
+                    n8 [label="postGuard"]
+                    n9 [label="guardBody"]
+                    n10 [label="{return}"]
+                    n11 [label="exit"]
+
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n4 -> n6
+                    n5 -> n7
+                    n6 -> n8
+                    n7 -> n9
+                    n9 -> n10
+                    n8 -> n11
+                    n10 -> n11
+                }
+                """
+        )
+        XCTAssert(graph.entry.node === stmt)
+        XCTAssert(graph.exit.node === stmt)
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
     func testSwitchStatement() {
         let stmt: CompoundStatement = [
             Statement.switch(

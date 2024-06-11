@@ -12,6 +12,7 @@ public enum StatementKind: Codable {
     case expressions(ExpressionsStatement)
     case `fallthrough`(FallthroughStatement)
     case `if`(IfStatement)
+    case `guard`(GuardStatement)
     case `for`(ForStatement)
     case localFunction(LocalFunctionStatement)
     case `return`(ReturnStatement)
@@ -53,6 +54,8 @@ public enum StatementKind: Codable {
         case .fallthrough(let s):
             return s
         case .if(let s):
+            return s
+        case .guard(let s):
             return s
         case .for(let s):
             return s
