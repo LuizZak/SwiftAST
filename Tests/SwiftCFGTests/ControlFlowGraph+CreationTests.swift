@@ -204,22 +204,23 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n4 [label="{compound}"]
                     n5 [label="{exp}"]
                     n6 [label="a"]
-                    n7 [label="b"]
-                    n8 [label="{if}"]
-                    n9 [label="{compound}"]
-                    n10 [label="{end scope of {do}}"]
-                    n11 [label="c"]
-                    n12 [label="{end scope of {compound}}"]
-                    n13 [label="{throw c}"]
-                    n14 [label="{end scope of {if}}"]
-                    n15 [label="{end scope of {do}}"]
-                    n16 [label="{catch}"]
-                    n17 [label="{compound}"]
-                    n18 [label="{exp}"]
-                    n19 [label="d"]
-                    n20 [label="{end scope of {catch}}"]
-                    n21 [label="{end scope of {if}}"]
-                    n22 [label="exit"]
+                    n7 [label="{if}"]
+                    n8 [label="b"]
+                    n9 [label="{if b}"]
+                    n10 [label="{compound}"]
+                    n11 [label="{end scope of {do}}"]
+                    n12 [label="c"]
+                    n13 [label="{end scope of {compound}}"]
+                    n14 [label="{throw c}"]
+                    n15 [label="{end scope of {if}}"]
+                    n16 [label="{end scope of {do}}"]
+                    n17 [label="{catch}"]
+                    n18 [label="{compound}"]
+                    n19 [label="{exp}"]
+                    n20 [label="d"]
+                    n21 [label="{end scope of {catch}}"]
+                    n22 [label="{end scope of {if}}"]
+                    n23 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -229,20 +230,21 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
-                    n8 -> n10
-                    n21 -> n10
-                    n9 -> n11
+                    n9 -> n10 [label="true"]
+                    n9 -> n11 [label="false"]
+                    n22 -> n11
                     n10 -> n12
-                    n20 -> n12
                     n11 -> n13
-                    n13 -> n14
+                    n21 -> n13
+                    n12 -> n14
                     n14 -> n15
                     n15 -> n16
                     n16 -> n17
                     n17 -> n18
                     n18 -> n19
                     n19 -> n20
-                    n12 -> n22
+                    n20 -> n21
+                    n13 -> n23
                 }
                 """,
             syntaxNode: stmt
@@ -277,17 +279,18 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n3 [label="var preIf: Int"]
                     n4 [label="0"]
                     n5 [label="preIf: Int = 0"]
-                    n6 [label="true"]
-                    n7 [label="{if}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{exp}"]
-                    n10 [label="var ifBody: Int"]
-                    n11 [label="postIf"]
-                    n12 [label="0"]
-                    n13 [label="{end scope of {compound}}"]
-                    n14 [label="ifBody: Int = 0"]
-                    n15 [label="{end scope of {if}}"]
-                    n16 [label="exit"]
+                    n6 [label="{if}"]
+                    n7 [label="true"]
+                    n8 [label="{if true}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{exp}"]
+                    n11 [label="var ifBody: Int"]
+                    n12 [label="postIf"]
+                    n13 [label="0"]
+                    n14 [label="{end scope of {compound}}"]
+                    n15 [label="ifBody: Int = 0"]
+                    n16 [label="{end scope of {if}}"]
+                    n17 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -296,15 +299,16 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n5 -> n6
                     n6 -> n7
                     n7 -> n8
-                    n7 -> n9
-                    n15 -> n9
-                    n8 -> n10
+                    n8 -> n9 [label="true"]
+                    n8 -> n10 [label="false"]
+                    n16 -> n10
                     n9 -> n11
                     n10 -> n12
                     n11 -> n13
                     n12 -> n14
-                    n14 -> n15
-                    n13 -> n16
+                    n13 -> n15
+                    n15 -> n16
+                    n14 -> n17
                 }
                 """,
             syntaxNode: stmt

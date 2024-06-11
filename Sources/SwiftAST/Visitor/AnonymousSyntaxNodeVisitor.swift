@@ -249,9 +249,30 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
     public func visitIf(_ stmt: IfStatement) {
         listener(stmt)
 
-        visitExpression(stmt.exp)
+        visitConditionalClauses(stmt.conditionalClauses)
         visitStatement(stmt.body)
         stmt.elseBody.map(visitStatement)
+    }
+
+    /// Visits a conditional clause list of a conditional statement with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A ConditionalClauses to visit
+    public func visitConditionalClauses(_ clauses: ConditionalClauses) {
+        listener(clauses)
+
+        clauses.clauses.forEach(visitConditionalClauseElement)
+    }
+
+    /// Visits a conditional clause element of a conditional clause list with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A ConditionalClauseElement to visit
+    public func visitConditionalClauseElement(_ clause: ConditionalClauseElement) {
+        listener(clause)
+
+        clause.pattern.map(visitPattern)
+        visitExpression(clause.expression)
     }
 
     /// Visits a `switch` statement with this visitor

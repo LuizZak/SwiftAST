@@ -99,26 +99,48 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
     }
 
     func visitIf(_ stmt: IfStatement) -> CFGVisitResult {
-        let exp = stmt.exp.accept(self)
+        let conditions = stmt.conditionalClauses.accept(self)
         let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
 
         let body = stmt.body.accept(self)
         let elseBody = stmt.elseBody.map(visitStatement)
 
         if let elseBody = elseBody {
-            return exp
-                .then(node)
-                .then(
-                    inParallel(body, elseBody)
-                )
+            return node
+                .then(conditions)
+                .then(body)
+                .resolvingJumps(kind: .conditionalClauseFail, to: elseBody)
                 .finalized()
         } else {
-            return exp
-                .then(node)
+            return node
+                .then(conditions)
                 .then(body)
-                .branching(from: node.exit, to: body.exit)
+                .resolvingJumps(kind: .conditionalClauseFail, to: body.exit)
                 .finalized()
         }
+    }
+
+    func visitConditionalClauses(_ clauses: ConditionalClauses) -> CFGVisitResult {
+        let elements = clauses.clauses.map(visitConditionalClauseElement)
+
+        return elements.inSequence()
+    }
+
+    func visitConditionalClauseElement(_ clause: ConditionalClauseElement) -> CFGVisitResult {
+        let node = CFGVisitResult(forSyntaxNode: clause, id: nextId())
+        var result = CFGVisitResult()
+
+        if let pattern = clause.pattern {
+            result = result.then(
+                visitPattern(pattern)
+            )
+        }
+
+        return result
+            .then(visitExpression(clause.expression))
+            .then(node)
+            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId(), debugLabel: "false"))
+            .labelingExits(debugLabel: "true")
     }
 
     func visitWhile(_ stmt: WhileStatement) -> CFGVisitResult {
@@ -685,4 +707,18 @@ private func inParallel(_ results: CFGVisitResult...) -> CFGVisitResult {
     result.graph.exit = exit
 
     return result
+}
+
+private extension Sequence where Element == CFGVisitResult {
+    /// Returns the result of concatenating each result within this sequence to
+    /// the next by connecting their exits, in a `r1.then(r2).then(r3)` fashion.
+    ///
+    /// If this sequence is empty, an empty result is returned.
+    func inSequence() -> CFGVisitResult {
+        var result = CFGVisitResult()
+        for next in self {
+            result = result.then(next)
+        }
+        return result
+    }
 }

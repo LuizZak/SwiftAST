@@ -46,6 +46,24 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
         stmt.elseBody.map { visitStatement($0, state: state) }
     }
 
+    /// Visits a conditional clause list of a conditional statement with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A conditional clause list to visit
+    public func visitConditionalClauses(_ clauses: ConditionalClauses, state: State) {
+        let state = listener(clauses, state)
+
+        clauses.clauses.forEach { visitConditionalClauseElement($0, state: state) }
+    }
+
+    /// Visits a conditional clause element of a conditional clause list with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A conditional clause element to visit
+    public func visitConditionalClauseElement(_ clause: ConditionalClauseElement, state: State) {
+        _ = listener(clause, state)
+    }
+
     /// Visits a `switch` statement with this visitor
     ///
     /// - Parameter stmt: A SwitchStatement to visit

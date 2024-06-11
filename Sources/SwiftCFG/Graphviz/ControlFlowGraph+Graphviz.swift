@@ -178,6 +178,9 @@ fileprivate func labelForSyntaxNode(_ node: SwiftAST.SyntaxNode) -> String {
     case is ExpressionsStatement:
         label = "{exp}"
 
+    case let clause as ConditionalClauseElement:
+        label = "{if \(clause.description)}"
+
     case is IfStatement:
         label = "{if}"
 

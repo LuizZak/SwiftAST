@@ -224,6 +224,23 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
         stmt.elseBody.map(visitStatement)
     }
 
+    /// Visits a conditional clause list of a conditional statement with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A ConditionalClauses to visit
+    open func visitConditionalClauses(_ clauses: ConditionalClauses) {
+        clauses.clauses.forEach(visitConditionalClauseElement)
+    }
+
+    /// Visits a conditional clause element of a conditional clause list with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A ConditionalClauseElement to visit
+    open func visitConditionalClauseElement(_ clause: ConditionalClauseElement) {
+        clause.pattern.map(visitPattern)
+        visitExpression(clause.expression)
+    }
+
     /// Visits a `switch` statement with this visitor
     ///
     /// - Parameter stmt: A SwitchStatement to visit

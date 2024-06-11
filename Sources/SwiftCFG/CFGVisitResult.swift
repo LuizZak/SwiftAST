@@ -81,7 +81,8 @@ public struct CFGVisitResult {
     init(
         withBranchingSyntaxNode syntaxNode: SyntaxNode,
         toUnresolvedJump kind: UnresolvedJump.Kind,
-        id: Int
+        id: Int,
+        debugLabel: String? = nil
     ) {
 
         let node = ControlFlowGraphNode(node: syntaxNode, id: id)
@@ -95,7 +96,8 @@ public struct CFGVisitResult {
 
         graph.prepend(node, before: exit)
         graph.addNode(jump.node)
-        graph.addEdge(from: node, to: jump.node)
+        let edge = graph.addEdge(from: node, to: jump.node)
+        edge.debugLabel = debugLabel
 
         unresolvedJumps = [jump]
     }
@@ -107,7 +109,11 @@ public struct CFGVisitResult {
     /// entry --> exit
     ///       \-> jump
     /// ```
-    init(branchingToUnresolvedJump kind: UnresolvedJump.Kind, id: Int) {
+    init(
+        branchingToUnresolvedJump kind: UnresolvedJump.Kind,
+        id: Int,
+        debugLabel: String? = nil
+    ) {
         self.init()
 
         let jump = UnresolvedJump(
@@ -116,7 +122,8 @@ public struct CFGVisitResult {
         )
 
         graph.addNode(jump.node)
-        graph.addEdge(from: graph.entry, to: jump.node)
+        let edge = graph.addEdge(from: graph.entry, to: jump.node)
+        edge.debugLabel = debugLabel
 
         unresolvedJumps = [jump]
     }
@@ -132,6 +139,14 @@ public struct CFGVisitResult {
         graph.addEdge(from: entry, to: exit)
     }
 
+    /// Returns a list of unresolved jumps from this graph result that match a
+    /// specified kind.
+    public func unresolvedJumps(ofKind kind: UnresolvedJump.Kind) -> [UnresolvedJump] {
+        unresolvedJumps.filter { $0.kind == kind }
+    }
+
+    /// Performs a deep copy of this result, copying the graph, and all unresolved
+    /// jumps.
     func copy() -> Self {
         var copy = self
         copy.graph = self.graph.copy()
@@ -250,6 +265,29 @@ public struct CFGVisitResult {
         return copy
     }
 
+    /// Returns a copy of this graph result which is the combination of the graph
+    /// from this result, and `other`, connecting the entry node of the incoming
+    /// graph with all unresolved jumps within this result that match the provided
+    /// kind, and creating an edge between the incoming graph's exit node and
+    /// this result's graph's exit node.
+    ///
+    /// The entry node from this graph is the entry of the result, and the exit
+    /// node of `self` remains the exit node.
+    ///
+    /// Unresolved jump list are concatenated in the result.
+    func resolvingJumps(
+        kind: UnresolvedJump.Kind,
+        to other: Self,
+        debugLabel: String? = nil
+    ) -> Self {
+
+        var copy = self.inserting(other)
+        copy.resolveJumps(kind: kind, to: other.entry, debugLabel: debugLabel)
+        copy.graph.addEdge(from: other.exit, to: exit)
+
+        return copy
+    }
+
     /// Returns a copy of this graph with a set of defer subgraphs appended to
     /// all jump nodes.
     ///
@@ -289,35 +327,43 @@ public struct CFGVisitResult {
         return copy
     }
 
-    /// Returns a list of unresolved jumps from this graph result that match a
-    /// specified kind.
-    public func unresolvedJumps(ofKind kind: UnresolvedJump.Kind) -> [UnresolvedJump] {
-        unresolvedJumps.filter { $0.kind == kind }
-    }
-
-    func resolvingJumpsToExit(kind: UnresolvedJump.Kind) -> Self {
+    func resolvingJumpsToExit(
+        kind: UnresolvedJump.Kind,
+        debugLabel: String? = nil
+    ) -> Self {
         var copy = self.copy()
-        copy.resolveJumpsToExit(kind: kind)
+        copy.resolveJumpsToExit(kind: kind, debugLabel: debugLabel)
         return copy
     }
 
-    mutating func resolveJumpsToExit(kind: UnresolvedJump.Kind) {
-        resolveJumps(kind: kind, to: exit)
+    mutating func resolveJumpsToExit(
+        kind: UnresolvedJump.Kind,
+        debugLabel: String? = nil
+    ) {
+        resolveJumps(kind: kind, to: exit, debugLabel: debugLabel)
     }
 
-    func resolvingJumps(kind: UnresolvedJump.Kind, to node: ControlFlowGraphNode) -> Self {
+    func resolvingJumps(
+        kind: UnresolvedJump.Kind,
+        to node: ControlFlowGraphNode,
+        debugLabel: String? = nil
+    ) -> Self {
         var copy = self.copy()
-        copy.resolveJumps(kind: kind, to: node)
+        copy.resolveJumps(kind: kind, to: node, debugLabel: debugLabel)
         return copy
     }
 
-    mutating func resolveJumps(kind: UnresolvedJump.Kind, to node: ControlFlowGraphNode) {
+    mutating func resolveJumps(
+        kind: UnresolvedJump.Kind,
+        to node: ControlFlowGraphNode,
+        debugLabel: String? = nil
+    ) {
         func predicate(_ jump: UnresolvedJump) -> Bool {
             jump.kind == kind
         }
 
         for jump in unresolvedJumps.filter(predicate) {
-            jump.resolve(to: node, in: graph)
+            jump.resolve(to: node, in: graph, debugLabel: debugLabel)
         }
 
         unresolvedJumps.removeAll(where: predicate)
@@ -327,9 +373,13 @@ public struct CFGVisitResult {
     /// Jump nodes that are not present in this graph are added prior to resolution,
     /// and existing unresolved jumps that match node-wise with jumps from the
     /// given list are removed.
-    func resolvingJumps(_ jumps: [UnresolvedJump], to node: ControlFlowGraphNode) -> Self {
+    func resolvingJumps(
+        _ jumps: [UnresolvedJump],
+        to node: ControlFlowGraphNode,
+        debugLabel: String? = nil
+    ) -> Self {
         var copy = self.copy()
-        copy.resolveJumps(jumps, to: node)
+        copy.resolveJumps(jumps, to: node, debugLabel: debugLabel)
 
         return copy
     }
@@ -338,9 +388,13 @@ public struct CFGVisitResult {
     /// Jump nodes that are not present in this graph are added prior to resolution,
     /// and existing unresolved jumps that match node-wise with jumps from the
     /// given list are removed.
-    mutating func resolveJumps(_ jumps: [UnresolvedJump], to node: ControlFlowGraphNode) {
+    mutating func resolveJumps(
+        _ jumps: [UnresolvedJump],
+        to node: ControlFlowGraphNode,
+        debugLabel: String? = nil
+    ) {
         for jump in jumps {
-            jump.resolve(to: node, in: graph)
+            jump.resolve(to: node, in: graph, debugLabel: debugLabel)
         }
 
         unresolvedJumps.removeAll { u in
@@ -350,17 +404,23 @@ public struct CFGVisitResult {
 
     /// Returns a copy of this graph with all jumps from this graph result to a
     /// given node.
-    func resolvingAllJumps(to node: ControlFlowGraphNode) -> Self {
+    func resolvingAllJumps(
+        to node: ControlFlowGraphNode,
+        debugLabel: String? = nil
+    ) -> Self {
         var copy = self.copy()
-        copy.resolveAllJumps(to: node)
+        copy.resolveAllJumps(to: node, debugLabel: debugLabel)
 
         return copy
     }
 
     /// Resolves all jumps from this graph result to a given node.
-    mutating func resolveAllJumps(to node: ControlFlowGraphNode) {
+    mutating func resolveAllJumps(
+        to node: ControlFlowGraphNode,
+        debugLabel: String? = nil
+    ) {
         for jump in unresolvedJumps {
-            jump.resolve(to: node, in: graph)
+            jump.resolve(to: node, in: graph, debugLabel: debugLabel)
         }
 
         unresolvedJumps.removeAll()
@@ -368,17 +428,17 @@ public struct CFGVisitResult {
 
     /// Returns a copy of this graph with all jumps from this graph result to the
     /// current exit node.
-    func resolvingAllJumpsToExit() -> Self {
+    func resolvingAllJumpsToExit(debugLabel: String? = nil) -> Self {
         var copy = self.copy()
-        copy.resolveAllJumpsToExit()
+        copy.resolveAllJumpsToExit(debugLabel: debugLabel)
 
         return copy
     }
 
     /// Resolves all jumps from this graph result to the current exit node.
-    mutating func resolveAllJumpsToExit() {
+    mutating func resolveAllJumpsToExit(debugLabel: String? = nil) {
         for jump in unresolvedJumps {
-            jump.resolve(to: exit, in: graph)
+            jump.resolve(to: exit, in: graph, debugLabel: debugLabel)
         }
 
         unresolvedJumps.removeAll()
@@ -408,13 +468,49 @@ public struct CFGVisitResult {
         unresolvedJumps.removeAll(where: predicate)
     }
 
+    /// Replaces the labels of all edges pointing to the exit node of this
+    /// result with a given value.
+    mutating func labelExits(debugLabel: String?) {
+        for edge in graph.edges(towards: exit) {
+            edge.debugLabel = debugLabel
+        }
+    }
+
+    /// Returns a copy of this result with all edges pointing to the exit node
+    /// having a given debug label value.
+    func labelingExits(debugLabel: String?) -> Self {
+        var copy = self.copy()
+        copy.labelExits(debugLabel: debugLabel)
+        return copy
+    }
+
+    /// Replaces the labels of all edges pointing from the entry node of this
+    /// result with a given value.
+    mutating func labelEntries(debugLabel: String?) {
+        for edge in graph.edges(from: entry) {
+            edge.debugLabel = debugLabel
+        }
+    }
+
+    /// Returns a copy of this result with all edges pointing from the entry node
+    /// having a given debug label value.
+    func labelingEntries(debugLabel: String?) -> Self {
+        var copy = self.copy()
+        copy.labelEntries(debugLabel: debugLabel)
+        return copy
+    }
+
     /// An unresolved jump from a CFG visit.
     public struct UnresolvedJump {
         public var node: ControlFlowGraphNode
         public var kind: Kind
 
-        func resolve(to node: ControlFlowGraphNode, in graph: ControlFlowGraph) {
-            connect(to: node, in: graph)
+        func resolve(
+            to node: ControlFlowGraphNode,
+            in graph: ControlFlowGraph,
+            debugLabel: String? = nil
+        ) {
+            connect(to: node, in: graph, debugLabel: debugLabel)
 
             expandAndRemove(in: graph)
         }
@@ -429,7 +525,11 @@ public struct CFGVisitResult {
             _expandAndRemove(node: node, in: graph)
         }
 
-        func connect(to target: ControlFlowGraphNode, in graph: ControlFlowGraph) {
+        func connect(
+            to target: ControlFlowGraphNode,
+            in graph: ControlFlowGraph,
+            debugLabel: String? = nil
+        ) {
             if !graph.containsNode(node) {
                 graph.addNode(node)
             }
@@ -441,17 +541,39 @@ public struct CFGVisitResult {
                 return
             }
 
-            graph.addEdge(from: node, to: target)
+            let edge = graph.addEdge(from: node, to: target)
+            edge.debugLabel = debugLabel
         }
 
         public enum Kind: Equatable {
+            /// A continue statement, with an optional label.
             case `continue`(label: String?)
+
+            /// A break statement, with an optional label.
             case `break`(label: String?)
+
+            /// A return statement.
             case `return`
+
+            /// A throw in a throwable function.
             case `throw`
+
+            /// A switch case's 'fallthrough'.
             case `fallthrough`
+
+            /// Expression short-circuits, like boolean expression short circuiting
+            /// or null-coalesce/optional member access expressions.
             case expressionShortCircuit
+
+            // TODO: Consider collapsing switch case/conditional clause into one kind
+
+            /// Used in switch statements to move between cases when their patterns
+            /// fail.
             case switchCasePatternFail
+
+            /// Used in conditional statements to bail out of a condition on each
+            /// pattern.
+            case conditionalClauseFail
         }
     }
 }
@@ -486,8 +608,10 @@ private func _expandAndRemove(node: ControlFlowGraphNode, in graph: ControlFlowG
             switch (edgeTo.debugLabel, edgeFrom.debugLabel) {
             case (let labelTo?, let labelFrom?):
                 edge.debugLabel = "\(labelTo)/\(labelFrom)"
+
             case (nil, let label?), (let label?, nil):
                 edge.debugLabel = label
+
             case (nil, nil):
                 break
             }

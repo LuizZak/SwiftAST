@@ -5,16 +5,12 @@ public final class ConditionalClauses: SyntaxNode, Codable {
     /// A valid conditional clause always has at least one clause element, and
     /// this may be enforced during runtime by assertion failures.
     public var clauses: [ConditionalClauseElement] {
-        willSet {
-            clauses.forEach { $0.setParent(nil) }
-        }
-        didSet {
-            clauses.forEach { $0.setParent(self) }
-        }
+        willSet { clauses.forEach { $0.parent = nil } }
+        didSet { clauses.forEach { $0.parent = self } }
     }
 
     public override var children: [SyntaxNode] {
-        clauses.flatMap(\.subExpressions)
+        clauses
     }
 
     public init(clauses: [ConditionalClauseElement]) {
@@ -37,7 +33,10 @@ public final class ConditionalClauses: SyntaxNode, Codable {
     public required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.clauses = try container.decode([ConditionalClauseElement].self, forKey: CodingKeys.clauses)
+        self.clauses = try container.decode(
+            [ConditionalClauseElement].self,
+            forKey: CodingKeys.clauses
+        )
     }
 
     @inlinable
@@ -53,6 +52,16 @@ public final class ConditionalClauses: SyntaxNode, Codable {
         return self.clauses.elementsEqual(other.clauses) {
             $0.isEqual(to: $1)
         }
+    }
+
+    @inlinable
+    public func accept<V: StatementVisitor>(_ visitor: V) -> V.ConditionalClausesResult {
+        visitor.visitConditionalClauses(self)
+    }
+
+    @inlinable
+    public func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.ConditionalClausesResult {
+        visitor.visitConditionalClauses(self, state: state)
     }
 
     internal func collect(expressions: inout [SyntaxNode]) {
@@ -79,24 +88,30 @@ extension ConditionalClauses: ExpressibleByArrayLiteral {
 }
 
 /// Conditional clause element for a conditional clause of a conditional statement.
-public class ConditionalClauseElement: ExpressionComponent, Codable {
+public class ConditionalClauseElement: SyntaxNode, Codable {
     /// An optional pattern that the expression is bound to.
-    public let pattern: Pattern?
+    public var pattern: Pattern? {
+        didSet { oldValue?.setParent(nil); pattern?.setParent(self) }
+    }
 
     /// The main expression of the clause.
-    public let expression: Expression
+    public var expression: Expression {
+        didSet { oldValue.parent = nil; expression.parent = self }
+    }
 
-    public var subExpressions: [Expression] {
+    public override var children: [SyntaxNode] {
         if let pattern {
-            pattern.subExpressions + [expression]
+            return pattern.subExpressions + [expression]
         } else {
-            [expression]
+            return [expression]
         }
     }
 
     public init(pattern: Pattern? = nil, expression: Expression) {
         self.pattern = pattern
         self.expression = expression
+
+        super.init()
     }
 
     public required init(from decoder: any Decoder) throws {
@@ -106,7 +121,7 @@ public class ConditionalClauseElement: ExpressionComponent, Codable {
         self.expression = try container.decodeExpression(forKey: .expression)
     }
 
-    public func copy() -> ConditionalClauseElement {
+    public override func copy() -> ConditionalClauseElement {
         ConditionalClauseElement(
             pattern: pattern?.copy(),
             expression: expression.copy()
@@ -120,9 +135,14 @@ public class ConditionalClauseElement: ExpressionComponent, Codable {
         try container.encodeExpression(expression, forKey: .expression)
     }
 
-    internal func setParent(_ node: SyntaxNode?) {
-        pattern?.setParent(node)
-        expression.parent = node
+    @inlinable
+    public func accept<V: StatementVisitor>(_ visitor: V) -> V.ConditionalClauseElementResult {
+        visitor.visitConditionalClauseElement(self)
+    }
+
+    @inlinable
+    public func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.ConditionalClauseElementResult {
+        visitor.visitConditionalClauseElement(self, state: state)
     }
 
     internal func collect(expressions: inout [SyntaxNode]) {

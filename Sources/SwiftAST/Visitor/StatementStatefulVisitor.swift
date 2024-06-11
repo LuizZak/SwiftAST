@@ -8,6 +8,8 @@ public protocol StatementStatefulVisitor {
     associatedtype State
 
     associatedtype StmtResult
+    associatedtype ConditionalClausesResult = StmtResult
+    associatedtype ConditionalClauseElementResult = StmtResult
     associatedtype SwitchCaseResult = StmtResult
     associatedtype SwitchDefaultCaseResult = StmtResult
     associatedtype CatchBlockResult = StmtResult
@@ -36,6 +38,20 @@ public protocol StatementStatefulVisitor {
     /// - Parameter stmt: An `if` statement to visit
     /// - Returns: Result of visiting the `if` statement node
     func visitIf(_ stmt: IfStatement, state: State) -> StmtResult
+
+    /// Visits a conditional clause list of a conditional statement with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A conditional clause list to visit
+    /// - Returns: Result of visiting the conditional clause node
+    func visitConditionalClauses(_ clauses: ConditionalClauses, state: State) -> ConditionalClausesResult
+
+    /// Visits a conditional clause element of a conditional clause list with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A conditional clause element to visit
+    /// - Returns: Result of visiting the conditional clause element node
+    func visitConditionalClauseElement(_ clause: ConditionalClauseElement, state: State) -> ConditionalClauseElementResult
 
     /// Visits a `while` statement with this visitor
     ///

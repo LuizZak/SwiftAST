@@ -276,11 +276,32 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
     /// - Parameter stmt: An `IfStatement` to visit
     /// - Returns: Result of visiting the `if` statement node
     open func visitIf(_ stmt: IfStatement) -> Statement {
-        stmt.exp = visitExpression(stmt.exp)
+        stmt.conditionalClauses = visitConditionalClauses(stmt.conditionalClauses)
         stmt.body = _visitCompound(stmt.body)
         stmt.elseBody = stmt.elseBody.map { _visitCompound($0) }
 
         return stmt
+    }
+
+    /// Visits a conditional clause list of a conditional statement with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A ConditionalClauses to visit
+    open func visitConditionalClauses(_ clauses: ConditionalClauses) -> ConditionalClauses {
+        clauses.clauses = clauses.clauses.map(visitConditionalClauseElement(_:))
+
+        return clauses
+    }
+
+    /// Visits a conditional clause element of a conditional clause list with this
+    /// visitor
+    ///
+    /// - Parameter clauses: A ConditionalClauseElement to visit
+    open func visitConditionalClauseElement(_ clause: ConditionalClauseElement) -> ConditionalClauseElement {
+        clause.pattern = clause.pattern.map(visitPattern)
+        clause.expression = visitExpression(clause.expression)
+
+        return clause
     }
 
     /// Visits a `switch` statement with this visitor
