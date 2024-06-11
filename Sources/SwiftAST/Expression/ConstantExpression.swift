@@ -129,7 +129,7 @@ public enum Constant: Codable, Equatable {
     case float(Float)
     case double(Double)
     case boolean(Bool)
-    case int(Int, IntegerType)
+    case int(Int, IntegerType = .decimal)
     case string(String)
     case rawConstant(String)
     case `nil`
