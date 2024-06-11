@@ -1025,7 +1025,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
                     n4 -> n5
                     n5 -> n6
                     n6 -> n7
-                    n7 -> n8
+                    n7 -> n8 [label="throws"]
                     n7 -> n9
                     n8 -> n10
                     n9 -> n11
@@ -1127,7 +1127,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
                     n4 -> n5
                     n5 -> n6
                     n6 -> n7
-                    n6 -> n8
+                    n6 -> n8 [label="throws"]
                     n7 -> n8
                 }
                 """

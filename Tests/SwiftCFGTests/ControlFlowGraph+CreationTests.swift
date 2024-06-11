@@ -573,7 +573,7 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n3 -> n4
                     n4 -> n5
                     n5 -> n6
-                    n6 -> n7
+                    n6 -> n7 [label="throws"]
                     n6 -> n8
                     n8 -> n9 [label="true"]
                     n7 -> n10

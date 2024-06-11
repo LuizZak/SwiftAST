@@ -990,7 +990,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n7 -> n8 [label="true"]
                     n8 -> n9
                     n9 -> n10
-                    n10 -> n11
+                    n10 -> n11 [label="throws"]
                     n10 -> n12
                     n12 -> n13 [label="true"]
                     n11 -> n14
@@ -1066,7 +1066,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n6 -> n7
                     n7 -> n8 [label="true"]
                     n8 -> n9
-                    n9 -> n10
+                    n9 -> n10 [label="throws"]
                     n9 -> n11
                     n10 -> n12
                     n11 -> n13
@@ -1774,7 +1774,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n14 -> n15
                     n15 -> n16
                     n16 -> n17
-                    n11 -> n18
+                    n11 -> n18 [label="throws"]
                     n13 -> n18
                     n17 -> n18
                 }

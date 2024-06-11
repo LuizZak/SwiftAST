@@ -721,7 +721,8 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             node = CFGVisitResult(
                 withBranchingSyntaxNode: exp,
                 toUnresolvedJump: .throw,
-                id: nextId()
+                id: nextId(),
+                debugLabel: "throws"
             )
 
         case .optional, .forced:

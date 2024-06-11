@@ -5,6 +5,10 @@ import SwiftAST
 
 @testable import SwiftCFG
 
+func isRecordModeOn() -> Bool {
+    recordMode || ProcessInfo.processInfo.environment["RECORD_GRAPHVIZ"] == "1"
+}
+
 internal var recordMode: Bool = false
 internal var recordedGraphs: [GraphvizUpdateEntry] = []
 internal func assertGraphviz(
@@ -25,7 +29,7 @@ internal func assertGraphviz(
         return
     }
 
-    if recordMode {
+    if isRecordModeOn() {
         recordedGraphs.append(
             .init(
                 file: "\(file)",
@@ -75,7 +79,7 @@ internal func printGraphviz(graph: ControlFlowGraph) {
 }
 
 func updateAllRecordedGraphviz() throws {
-    guard recordMode && !recordedGraphs.isEmpty else {
+    guard isRecordModeOn() && !recordedGraphs.isEmpty else {
         return
     }
     defer { recordedGraphs.removeAll() }
@@ -101,7 +105,7 @@ func throwErrorIfInGraphvizRecordMode(file: StaticString = #file) throws {
     }
 
     if recordMode {
-        throw TestError(description: "Record mode is on on graphviz tests in file \(file)")
+        throw TestError(description: "Failing tests until record mode is turned off in test file \(file)")
     }
 }
 
