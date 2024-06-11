@@ -376,6 +376,26 @@ public class ControlFlowGraphNode: Hashable, CustomStringConvertible {
     }
 }
 
+/// A graph node which serves as a temporary marker for unresolved jumps.
+public final class ControlFlowGraphUnresolvedJumpNode: ControlFlowGraphNode {
+    /// The debug label associated with this node.
+    public let debugLabel: String
+
+    init(node: SyntaxNode, id: Int, debugLabel: String) {
+        self.debugLabel = debugLabel
+
+        super.init(node: node, id: id)
+    }
+
+    public override func copy() -> ControlFlowGraphNode {
+        ControlFlowGraphUnresolvedJumpNode(
+            node: node,
+            id: id,
+            debugLabel: debugLabel
+        )
+    }
+}
+
 /// Represents an entry node for a control flow graph
 public final class ControlFlowGraphEntryNode: ControlFlowGraphNode {
     public override var description: String {

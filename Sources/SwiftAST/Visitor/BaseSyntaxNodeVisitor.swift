@@ -270,8 +270,16 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     ///
     /// - Parameter switchCase: A switch case block to visit
     open func visitSwitchCase(_ switchCase: SwitchCase) {
-        switchCase.patterns.forEach(visitPattern)
+        switchCase.casePatterns.forEach(visitSwitchCasePattern(_:))
         switchCase.statements.forEach(visitStatement)
+    }
+
+    /// Visits the pattern for a `case` block from a `SwitchStatement`.
+    ///
+    /// - Parameter casePattern: A switch case pattern to visit
+    open func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) {
+        visitPattern(casePattern.pattern)
+        casePattern.whereClause.map(visitExpression)
     }
 
     /// Visits a `default` block from a `SwitchStatement`.

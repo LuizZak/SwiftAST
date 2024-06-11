@@ -12,6 +12,7 @@ public protocol StatementStatefulVisitor {
     associatedtype ConditionalClauseElementResult = StmtResult
     associatedtype ElseBodyResult = StmtResult
     associatedtype SwitchCaseResult = StmtResult
+    associatedtype SwitchCasePatternResult = StmtResult
     associatedtype SwitchDefaultCaseResult = StmtResult
     associatedtype CatchBlockResult = StmtResult
     associatedtype StatementVariableDeclarationResult = StmtResult
@@ -77,6 +78,12 @@ public protocol StatementStatefulVisitor {
     /// - Parameter switchCase: A switch case block to visit
     /// - Returns: Result of visiting the switch case block
     func visitSwitchCase(_ switchCase: SwitchCase, state: State) -> SwitchCaseResult
+
+    /// Visits the pattern for a `case` block from a `SwitchStatement`.
+    ///
+    /// - Parameter casePattern: A switch case pattern to visit
+    /// - Returns: Result of visiting the switch case pattern
+    func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern, state: State) -> SwitchCasePatternResult
 
     /// Visits a `default` block from a `SwitchStatement`.
     ///

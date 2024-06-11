@@ -349,10 +349,20 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
     ///
     /// - Parameter switchCase: A switch case block to visit
     open func visitSwitchCase(_ switchCase: SwitchCase) -> SwitchCase {
-        switchCase.patterns = switchCase.patterns.map(visitPattern)
+        switchCase.casePatterns = switchCase.casePatterns.map(visitSwitchCasePattern)
         switchCase.body = _visitCompound(switchCase.body)
 
         return switchCase
+    }
+
+    /// Visits the pattern for a `case` block from a `SwitchStatement`.
+    ///
+    /// - Parameter casePattern: A switch case pattern to visit
+    open func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) -> SwitchCase.CasePattern {
+        return .init(
+            pattern: visitPattern(casePattern.pattern),
+            whereClause: casePattern.whereClause.map(visitExpression)
+        )
     }
 
     /// Visits a `default` block from a `SwitchStatement`.

@@ -902,8 +902,8 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="a"]
-                    n3 [label="{marker}"]
-                    n4 [label="{marker}"]
+                    n3 [fillcolor="#DDDDFF", label="{marker}", style=filled]
+                    n4 [fillcolor="#DDDDFF", label="{marker}", style=filled]
                     n5 [label="try a"]
                     n6 [label="exit"]
                 
@@ -934,8 +934,8 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="a"]
-                    n3 [label="{marker}"]
-                    n4 [label="{marker}"]
+                    n3 [fillcolor="#DDDDFF", label="{marker}", style=filled]
+                    n4 [fillcolor="#DDDDFF", label="{marker}", style=filled]
                     n5 [label="try? a"]
                     n6 [label="exit"]
                 
@@ -966,8 +966,8 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="a"]
-                    n3 [label="{marker}"]
-                    n4 [label="{marker}"]
+                    n3 [fillcolor="#DDDDFF", label="{marker}", style=filled]
+                    n4 [fillcolor="#DDDDFF", label="{marker}", style=filled]
                     n5 [label="try! a"]
                     n6 [label="exit"]
                 

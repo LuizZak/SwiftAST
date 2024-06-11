@@ -16,6 +16,7 @@ extension ControlFlowGraph {
         // Prepare nodes
         for node in nodes {
             let label = labelForNode(node, graph: self)
+            let attributes = attributesForNode(node, graph: self)
 
             let rankStart = self.shortestDistance(from: self.entry, to: node)
             let rankEnd = self.shortestDistance(from: node, to: self.exit)
@@ -26,7 +27,8 @@ extension ControlFlowGraph {
                     rankFromStart: rankStart,
                     rankFromEnd: rankEnd,
                     label: label,
-                    id: node.id
+                    id: node.id,
+                    attributes: attributes
                 )
             )
         }
@@ -95,7 +97,10 @@ extension ControlFlowGraph {
 
         // Prepare nodes
         for definition in nodeDefinitions {
-            nodeIds[definition.node] = viz.createNode(label: definition.label)
+            nodeIds[definition.node] = viz.createNode(
+                label: definition.label,
+                attributes: definition.attributes
+            )
         }
 
         var intermediaries: [IntermediaryEdge] = []
@@ -191,10 +196,10 @@ fileprivate func labelForSyntaxNode(_ node: SwiftAST.SyntaxNode) -> String {
         label = "{switch}"
 
     case let clause as SwitchCase:
-        if clause.patterns.count == 1 {
-            label = "{case \(clause.patterns[0])}"
+        if clause.casePatterns.count == 1 {
+            label = "{case \(clause.casePatterns[0])}"
         } else {
-            label = "{case \(clause.patterns)}"
+            label = "{case \(clause.casePatterns)}"
         }
 
     case is SwitchDefaultCase:
@@ -261,6 +266,9 @@ fileprivate func labelForSyntaxNode(_ node: SwiftAST.SyntaxNode) -> String {
     case let obj as CustomStringConvertible:
         label = obj.description
 
+    case is MarkerSyntaxNode:
+        label = "{marker}"
+
     default:
         label = "\(type(of: node))"
     }
@@ -275,8 +283,12 @@ fileprivate func labelForNode(_ node: ControlFlowGraphNode, graph: ControlFlowGr
     if node === graph.exit {
         return "exit"
     }
-    if node.node is MarkerSyntaxNode {
-        return "{marker}"
+    if let node = node as? ControlFlowGraphUnresolvedJumpNode {
+        if node.node is MarkerSyntaxNode {
+            return "{marker \(node.debugLabel)}"
+        }
+
+        return "{\(node.debugLabel)}"
     }
     if let endScope = node as? ControlFlowGraphEndScopeNode {
         var reportNode: SwiftAST.SyntaxNode = endScope.scope
@@ -291,4 +303,19 @@ fileprivate func labelForNode(_ node: ControlFlowGraphNode, graph: ControlFlowGr
     }
 
     return labelForSyntaxNode(node.node)
+}
+
+fileprivate func attributesForNode(
+    _ node: ControlFlowGraphNode,
+    graph: ControlFlowGraph
+) -> GraphViz.Attributes {
+
+    if node.node is MarkerSyntaxNode {
+        return [
+            "style": "filled",
+            "fillcolor": .string("#DDDDFF"),
+        ]
+    }
+
+    return [:]
 }

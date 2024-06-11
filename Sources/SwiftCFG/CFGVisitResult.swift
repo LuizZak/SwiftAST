@@ -41,7 +41,11 @@ public struct CFGVisitResult {
         self.init()
 
         let jump = UnresolvedJump(
-            node: ControlFlowGraphNode(node: MarkerSyntaxNode(), id: id),
+            node: ControlFlowGraphUnresolvedJumpNode(
+                node: MarkerSyntaxNode(),
+                id: id,
+                debugLabel: kind.description
+            ),
             kind: kind
         )
 
@@ -61,7 +65,11 @@ public struct CFGVisitResult {
         self.init()
 
         let jump = UnresolvedJump(
-            node: ControlFlowGraphNode(node: MarkerSyntaxNode(), id: id),
+            node: ControlFlowGraphUnresolvedJumpNode(
+                node: MarkerSyntaxNode(),
+                id: id,
+                debugLabel: kind.description
+            ),
             kind: kind
         )
 
@@ -90,7 +98,11 @@ public struct CFGVisitResult {
         self.init()
 
         let jump = UnresolvedJump(
-            node: ControlFlowGraphNode(node: MarkerSyntaxNode(), id: id),
+            node: ControlFlowGraphUnresolvedJumpNode(
+                node: MarkerSyntaxNode(),
+                id: id,
+                debugLabel: kind.description
+            ),
             kind: kind
         )
 
@@ -117,7 +129,11 @@ public struct CFGVisitResult {
         self.init()
 
         let jump = UnresolvedJump(
-            node: ControlFlowGraphNode(node: MarkerSyntaxNode(), id: id),
+            node: ControlFlowGraphUnresolvedJumpNode(
+                node: MarkerSyntaxNode(),
+                id: id,
+                debugLabel: kind.description
+            ),
             kind: kind
         )
 
@@ -502,8 +518,12 @@ public struct CFGVisitResult {
 
     /// An unresolved jump from a CFG visit.
     public struct UnresolvedJump {
-        public var node: ControlFlowGraphNode
-        public var kind: Kind
+        /// The temporary node inserted to represent this unresolved jump in
+        /// the graph.
+        public let node: ControlFlowGraphUnresolvedJumpNode
+
+        /// The kind of this unresolved jump.
+        public let kind: Kind
 
         func resolve(
             to node: ControlFlowGraphNode,
@@ -547,7 +567,7 @@ public struct CFGVisitResult {
             }
         }
 
-        public enum Kind: Equatable {
+        public enum Kind: Equatable, CustomStringConvertible {
             /// A continue statement, with an optional label.
             case `continue`(label: String?)
 
@@ -576,6 +596,34 @@ public struct CFGVisitResult {
             /// Used in conditional statements to bail out of a condition on each
             /// pattern.
             case conditionalClauseFail
+
+            public var description: String {
+                switch self {
+                case .break(let label):
+                    return "break \(label ?? "")"
+
+                case .conditionalClauseFail:
+                    return "conditionalClauseFail"
+
+                case .continue(let label):
+                    return "continue \(label ?? "")"
+
+                case .expressionShortCircuit:
+                    return "expressionShortCircuit"
+
+                case .fallthrough:
+                    return "fallthrough"
+
+                case .return:
+                    return "return"
+
+                case .switchCasePatternFail:
+                    return "switchCasePatternFail"
+
+                case .throw:
+                    return "throw"
+                }
+            }
         }
     }
 }
@@ -618,5 +666,12 @@ private func _expandAndRemove(node: ControlFlowGraphNode, in graph: ControlFlowG
                 break
             }
         }
+    }
+}
+
+internal extension CFGVisitResult {
+    func debugPrint() {
+        let viz = self.graph.asGraphviz()
+        print(viz.generateFile())
     }
 }

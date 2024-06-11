@@ -106,6 +106,13 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
         visitStatement(switchCase.body, state: state)
     }
 
+    /// Visits the pattern for a `case` block from a `SwitchStatement`.
+    ///
+    /// - Parameter casePattern: A switch case pattern to visit
+    public func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern, state: State) {
+
+    }
+
     /// Visits a `default` block from a `SwitchStatement`.
     ///
     /// - Parameter defaultCase: A switch default case block to visit

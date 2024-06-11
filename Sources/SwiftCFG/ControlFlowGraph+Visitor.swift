@@ -230,13 +230,22 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
     }
 
     func visitSwitchCase(_ switchCase: SwitchCase) -> SwitchCaseVisitResult {
+        print()
         var result =
-            switchCase.patterns.map(visitPattern)
-            .reduce(CFGVisitResult()) {
-                $0.then($1)
-            }
-            .then(CFGVisitResult(forSyntaxNode: switchCase, id: nextId()))
-            .then(CFGVisitResult(branchingToUnresolvedJump: .switchCasePatternFail, id: nextId()))
+            CFGVisitResult(forSyntaxNode: switchCase, id: nextId())
+            .then(
+                switchCase.casePatterns.map(visitSwitchCasePattern)
+                .reduce(CFGVisitResult()) {
+                    $0.then($1)
+                }
+            )
+            .resolvingJumps(
+                kind: .conditionalClauseFail,
+                to: CFGVisitResult(
+                    forUnresolvedJump: .switchCasePatternFail,
+                    id: nextId()
+                )
+            )
 
         let body = visitStatement(switchCase.body)
 
@@ -246,6 +255,21 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             result: result,
             fallthroughTarget: body.entry
         )
+    }
+
+    func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) -> CFGVisitResult {
+        let result = visitPattern(casePattern.pattern)
+            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId()))
+
+        guard let whereClause = casePattern.whereClause else {
+            return result
+        }
+
+        let whereClauseResult = visitExpression(whereClause)
+            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId()))
+
+        return result
+            .then(whereClauseResult)
     }
 
     func visitSwitchDefaultCase(_ defaultCase: SwitchDefaultCase) -> SwitchCaseVisitResult {

@@ -561,7 +561,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
 
                 // -- depth 2
                 // switch -> case 0 (patterns) 0 -> sub expression
-                el(stmt.cases[0].patterns[0].subExpressions[0]),
+                el(stmt.cases[0].casePatterns[0].subExpressions[0]),
                 // switch -> case 0 -> body
                 el(stmt.cases[0].body),
                 // switch -> default -> body
@@ -617,7 +617,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
                 // switch -> exp -> body
                 el(switchExp.body),
                 // switch -> case 0 (patterns) -> sub expression 0
-                el(stmt.cases[0].patterns[0].subExpressions[0]),
+                el(stmt.cases[0].casePatterns[0].subExpressions[0]),
                 // switch -> case 0 -> body
                 el(stmt.cases[0].body),
                 // switch -> default -> body
@@ -627,7 +627,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
                 // switch -> exp -> body -> statements
                 el(switchExp.body.statements[0]),
                 // switch -> case 0 (patterns) 0 -> sub expression 0 -> body
-                el(stmt.cases[0].patterns[0].subExpressions[0].asBlock?.body),
+                el(stmt.cases[0].casePatterns[0].subExpressions[0].asBlock?.body),
                 // switch -> case 0 -> body -> statement 0
                 el(stmt.cases[0].body.statements[0]),
                 // switch -> default -> body -> statement 0
@@ -637,7 +637,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
                 // switch -> exp -> body -> statements -> expression
                 el(switchExp.body.statements[0].asExpressions?.expressions[0]),
                 // switch -> case 0 (patterns) 0 -> sub expression 0 -> body -> statement 0
-                el(stmt.cases[0].patterns[0].subExpressions[0].asBlock?.body.statements[0]),
+                el(stmt.cases[0].casePatterns[0].subExpressions[0].asBlock?.body.statements[0]),
                 // switch -> case 0 -> body -> statement 0 -> expression 0
                 el(stmt.cases[0].body.statements[0].asExpressions?.expressions[0]),
                 // switch -> default -> body -> statement 0 -> expression 0
@@ -645,7 +645,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
 
                 // -- depth 5
                 // switch -> case 0 (patterns) 0 -> sub expression 0 -> body -> statement 0 -> expression 0
-                el(stmt.cases[0].patterns[0].subExpressions[0].asBlock?.body.statements[0].asExpressions?.expressions[0]),
+                el(stmt.cases[0].casePatterns[0].subExpressions[0].asBlock?.body.statements[0].asExpressions?.expressions[0]),
             ]
         )
     }

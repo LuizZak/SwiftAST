@@ -1246,18 +1246,18 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 cases: [
                     SwitchCase(
                         patterns: [
-                            .identifier("patternA")
+                            .identifier("patternA"),
                         ],
                         statements: [
-                            .expression(.identifier("case1"))
+                            .expression(.identifier("case1")),
                         ]
                     ),
                     SwitchCase(
                         patterns: [
-                            .identifier("patternB")
+                            .identifier("patternB"),
                         ],
                         statements: [
-                            .expression(.identifier("case2"))
+                            .expression(.identifier("case2")),
                         ]
                     ),
                 ],
@@ -1313,30 +1313,30 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     SwitchCase(
                         patterns: [.identifier("patternA")],
                         statements: [
-                            .expression(.identifier("b"))
+                            .expression(.identifier("b")),
                         ]
                     ),
                     SwitchCase(
                         patterns: [.identifier("patternB")],
                         statements: [
-                            .expression(.identifier("c"))
+                            .expression(.identifier("c")),
                         ]
                     ),
                     SwitchCase(
                         patterns: [.identifier("patternC")],
                         statements: [
-                            .expression(.identifier("d"))
+                            .expression(.identifier("d")),
                         ]
                     ),
                     SwitchCase(
                         patterns: [.identifier("patternD")],
                         statements: [
-                            .expression(.identifier("e"))
+                            .expression(.identifier("e")),
                         ]
                     ),
                 ],
                 defaultStatements: [
-                    .expression(.identifier("defaultCase"))
+                    .expression(.identifier("defaultCase")),
                 ]
             )
         ]
@@ -1525,20 +1525,283 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
     }
 
+    func testSwitchStatement_casesWithWherePattern() {
+        let stmt: CompoundStatement = [
+            Statement.switch(
+                .identifier("switchExp"),
+                cases: [
+                    SwitchCase(
+                        casePatterns: [
+                            .init(
+                                pattern: .identifier("patternA"),
+                                whereClause: .identifier("whereClauseA")
+                            ),
+                        ],
+                        body: [
+                            .expression(.identifier("case1")),
+                        ]
+                    ),
+                    SwitchCase(
+                        patterns: [
+                            .identifier("patternB"),
+                        ],
+                        statements: [
+                            .expression(.identifier("case2")),
+                        ]
+                    ),
+                ],
+                default: nil
+            )
+        ]
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="switchExp"]
+                    n4 [label="{switch}"]
+                    n5 [label="{case patternA where whereClauseA}"]
+                    n6 [label="whereClauseA"]
+                    n7 [label="{case patternB}"]
+                    n8 [label="{compound}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{exp}"]
+                    n11 [label="{exp}"]
+                    n12 [label="case1"]
+                    n13 [label="case2"]
+                    n14 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                    n5 -> n7
+                    n6 -> n7
+                    n6 -> n8
+                    n7 -> n9
+                    n8 -> n10
+                    n9 -> n11
+                    n10 -> n12
+                    n11 -> n13
+                    n12 -> n14
+                    n13 -> n14
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
+    func testSwitchStatement_casesWithMultiplePatterns_withWherePattern() {
+        let stmt: CompoundStatement = [
+            Statement.switch(
+                .identifier("switchExp"),
+                cases: [
+                    SwitchCase(
+                        casePatterns: [
+                            .init(
+                                pattern: .identifier("patternA"),
+                                whereClause: .identifier("whereClauseA")
+                            ),
+                            .init(
+                                pattern: .expression(.identifier("expressionB")),
+                                whereClause: .identifier("whereClauseB")
+                            ),
+                            .init(
+                                pattern: .identifier("patternC")
+                            ),
+                            .init(
+                                pattern: .identifier("patternD"),
+                                whereClause: .identifier("whereClauseD")
+                            ),
+                        ],
+                        body: [
+                            .expression(.identifier("case1")),
+                        ]
+                    ),
+                    SwitchCase(
+                        patterns: [
+                            .identifier("patternB"),
+                        ],
+                        statements: [
+                            .expression(.identifier("case2")),
+                        ]
+                    ),
+                ],
+                default: nil
+            )
+        ]
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="switchExp"]
+                    n4 [label="{switch}"]
+                    n5 [label="{case [patternA where whereClauseA, expressionB where whereClauseB, patternC, patternD where whereClauseD]}"]
+                    n6 [label="whereClauseA"]
+                    n7 [label="{case patternB}"]
+                    n8 [label="expressionB"]
+                    n9 [label="{compound}"]
+                    n10 [label="whereClauseB"]
+                    n11 [label="{exp}"]
+                    n12 [label="whereClauseD"]
+                    n13 [label="case2"]
+                    n14 [label="{compound}"]
+                    n15 [label="{exp}"]
+                    n16 [label="case1"]
+                    n17 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                    n5 -> n7
+                    n6 -> n7
+                    n8 -> n7
+                    n10 -> n7
+                    n12 -> n7
+                    n6 -> n8
+                    n7 -> n9
+                    n8 -> n10
+                    n9 -> n11
+                    n10 -> n12
+                    n11 -> n13
+                    n12 -> n14
+                    n14 -> n15
+                    n15 -> n16
+                    n13 -> n17
+                    n16 -> n17
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
+    func testSwitchStatement_casesWithMultiplePatterns_withWherePattern_withThrowingExpressionPattern() {
+        let stmt: CompoundStatement = [
+            Statement.switch(
+                .identifier("switchExp"),
+                cases: [
+                    SwitchCase(
+                        casePatterns: [
+                            .init(
+                                pattern: .identifier("patternA"),
+                                whereClause: .identifier("whereClauseA")
+                            ),
+                            .init(
+                                pattern: .expression(.try(.identifier("expressionB"))),
+                                whereClause: .identifier("whereClauseB")
+                            ),
+                            .init(
+                                pattern: .identifier("patternC")
+                            ),
+                            .init(
+                                pattern: .identifier("patternD"),
+                                whereClause: .identifier("whereClauseD")
+                            ),
+                        ],
+                        body: [
+                            .expression(.identifier("case1")),
+                        ]
+                    ),
+                    SwitchCase(
+                        patterns: [
+                            .identifier("patternB"),
+                        ],
+                        statements: [
+                            .expression(.identifier("case2")),
+                        ]
+                    ),
+                ],
+                default: nil
+            )
+        ]
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="switchExp"]
+                    n4 [label="{switch}"]
+                    n5 [label="{case [patternA where whereClauseA, try expressionB where whereClauseB, patternC, patternD where whereClauseD]}"]
+                    n6 [label="{case patternB}"]
+                    n7 [label="whereClauseA"]
+                    n8 [label="{compound}"]
+                    n9 [label="expressionB"]
+                    n10 [label="{exp}"]
+                    n11 [label="try expressionB"]
+                    n12 [label="whereClauseB"]
+                    n13 [label="case2"]
+                    n14 [label="whereClauseD"]
+                    n15 [label="{compound}"]
+                    n16 [label="{exp}"]
+                    n17 [label="case1"]
+                    n18 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                    n7 -> n6
+                    n11 -> n6
+                    n12 -> n6
+                    n14 -> n6
+                    n5 -> n7
+                    n6 -> n8
+                    n7 -> n9
+                    n8 -> n10
+                    n9 -> n11
+                    n11 -> n12
+                    n10 -> n13
+                    n12 -> n14
+                    n14 -> n15
+                    n15 -> n16
+                    n16 -> n17
+                    n11 -> n18
+                    n13 -> n18
+                    n17 -> n18
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
+    }
+
     func testSwitchStatement_fallthrough() {
         let stmt: CompoundStatement = [
             Statement.switch(
                 .identifier("switchExp"),
                 cases: [
                     SwitchCase(
-                        patterns: [],
+                        patterns: [
+                            .identifier("caseA"),
+                        ],
                         statements: [
                             .expression(.identifier("b")),
                             .fallthrough,
                         ]
                     ),
                     SwitchCase(
-                        patterns: [],
+                        patterns: [
+                            .identifier("caseB"),
+                        ],
                         statements: [
                             .expression(.identifier("c"))
                         ]
@@ -1560,9 +1823,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 [label="{compound}"]
                     n3 [label="switchExp"]
                     n4 [label="{switch}"]
-                    n5 [label="{case []}"]
+                    n5 [label="{case caseA}"]
                     n6 [label="{compound}"]
-                    n7 [label="{case []}"]
+                    n7 [label="{case caseB}"]
                     n8 [label="{exp}"]
                     n9 [label="{default}"]
                     n10 [label="{compound}"]
@@ -1601,13 +1864,89 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
     }
 
-    func testSwitchStatement_breakDefer() {
+    func testSwitchStatement_fallthrough_emptyCases() {
         let stmt: CompoundStatement = [
             Statement.switch(
                 .identifier("switchExp"),
                 cases: [
                     SwitchCase(
                         patterns: [],
+                        statements: [
+                            .expression(.identifier("b")),
+                            .fallthrough,
+                        ]
+                    ),
+                    SwitchCase(
+                        patterns: [],
+                        statements: [
+                            .expression(.identifier("c"))
+                        ]
+                    ),
+                ],
+                defaultStatements: [
+                    .expression(.identifier("defaultExp"))
+                ]
+            )
+        ]
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph, expectsUnreachable: true)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="switchExp"]
+                    n4 [label="{switch}"]
+                    n5 [label="{case []}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{exp}"]
+                    n8 [label="b"]
+                    n9 [label="{fallthrough}"]
+                    n10 [label="{compound}"]
+                    n11 [label="{exp}"]
+                    n12 [label="c"]
+                    n13 [label="{case []}"]
+                    n14 [label="{default}"]
+                    n15 [label="{compound}"]
+                    n16 [label="{exp}"]
+                    n17 [label="defaultExp"]
+                    n18 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                    n6 -> n7
+                    n7 -> n8
+                    n8 -> n9
+                    n9 -> n10
+                    n13 -> n10
+                    n10 -> n11
+                    n11 -> n12
+                    n14 -> n15
+                    n15 -> n16
+                    n16 -> n17
+                    n12 -> n18
+                    n17 -> n18
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
+    func testSwitchStatement_breakDefer() {
+        let stmt: CompoundStatement = [
+            Statement.switch(
+                .identifier("switchExp"),
+                cases: [
+                    SwitchCase(
+                        patterns: [
+                            .identifier("caseA"),
+                        ],
                         statements: [
                             .expression(.identifier("b")),
                             .defer([
@@ -1639,7 +1978,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 [label="{compound}"]
                     n3 [label="switchExp"]
                     n4 [label="{switch}"]
-                    n5 [label="{case []}"]
+                    n5 [label="{case caseA}"]
                     n6 [label="{compound}"]
                     n7 [label="{default}"]
                     n8 [label="{exp}"]
@@ -1865,7 +2204,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 .identifier("switchExp"),
                 cases: [
                     SwitchCase(
-                        patterns: [],
+                        patterns: [
+                            .identifier("caseA"),
+                        ],
                         statements: [
                             .expression(.identifier("b")),
                             .defer([
@@ -1891,7 +2232,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                         ]
                     ),
                     SwitchCase(
-                        patterns: [],
+                        patterns: [
+                            .identifier("caseB"),
+                        ],
                         statements: [
                             .expression(.identifier("g"))
                         ]
@@ -1913,9 +2256,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 [label="{compound}"]
                     n3 [label="switchExp"]
                     n4 [label="{switch}"]
-                    n5 [label="{case []}"]
+                    n5 [label="{case caseA}"]
                     n6 [label="{compound}"]
-                    n7 [label="{case []}"]
+                    n7 [label="{case caseB}"]
                     n8 [label="{exp}"]
                     n9 [label="{default}"]
                     n10 [label="{compound}"]
