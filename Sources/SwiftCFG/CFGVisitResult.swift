@@ -343,6 +343,11 @@ public struct CFGVisitResult {
         return copy
     }
 
+    /// Removes all edges that point to the exit of this CFG result.
+    mutating func removeExitEdges() {
+        graph.removeEntryEdges(towards: exit)
+    }
+
     func resolvingJumpsToExit(
         kind: UnresolvedJump.Kind,
         debugLabel: String? = nil

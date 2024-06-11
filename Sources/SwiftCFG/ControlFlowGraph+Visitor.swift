@@ -447,7 +447,43 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
     // MARK: - Expression
 
     func visitExpression(_ expression: Expression) -> CFGVisitResult {
-        expression.accept(self)
+        var result = expression.accept(self)
+
+        // Merge expressions
+        if options.mergeExpressions {
+            // Extract the unresolved jumps
+            let exitEdges = result.graph.edges(towards: result.exit)
+            let hasExit = !exitEdges.isEmpty
+
+            var reduced = CFGVisitResult(forSyntaxNode: expression, id: nextId())
+
+            for jump in result.unresolvedJumps {
+                // Extract edge information
+                let edgesTo = result.graph.edges(towards: jump.node)
+                let edgeLabels = edgesTo.compactMap(\.debugLabel)
+                let hasLabels = !edgeLabels.isEmpty
+
+                reduced =
+                    reduced.then(
+                        CFGVisitResult(
+                            branchingToUnresolvedJump: jump.kind,
+                            id: nextId(),
+                            debugLabel:
+                                hasLabels
+                                ? edgeLabels.joined(separator: "/")
+                                : nil
+                        )
+                    )
+            }
+
+            if !hasExit {
+                reduced.removeExitEdges()
+            }
+
+            result = reduced
+        }
+
+        return result
     }
 
     func visitAssignment(_ exp: AssignmentExpression) -> CFGVisitResult {

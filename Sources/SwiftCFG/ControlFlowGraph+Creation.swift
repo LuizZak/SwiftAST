@@ -21,12 +21,21 @@ public extension ControlFlowGraph {
         /// from the entry node are removed from the graph.
         public var pruneUnreachable: Bool
 
+        /// If `true`, expressions trees appear in the CFG as single nodes rooted
+        /// on the statements that spawned them.
+        ///
+        /// If this flag is true when generating expression CFGs specifically, the
+        /// CFGs produced will always have only one node.
+        public var mergeExpressions: Bool
+
         public init(
             generateEndScopes: Bool = false,
-            pruneUnreachable: Bool = false
+            pruneUnreachable: Bool = false,
+            mergeExpressions: Bool = false
         ) {
             self.generateEndScopes = generateEndScopes
             self.pruneUnreachable = pruneUnreachable
+            self.mergeExpressions = mergeExpressions
         }
     }
 

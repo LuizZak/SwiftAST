@@ -525,4 +525,72 @@ class ControlFlowGraph_CreationTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
     }
+
+    func testMergeExpressions_true() {
+        let stmt: CompoundStatement = [
+            .do([
+                .if(
+                    .identifier("a").dot("b").call([
+                        .try(.identifier("c")).sub(.constant(0))
+                            .binary(op: .or, rhs: .constant(true))
+                    ]),
+                    body: [
+                    .expression(.identifier("e")),
+                ]),
+            ]).catch([
+                .expression(.identifier("catchBlock")),
+            ]),
+        ]
+
+        let graph = ControlFlowGraph.forCompoundStatement(
+            stmt,
+            options: .init(mergeExpressions: true)
+        )
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="{do}"]
+                    n4 [label="{compound}"]
+                    n5 [label="{if}"]
+                    n6 [label="a.b(try c[0] || true)"]
+                    n7 [label="{catch}"]
+                    n8 [label="{if a.b(try c[0] || true)}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{compound}"]
+                    n11 [label="{exp}"]
+                    n12 [label="{exp}"]
+                    n13 [label="catchBlock"]
+                    n14 [label="e"]
+                    n15 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                    n6 -> n7
+                    n6 -> n8
+                    n8 -> n9 [label="true"]
+                    n7 -> n10
+                    n9 -> n11
+                    n10 -> n12
+                    n12 -> n13
+                    n11 -> n14
+                    n8 -> n15 [label="false"]
+                    n13 -> n15
+                    n14 -> n15
+                }
+                """,
+            syntaxNode: stmt
+        )
+        XCTAssert(graph.entry.node === stmt)
+        XCTAssert(graph.exit.node === stmt)
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
+    }
 }
