@@ -85,19 +85,6 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             .finalized()
     }
 
-    func visitGuard(_ stmt: GuardStatement) -> CFGVisitResult {
-        let exp = stmt.exp.accept(self)
-        let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
-
-        let elseBody = stmt.elseBody.accept(self)
-
-        return exp
-            .then(node)
-            .then(elseBody)
-            .branching(from: node.exit, to: elseBody.exit)
-            .finalized()
-    }
-
     func visitConditionalClauses(_ clauses: ConditionalClauses) -> CFGVisitResult {
         let elements = clauses.clauses.map(visitConditionalClauseElement)
 
@@ -123,6 +110,18 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             .then(node)
             .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId(), debugLabel: "false"))
             .labelingExits(debugLabel: "true")
+    }
+
+    func visitGuard(_ stmt: GuardStatement) -> CFGVisitResult {
+        let conditions = stmt.conditionalClauses.accept(self)
+        let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
+
+        let elseBody = stmt.elseBody.accept(self)
+
+        return node
+            .then(conditions)
+            .resolvingJumps(kind: .conditionalClauseFail, to: elseBody)
+            .finalized()
     }
 
     func visitIf(_ stmt: IfStatement) -> CFGVisitResult {

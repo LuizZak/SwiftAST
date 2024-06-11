@@ -18,15 +18,8 @@ public class WhileStatement: Statement, StatementKindType {
     ///
     /// Convenience for `conditionalClauses.clauses[0].expression`.
     public var exp: Expression {
-        get {
-            firstClause.expression
-        }
-        set {
-            firstClause = .init(
-                pattern: firstClause.pattern,
-                expression: newValue
-            )
-        }
+        get { firstClause.expression }
+        set { firstClause.expression = newValue }
     }
     public var body: CompoundStatement {
         didSet {

@@ -223,6 +223,24 @@ class SyntaxNodeIteratorTests: XCTestCase {
         )
     }
 
+    func testGuard() {
+        assertStatement(
+            .guard(.constant(true), else: [.do([.break()])]),
+            iteratesAs: [
+                Statement.guard(.constant(true), else: [.do([.break()])]),
+                [
+                    .init(expression: .constant(true))
+                ] as ConditionalClauses,
+                Statement.compound([.do([.break()])]),
+                ConditionalClauseElement.init(expression: .constant(true)),
+                Statement.do([.break()]),
+                Expression.constant(true),
+                Statement.compound([.break()]),
+                Statement.break(),
+            ]
+        )
+    }
+
     func testIf() {
         assertStatement(
             .if(.constant(true), body: [.do([.break()])], else: [.do([.continue()])]),

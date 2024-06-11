@@ -1111,21 +1111,23 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="GuardStatement"]
-                    n5 [label="{compound}"]
-                    n6 [label="{exp}"]
-                    n7 [label="guardBody"]
-                    n8 [label="exit"]
-
+                    n3 [label="{guard}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{exp}"]
+                    n8 [label="guardBody"]
+                    n9 [label="exit"]
+                
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="false"]
                     n6 -> n7
-                    n4 -> n8
                     n7 -> n8
+                    n5 -> n9 [label="true"]
+                    n8 -> n9
                 }
                 """
         )
@@ -1156,26 +1158,81 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="GuardStatement"]
-                    n5 [label="{compound}"]
-                    n6 [label="{exp}"]
+                    n3 [label="{guard}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
                     n7 [label="{exp}"]
-                    n8 [label="postGuard"]
-                    n9 [label="guardBody"]
-                    n10 [label="{return}"]
-                    n11 [label="exit"]
-
+                    n8 [label="{exp}"]
+                    n9 [label="postGuard"]
+                    n10 [label="guardBody"]
+                    n11 [label="{return}"]
+                    n12 [label="exit"]
+                
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n4 -> n6
-                    n5 -> n7
+                    n5 -> n6 [label="false"]
+                    n5 -> n7 [label="true"]
                     n6 -> n8
                     n7 -> n9
-                    n9 -> n10
-                    n8 -> n11
+                    n8 -> n10
+                    n10 -> n11
+                    n9 -> n12
+                    n11 -> n12
+                }
+                """
+        )
+        XCTAssert(graph.entry.node === stmt)
+        XCTAssert(graph.exit.node === stmt)
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
+    func testGuard_multiClause() {
+        let stmt: CompoundStatement = [
+            Statement.guard(
+                clauses: [
+                    .init(expression: .identifier("predicate1")),
+                    .init(expression: .identifier("predicate2")),
+                ],
+                else: [
+                    .expression(.identifier("guardBody")),
+                ]
+            ),
+        ]
+
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="{guard}"]
+                    n4 [label="predicate1"]
+                    n5 [label="{if predicate1}"]
+                    n6 [label="{compound}"]
+                    n7 [label="predicate2"]
+                    n8 [label="{exp}"]
+                    n9 [label="{if predicate2}"]
+                    n10 [label="guardBody"]
+                    n11 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6 [label="false"]
+                    n9 -> n6 [label="false"]
+                    n5 -> n7 [label="true"]
+                    n6 -> n8
+                    n7 -> n9
+                    n8 -> n10
+                    n9 -> n11 [label="true"]
                     n10 -> n11
                 }
                 """

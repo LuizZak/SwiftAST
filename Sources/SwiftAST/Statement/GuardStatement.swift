@@ -3,8 +3,23 @@ public class GuardStatement: Statement, StatementKindType {
         .guard(self)
     }
 
+    /// Gets the main conditional clauses of this guard statement.
+    public var conditionalClauses: ConditionalClauses {
+        didSet { oldValue.parent = nil; conditionalClauses.parent = self }
+    }
+
+    /// Convenience for `conditionalClauses.clauses[0]`.
+    internal var firstClause: ConditionalClauseElement {
+        get { conditionalClauses.clauses[0] }
+        set { conditionalClauses.clauses[0] = newValue }
+    }
+
+    /// Gets the first conditional clause expression in this guard statement.
+    ///
+    /// Convenience for `conditionalClauses.clauses[0].expression`.
     public var exp: Expression {
-        didSet { oldValue.parent = nil; exp.parent = self }
+        get { firstClause.expression }
+        set { firstClause.expression = newValue }
     }
     public var elseBody: CompoundStatement {
         didSet { oldValue.parent = nil; elseBody.parent = self }
@@ -14,11 +29,11 @@ public class GuardStatement: Statement, StatementKindType {
     /// pattern match over a given pattern.
     ///
     /// This is used to create guard-let statements.
+    ///
+    /// Convenience for `conditionalClauses.clauses[0].pattern`.
     public var pattern: Pattern? {
-        didSet {
-            oldValue?.setParent(nil)
-            pattern?.setParent(self)
-        }
+        get { firstClause.pattern }
+        set { firstClause.pattern = newValue }
     }
 
     /// Returns whether this `GuardExpression` represents a guard-let statement.
@@ -27,55 +42,52 @@ public class GuardStatement: Statement, StatementKindType {
     }
 
     public override var children: [SyntaxNode] {
-        var result: [SyntaxNode] = []
-
-        if let pattern = pattern {
-            pattern.collect(expressions: &result)
-        }
-
-        result.append(exp)
-        result.append(elseBody)
-
-        return result
+        [conditionalClauses, elseBody]
     }
 
     public override var isLabelableStatementType: Bool {
         return false
     }
 
-    public init(exp: Expression, elseBody: CompoundStatement, pattern: Pattern?) {
-        self.exp = exp
+    public convenience init(
+        exp: Expression,
+        elseBody: CompoundStatement,
+        pattern: Pattern?
+    ) {
+        self.init(
+            clauses: [.init(pattern: pattern, expression: exp)],
+            elseBody: elseBody
+        )
+    }
+
+    public init(clauses: ConditionalClauses, elseBody: CompoundStatement) {
+        self.conditionalClauses = clauses
         self.elseBody = elseBody
-        self.pattern = pattern
 
         super.init()
 
-        exp.parent = self
+        conditionalClauses.parent = self
         elseBody.parent = self
-        pattern?.setParent(self)
     }
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        exp = try container.decodeExpression(forKey: .exp)
+        conditionalClauses = try container.decode(ConditionalClauses.self, forKey: .conditionalClauses)
         elseBody = try container.decodeStatement(CompoundStatement.self, forKey: .elseBody)
-        pattern = try container.decodeIfPresent(Pattern.self, forKey: .pattern)
 
         try super.init(from: container.superDecoder())
 
-        exp.parent = self
+        conditionalClauses.parent = self
         elseBody.parent = self
-        pattern?.setParent(self)
     }
 
     @inlinable
     public override func copy() -> GuardStatement {
         let copy =
             GuardStatement(
-                exp: exp.copy(),
-                elseBody: elseBody.copy(),
-                pattern: pattern?.copy()
+                clauses: conditionalClauses.copy(),
+                elseBody: elseBody.copy()
             )
             .copyMetadata(from: self)
 
@@ -97,7 +109,7 @@ public class GuardStatement: Statement, StatementKindType {
     public override func isEqual(to other: Statement) -> Bool {
         switch other {
         case let rhs as GuardStatement:
-            return exp == rhs.exp && pattern == rhs.pattern && elseBody == rhs.elseBody && elseBody == rhs.elseBody
+            return conditionalClauses.isEqual(to: rhs.conditionalClauses) && elseBody == rhs.elseBody && elseBody == rhs.elseBody
         default:
             return false
         }
@@ -106,16 +118,14 @@ public class GuardStatement: Statement, StatementKindType {
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
-        try container.encode(pattern, forKey: .pattern)
-        try container.encodeExpression(exp, forKey: .exp)
+        try container.encode(conditionalClauses, forKey: .conditionalClauses)
         try container.encodeStatement(elseBody, forKey: .elseBody)
 
         try super.encode(to: container.superEncoder())
     }
 
     private enum CodingKeys: String, CodingKey {
-        case pattern
-        case exp
+        case conditionalClauses
         case elseBody
     }
 }
@@ -153,5 +163,15 @@ public extension Statement {
     ) -> GuardStatement {
 
         GuardStatement(exp: exp, elseBody: elseBody, pattern: pattern)
+    }
+
+    /// Creates a `GuardStatement` instance using the given condition clauses
+    /// and compound statement as its body, with a given else block.
+    static func `guard`(
+        clauses: ConditionalClauses,
+        else elseBody: CompoundStatement
+    ) -> GuardStatement {
+
+        GuardStatement(clauses: clauses, elseBody: elseBody)
     }
 }

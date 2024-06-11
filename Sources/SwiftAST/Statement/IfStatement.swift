@@ -18,15 +18,8 @@ public class IfStatement: Statement, StatementKindType {
     ///
     /// Convenience for `conditionalClauses.clauses[0].expression`.
     public var exp: Expression {
-        get {
-            firstClause.expression
-        }
-        set {
-            firstClause = .init(
-                pattern: firstClause.pattern,
-                expression: newValue
-            )
-        }
+        get { firstClause.expression }
+        set { firstClause.expression = newValue }
     }
     public var body: CompoundStatement {
         didSet { oldValue.parent = nil; body.parent = self }
@@ -42,15 +35,8 @@ public class IfStatement: Statement, StatementKindType {
     ///
     /// Convenience for `conditionalClauses.clauses[0].pattern`.
     public var pattern: Pattern? {
-        get {
-            firstClause.pattern
-        }
-        set {
-            firstClause = .init(
-                pattern: newValue,
-                expression: firstClause.expression
-            )
-        }
+        get { firstClause.pattern }
+        set { firstClause.pattern = newValue }
     }
 
     /// Returns whether this `IfExpression` represents an if-let statement.
