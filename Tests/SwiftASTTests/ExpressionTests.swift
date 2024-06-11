@@ -120,7 +120,7 @@ class ExpressionTests: XCTestCase {
         XCTAssertEqual(Expression.constant(.octal(0o7767)).description, "0o7767")
         XCTAssertEqual(
             Expression.constant(.string("I'm a string!")).description,
-            "\"I'm a string!\""
+            #""I\'m a string!""#
         )
         XCTAssertEqual(Expression.constant(.boolean(true)).description, "true")
         XCTAssertEqual(Expression.constant(.boolean(false)).description, "false")
