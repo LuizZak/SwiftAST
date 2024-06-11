@@ -260,6 +260,32 @@ class SyntaxNodeIteratorTests: XCTestCase {
         )
     }
 
+    func testIfLet_multipleBindings() {
+        let stmt: Statement =
+            .if(clauses: [
+                .init(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                .init(pattern: .expression(.identifier("b")), expression: .constant(false)),
+            ], body: [.do([.break()])], else: [.do([.continue()])])
+        assertStatement(
+            stmt,
+            iteratesAs: [
+                stmt,
+                Expression.identifier("a"),
+                Expression.constant(true),
+                Expression.identifier("b"),
+                Expression.constant(false),
+                Statement.compound([.do([.break()])]),
+                Statement.compound([.do([.continue()])]),
+                Statement.do([.break()]),
+                Statement.do([.continue()]),
+                Statement.compound([.break()]),
+                Statement.compound([.continue()]),
+                Statement.break(),
+                Statement.continue(),
+            ]
+        )
+    }
+
     func testDo() {
         assertStatement(
             .do([.break(), .continue()]),
