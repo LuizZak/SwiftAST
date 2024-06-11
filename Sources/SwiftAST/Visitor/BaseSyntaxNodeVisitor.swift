@@ -207,23 +207,6 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
         stmt.statements.forEach(visitStatement)
     }
 
-    /// Visits a `guard` statement with this visitor
-    ///
-    /// - Parameter stmt: A GuardStatement to visit
-    open func visitGuard(_ stmt: GuardStatement) {
-        visitExpression(stmt.exp)
-        visitStatement(stmt.elseBody)
-    }
-
-    /// Visits an `if` statement with this visitor
-    ///
-    /// - Parameter stmt: An IfStatement to visit
-    open func visitIf(_ stmt: IfStatement) {
-        visitExpression(stmt.exp)
-        visitStatement(stmt.body)
-        stmt.elseBody.map(visitStatement)
-    }
-
     /// Visits a conditional clause list of a conditional statement with this
     /// visitor
     ///
@@ -239,6 +222,23 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     open func visitConditionalClauseElement(_ clause: ConditionalClauseElement) {
         clause.pattern.map(visitPattern)
         visitExpression(clause.expression)
+    }
+
+    /// Visits a `guard` statement with this visitor
+    ///
+    /// - Parameter stmt: A GuardStatement to visit
+    open func visitGuard(_ stmt: GuardStatement) {
+        visitExpression(stmt.exp)
+        visitStatement(stmt.elseBody)
+    }
+
+    /// Visits an `if` statement with this visitor
+    ///
+    /// - Parameter stmt: An IfStatement to visit
+    open func visitIf(_ stmt: IfStatement) {
+        visitExpression(stmt.exp)
+        visitStatement(stmt.body)
+        stmt.elseBody.map(visitStatement)
     }
 
     /// Visits a `switch` statement with this visitor

@@ -98,6 +98,33 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             .finalized()
     }
 
+    func visitConditionalClauses(_ clauses: ConditionalClauses) -> CFGVisitResult {
+        let elements = clauses.clauses.map(visitConditionalClauseElement)
+
+        return elements.inSequence()
+    }
+
+    func visitConditionalClauseElement(_ clause: ConditionalClauseElement) -> CFGVisitResult {
+        // TODO: Conditional clauses can declare definitions within their patterns,
+        // TODO: and that should be handled with definition contexts somehow within
+        // TODO: the clause elements, or the conditional statements that contain
+        // TODO: the clauses
+        let node = CFGVisitResult(forSyntaxNode: clause, id: nextId())
+        var result = CFGVisitResult()
+
+        if let pattern = clause.pattern {
+            result = result.then(
+                visitPattern(pattern)
+            )
+        }
+
+        return result
+            .then(visitExpression(clause.expression))
+            .then(node)
+            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId(), debugLabel: "false"))
+            .labelingExits(debugLabel: "true")
+    }
+
     func visitIf(_ stmt: IfStatement) -> CFGVisitResult {
         let conditions = stmt.conditionalClauses.accept(self)
         let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
@@ -120,47 +147,24 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         }
     }
 
-    func visitConditionalClauses(_ clauses: ConditionalClauses) -> CFGVisitResult {
-        let elements = clauses.clauses.map(visitConditionalClauseElement)
-
-        return elements.inSequence()
-    }
-
-    func visitConditionalClauseElement(_ clause: ConditionalClauseElement) -> CFGVisitResult {
-        let node = CFGVisitResult(forSyntaxNode: clause, id: nextId())
-        var result = CFGVisitResult()
-
-        if let pattern = clause.pattern {
-            result = result.then(
-                visitPattern(pattern)
-            )
-        }
-
-        return result
-            .then(visitExpression(clause.expression))
-            .then(node)
-            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId(), debugLabel: "false"))
-            .labelingExits(debugLabel: "true")
-    }
-
     func visitWhile(_ stmt: WhileStatement) -> CFGVisitResult {
-        let exp = stmt.exp.accept(self)
-        let head = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
+        let conditions = stmt.conditionalClauses.accept(self)
+        let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
 
         let body = stmt.body.accept(self)
 
         let breakMarker = CFGVisitResult()
 
-        return exp
-            .then(head)
+        return node
+            .then(conditions)
             .then(body)
-            .thenLoop(backTo: exp.entry, conditionally: false)
+            .thenLoop(backTo: node.entry, conditionally: false)
             .then(breakMarker)
-            .branching(from: head.exit, to: breakMarker.entry)
-            .resolvingJumps(kind: .continue(label: nil), to: exp.entry)
-            .resolvingJumps(kind: .continue(label: stmt.label), to: exp.entry)
+            .resolvingJumps(kind: .continue(label: nil), to: node.entry)
+            .resolvingJumps(kind: .continue(label: stmt.label), to: node.entry)
             .resolvingJumps(kind: .break(label: nil), to: breakMarker.entry)
             .resolvingJumps(kind: .break(label: stmt.label), to: breakMarker.entry)
+            .resolvingJumps(kind: .conditionalClauseFail, to: breakMarker.entry)
             .finalized()
     }
 

@@ -23,12 +23,6 @@ public protocol StatementVisitor {
     /// - Returns: Result of visiting the compound statement
     func visitCompound(_ stmt: CompoundStatement) -> StmtResult
 
-    /// Visits an `if` statement with this visitor
-    ///
-    /// - Parameter stmt: An `if` statement to visit
-    /// - Returns: Result of visiting the `if` statement node
-    func visitIf(_ stmt: IfStatement) -> StmtResult
-
     /// Visits a conditional clause list of a conditional statement with this
     /// visitor
     ///
@@ -48,6 +42,12 @@ public protocol StatementVisitor {
     /// - Parameter stmt: A `guard` statement to visit
     /// - Returns: Result of visiting the `guard` statement node
     func visitGuard(_ stmt: GuardStatement) -> StmtResult
+
+    /// Visits an `if` statement with this visitor
+    ///
+    /// - Parameter stmt: An `if` statement to visit
+    /// - Returns: Result of visiting the `if` statement node
+    func visitIf(_ stmt: IfStatement) -> StmtResult
 
     /// Visits a `while` statement with this visitor
     ///

@@ -223,7 +223,8 @@ extension ControlFlowGraph {
                 guard containsNode(edge.start) && containsNode(edge.end) else {
                     continue
                 }
-                guard !areConnected(start: edge.start, end: edge.end) else {
+                if let existing = self.edge(from: edge.start, to: edge.end) {
+                    copyMetadata(from: edge, to: existing)
                     continue
                 }
             }
@@ -320,6 +321,7 @@ internal extension ControlFlowGraph {
 
                     let edge = addEdge(from: source, to: target)
                     edge.isBackEdge = edgeTo.isBackEdge
+                    edge.debugLabel = edgeTo.debugLabel
                 }
             }
             for edgeFrom in edgesFrom {
@@ -330,6 +332,7 @@ internal extension ControlFlowGraph {
 
                     let edge = addEdge(from: source, to: target)
                     edge.isBackEdge = edgeFrom.isBackEdge
+                    edge.debugLabel = edgeFrom.debugLabel
                 }
             }
         }
@@ -474,7 +477,7 @@ extension Sequence where Element: ControlFlowGraphEdge {
     @discardableResult
     func setDebugLabel(_ debugLabel: String?) -> [Element] {
         map {
-            $0.debugLabel = debugLabel
+            $0.debugLabel = debugLabel ?? $0.debugLabel
             return $0
         }
     }

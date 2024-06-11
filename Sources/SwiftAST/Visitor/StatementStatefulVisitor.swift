@@ -27,18 +27,6 @@ public protocol StatementStatefulVisitor {
     /// - Returns: Result of visiting the compound statement
     func visitCompound(_ stmt: CompoundStatement, state: State) -> StmtResult
 
-    /// Visits a `guard` statement with this visitor
-    ///
-    /// - Parameter stmt: A `guard` statement to visit
-    /// - Returns: Result of visiting the `guard` statement node
-    func visitGuard(_ stmt: GuardStatement, state: State) -> StmtResult
-
-    /// Visits an `if` statement with this visitor
-    ///
-    /// - Parameter stmt: An `if` statement to visit
-    /// - Returns: Result of visiting the `if` statement node
-    func visitIf(_ stmt: IfStatement, state: State) -> StmtResult
-
     /// Visits a conditional clause list of a conditional statement with this
     /// visitor
     ///
@@ -52,6 +40,18 @@ public protocol StatementStatefulVisitor {
     /// - Parameter clauses: A conditional clause element to visit
     /// - Returns: Result of visiting the conditional clause element node
     func visitConditionalClauseElement(_ clause: ConditionalClauseElement, state: State) -> ConditionalClauseElementResult
+
+    /// Visits a `guard` statement with this visitor
+    ///
+    /// - Parameter stmt: A `guard` statement to visit
+    /// - Returns: Result of visiting the `guard` statement node
+    func visitGuard(_ stmt: GuardStatement, state: State) -> StmtResult
+
+    /// Visits an `if` statement with this visitor
+    ///
+    /// - Parameter stmt: An `if` statement to visit
+    /// - Returns: Result of visiting the `if` statement node
+    func visitIf(_ stmt: IfStatement, state: State) -> StmtResult
 
     /// Visits a `while` statement with this visitor
     ///

@@ -59,11 +59,10 @@ public class IfStatement: Statement, StatementKindType {
     }
 
     public override var children: [SyntaxNode] {
-        var result: [SyntaxNode] = []
-
-        conditionalClauses.collect(expressions: &result)
-
-        result.append(body)
+        var result: [SyntaxNode] = [
+            conditionalClauses,
+            body
+        ]
 
         if let elseBody = elseBody {
             result.append(elseBody)

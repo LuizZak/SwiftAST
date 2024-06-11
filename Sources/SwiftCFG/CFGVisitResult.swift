@@ -537,12 +537,14 @@ public struct CFGVisitResult {
                 graph.addNode(target)
             }
 
-            guard !graph.areConnected(start: node, end: target) else {
-                return
+            if let existing = graph.edge(from: node, to: target) {
+                if existing.debugLabel == nil {
+                    existing.debugLabel = debugLabel
+                }
+            } else {
+                let edge = graph.addEdge(from: node, to: target)
+                edge.debugLabel = debugLabel
             }
-
-            let edge = graph.addEdge(from: node, to: target)
-            edge.debugLabel = debugLabel
         }
 
         public enum Kind: Equatable {

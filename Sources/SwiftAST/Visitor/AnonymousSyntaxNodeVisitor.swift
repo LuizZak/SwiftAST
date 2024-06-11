@@ -233,27 +233,6 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         stmt.statements.forEach(visitStatement)
     }
 
-    /// Visits a `guard` statement with this visitor
-    ///
-    /// - Parameter stmt: A `guard` statement to visit
-    /// - Returns: Result of visiting the `guard` statement node
-    public func visitGuard(_ stmt: GuardStatement) {
-        listener(stmt)
-
-        visitStatement(stmt.elseBody)
-    }
-
-    /// Visits an `if` statement with this visitor
-    ///
-    /// - Parameter stmt: An IfStatement to visit
-    public func visitIf(_ stmt: IfStatement) {
-        listener(stmt)
-
-        visitConditionalClauses(stmt.conditionalClauses)
-        visitStatement(stmt.body)
-        stmt.elseBody.map(visitStatement)
-    }
-
     /// Visits a conditional clause list of a conditional statement with this
     /// visitor
     ///
@@ -273,6 +252,27 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
 
         clause.pattern.map(visitPattern)
         visitExpression(clause.expression)
+    }
+
+    /// Visits a `guard` statement with this visitor
+    ///
+    /// - Parameter stmt: A `guard` statement to visit
+    /// - Returns: Result of visiting the `guard` statement node
+    public func visitGuard(_ stmt: GuardStatement) {
+        listener(stmt)
+
+        visitStatement(stmt.elseBody)
+    }
+
+    /// Visits an `if` statement with this visitor
+    ///
+    /// - Parameter stmt: An IfStatement to visit
+    public func visitIf(_ stmt: IfStatement) {
+        listener(stmt)
+
+        visitConditionalClauses(stmt.conditionalClauses)
+        visitStatement(stmt.body)
+        stmt.elseBody.map(visitStatement)
     }
 
     /// Visits a `switch` statement with this visitor

@@ -264,31 +264,33 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{do}"]
-                    n7 [label="{compound}"]
-                    n8 [label="{exp}"]
-                    n9 [label="a"]
-                    n10 [label="{break doLabel}"]
-                    n11 [label="{exp}"]
-                    n12 [label="b"]
-                    n13 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{do}"]
+                    n8 [label="{compound}"]
+                    n9 [label="{exp}"]
+                    n10 [label="a"]
+                    n11 [label="{break doLabel}"]
+                    n12 [label="{exp}"]
+                    n13 [label="b"]
+                    n14 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n10 -> n3 [color="#aa3333", penwidth=0.5]
-                    n12 -> n3
+                    n11 -> n3 [color="#aa3333", penwidth=0.5]
+                    n13 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="true"]
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
                     n9 -> n10
-                    n11 -> n12
-                    n4 -> n13
+                    n10 -> n11
+                    n12 -> n13
+                    n5 -> n14 [label="false"]
                 }
                 """
         )
@@ -832,41 +834,43 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="whilePredicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{if}"]
-                    n7 [label="predicate"]
-                    n8 [label="{if predicate}"]
-                    n9 [label="{compound}"]
-                    n10 [label="{if}"]
-                    n11 [label="predicateInner"]
-                    n12 [label="{if predicateInner}"]
-                    n13 [label="{compound}"]
-                    n14 [label="{break outer}"]
-                    n15 [label="{exp}"]
-                    n16 [label="postBreak"]
-                    n17 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="whilePredicate"]
+                    n5 [label="{if whilePredicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{if}"]
+                    n8 [label="predicate"]
+                    n9 [label="{if predicate}"]
+                    n10 [label="{compound}"]
+                    n11 [label="{if}"]
+                    n12 [label="predicateInner"]
+                    n13 [label="{if predicateInner}"]
+                    n14 [label="{compound}"]
+                    n15 [label="{break outer}"]
+                    n16 [label="{exp}"]
+                    n17 [label="postBreak"]
+                    n18 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n8 -> n3 [color="#aa3333", label="false", penwidth=0.5]
-                    n12 -> n3 [color="#aa3333", label="false", penwidth=0.5]
-                    n14 -> n3 [color="#aa3333", penwidth=0.5]
-                    n16 -> n3
+                    n9 -> n3 [color="#aa3333", label="false", penwidth=0.5]
+                    n13 -> n3 [color="#aa3333", label="false", penwidth=0.5]
+                    n15 -> n3 [color="#aa3333", penwidth=0.5]
+                    n17 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="true"]
                     n6 -> n7
                     n7 -> n8
-                    n8 -> n9 [label="true"]
-                    n9 -> n10
+                    n8 -> n9
+                    n9 -> n10 [label="true"]
                     n10 -> n11
                     n11 -> n12
-                    n12 -> n13 [label="true"]
-                    n13 -> n14
-                    n15 -> n16
-                    n4 -> n17
+                    n12 -> n13
+                    n13 -> n14 [label="true"]
+                    n14 -> n15
+                    n16 -> n17
+                    n5 -> n18 [label="false"]
                 }
                 """
         )
@@ -1991,21 +1995,23 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{exp}"]
-                    n7 [label="loopBody"]
-                    n8 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{exp}"]
+                    n8 [label="loopBody"]
+                    n9 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n7 -> n3 [color="#aa3333", penwidth=0.5]
+                    n8 -> n3 [color="#aa3333", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="true"]
                     n6 -> n7
-                    n4 -> n8
+                    n7 -> n8
+                    n5 -> n9 [label="false"]
                 }
                 """
         )
@@ -2030,17 +2036,19 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n5 -> n3 [color="#aa3333", penwidth=0.5]
+                    n6 -> n3 [color="#aa3333", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
-                    n4 -> n6
+                    n5 -> n6 [label="true"]
+                    n5 -> n7 [label="false"]
                 }
                 """
         )
@@ -2069,26 +2077,30 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="predicateInner"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
                     n7 [label="{while}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{continue outer}"]
-                    n10 [label="exit"]
+                    n8 [label="predicateInner"]
+                    n9 [label="{if predicateInner}"]
+                    n10 [label="{compound}"]
+                    n11 [label="{continue outer}"]
+                    n12 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n7 -> n3 [color="#aa3333", penwidth=0.5]
-                    n9 -> n3 [color="#aa3333", penwidth=0.5]
+                    n9 -> n3 [color="#aa3333", label="false", penwidth=0.5]
+                    n11 -> n3 [color="#aa3333", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="true"]
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
-                    n4 -> n10
+                    n9 -> n10 [label="true"]
+                    n10 -> n11
+                    n5 -> n12 [label="false"]
                 }
                 """
         )
@@ -2117,26 +2129,30 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="predicateInner"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
                     n7 [label="{while}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{break outer}"]
-                    n10 [label="exit"]
+                    n8 [label="predicateInner"]
+                    n9 [label="{if predicateInner}"]
+                    n10 [label="{compound}"]
+                    n11 [label="{break outer}"]
+                    n12 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n7 -> n3 [color="#aa3333", penwidth=0.5]
+                    n9 -> n3 [color="#aa3333", label="false", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="true"]
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
-                    n4 -> n10
-                    n9 -> n10
+                    n9 -> n10 [label="true"]
+                    n10 -> n11
+                    n5 -> n12 [label="false"]
+                    n11 -> n12
                 }
                 """
         )
@@ -2171,40 +2187,94 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="whilePredicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{if}"]
-                    n7 [label="ifPredicate"]
-                    n8 [label="{if ifPredicate}"]
-                    n9 [label="{compound}"]
+                    n3 [label="{while}"]
+                    n4 [label="whilePredicate"]
+                    n5 [label="{if whilePredicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{if}"]
+                    n8 [label="ifPredicate"]
+                    n9 [label="{if ifPredicate}"]
                     n10 [label="{compound}"]
-                    n11 [label="{exp}"]
-                    n12 [label="{break}"]
-                    n13 [label="preContinue"]
-                    n14 [label="{continue}"]
-                    n15 [label="{exp}"]
-                    n16 [label="postIf"]
-                    n17 [label="exit"]
+                    n11 [label="{compound}"]
+                    n12 [label="{exp}"]
+                    n13 [label="{break}"]
+                    n14 [label="preContinue"]
+                    n15 [label="{continue}"]
+                    n16 [label="{exp}"]
+                    n17 [label="postIf"]
+                    n18 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n14 -> n3 [color="#aa3333", penwidth=0.5]
-                    n16 -> n3
+                    n15 -> n3 [color="#aa3333", penwidth=0.5]
+                    n17 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="true"]
                     n6 -> n7
                     n7 -> n8
-                    n8 -> n9 [label="false"]
-                    n8 -> n10 [label="true"]
-                    n9 -> n11
+                    n8 -> n9
+                    n9 -> n10 [label="false"]
+                    n9 -> n11 [label="true"]
                     n10 -> n12
                     n11 -> n13
-                    n13 -> n14
-                    n15 -> n16
-                    n4 -> n17
-                    n12 -> n17
+                    n12 -> n14
+                    n14 -> n15
+                    n16 -> n17
+                    n5 -> n18 [label="false"]
+                    n13 -> n18
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
+    func testWhileLoop_multiClause() {
+        let stmt: CompoundStatement = [
+            Statement.while(
+                clauses: [
+                    .init(expression: .identifier("predicate1")),
+                    .init(pattern: .expression(.identifier("pattern2")), expression: .identifier("predicate2")),
+                ],
+                body: [
+                    .expression(.identifier("loopBody"))
+                ]
+            ),
+        ]
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate1"]
+                    n5 [label="{if predicate1}"]
+                    n6 [label="pattern2"]
+                    n7 [label="predicate2"]
+                    n8 [label="{if pattern2 = predicate2}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{exp}"]
+                    n11 [label="loopBody"]
+                    n12 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n11 -> n3 [color="#aa3333", penwidth=0.5]
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6 [label="true"]
+                    n6 -> n7
+                    n7 -> n8
+                    n8 -> n9 [label="true"]
+                    n9 -> n10
+                    n10 -> n11
+                    n5 -> n12 [label="false"]
+                    n8 -> n12 [label="false"]
                 }
                 """
         )
@@ -2310,25 +2380,27 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
                     n3 [label="{compound}"]
-                    n4 [label="predicateInner"]
-                    n5 [label="{while}"]
-                    n6 [label="{compound}"]
-                    n7 [label="predicate"]
-                    n8 [label="{continue outer}"]
-                    n9 [label="{repeat-while}"]
-                    n10 [label="exit"]
+                    n4 [label="{while}"]
+                    n5 [label="predicateInner"]
+                    n6 [label="{if predicateInner}"]
+                    n7 [label="{compound}"]
+                    n8 [label="predicate"]
+                    n9 [label="{continue outer}"]
+                    n10 [label="{repeat-while}"]
+                    n11 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n9 -> n3 [color="#aa3333", penwidth=0.5]
+                    n10 -> n3 [color="#aa3333", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
                     n5 -> n6
-                    n5 -> n7
-                    n8 -> n7
-                    n6 -> n8
+                    n6 -> n7 [label="true"]
+                    n6 -> n8 [label="false"]
+                    n9 -> n8
                     n7 -> n9
-                    n9 -> n10
+                    n8 -> n10
+                    n10 -> n11
                 }
                 """
         )
@@ -2358,25 +2430,27 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
                     n3 [label="{compound}"]
-                    n4 [label="predicateInner"]
-                    n5 [label="{while}"]
-                    n6 [label="predicate"]
-                    n7 [label="{compound}"]
-                    n8 [label="{break outer}"]
-                    n9 [label="{repeat-while}"]
-                    n10 [label="exit"]
+                    n4 [label="{while}"]
+                    n5 [label="predicateInner"]
+                    n6 [label="{if predicateInner}"]
+                    n7 [label="predicate"]
+                    n8 [label="{compound}"]
+                    n9 [label="{break outer}"]
+                    n10 [label="{repeat-while}"]
+                    n11 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n9 -> n3 [color="#aa3333", penwidth=0.5]
+                    n10 -> n3 [color="#aa3333", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
                     n5 -> n6
-                    n5 -> n7
-                    n7 -> n8
-                    n6 -> n9
-                    n8 -> n10
-                    n9 -> n10
+                    n6 -> n7 [label="false"]
+                    n6 -> n8 [label="true"]
+                    n8 -> n9
+                    n7 -> n10
+                    n9 -> n11
+                    n10 -> n11
                 }
                 """
         )
@@ -2526,23 +2600,25 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 [label="i"]
                     n4 [label="{for}"]
                     n5 [label="{compound}"]
-                    n6 [label="predicateInner"]
-                    n7 [label="{while}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{continue outer}"]
-                    n10 [label="exit"]
+                    n6 [label="{while}"]
+                    n7 [label="predicateInner"]
+                    n8 [label="{if predicateInner}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{continue outer}"]
+                    n11 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
-                    n7 -> n4 [color="#aa3333", penwidth=0.5]
-                    n9 -> n4 [color="#aa3333", penwidth=0.5]
+                    n8 -> n4 [color="#aa3333", label="false", penwidth=0.5]
+                    n10 -> n4 [color="#aa3333", penwidth=0.5]
                     n4 -> n5
                     n5 -> n6
                     n6 -> n7
                     n7 -> n8
-                    n8 -> n9
-                    n4 -> n10
+                    n8 -> n9 [label="true"]
+                    n9 -> n10
+                    n4 -> n11
                 }
                 """
         )
@@ -2575,23 +2651,25 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 [label="i"]
                     n4 [label="{for}"]
                     n5 [label="{compound}"]
-                    n6 [label="predicateInner"]
-                    n7 [label="{while}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{break outer}"]
-                    n10 [label="exit"]
+                    n6 [label="{while}"]
+                    n7 [label="predicateInner"]
+                    n8 [label="{if predicateInner}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{break outer}"]
+                    n11 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
-                    n7 -> n4 [color="#aa3333", penwidth=0.5]
+                    n8 -> n4 [color="#aa3333", label="false", penwidth=0.5]
                     n4 -> n5
                     n5 -> n6
                     n6 -> n7
                     n7 -> n8
-                    n8 -> n9
-                    n4 -> n10
+                    n8 -> n9 [label="true"]
                     n9 -> n10
+                    n4 -> n11
+                    n10 -> n11
                 }
                 """
         )
@@ -2674,19 +2752,21 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{return}"]
-                    n7 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{return}"]
+                    n8 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
-                    n4 -> n7
+                    n5 -> n6 [label="true"]
                     n6 -> n7
+                    n5 -> n8 [label="false"]
+                    n7 -> n8
                 }
                 """
         )
@@ -2750,21 +2830,23 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="predicate"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="Error"]
-                    n7 [label="{throw Error}"]
-                    n8 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="predicate"]
+                    n5 [label="{if predicate}"]
+                    n6 [label="{compound}"]
+                    n7 [label="Error"]
+                    n8 [label="{throw Error}"]
+                    n9 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
+                    n5 -> n6 [label="true"]
                     n6 -> n7
-                    n4 -> n8
                     n7 -> n8
+                    n5 -> n9 [label="false"]
+                    n8 -> n9
                 }
                 """
         )
@@ -2880,19 +2962,21 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="v"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{break}"]
-                    n7 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="v"]
+                    n5 [label="{if v}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{break}"]
+                    n8 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
-                    n4 -> n7
+                    n5 -> n6 [label="true"]
                     n6 -> n7
+                    n5 -> n8 [label="false"]
+                    n7 -> n8
                 }
                 """
         )
@@ -2938,51 +3022,53 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n4 [label="{for}"]
                     n5 [label="{compound}"]
                     n6 [label="{exp}"]
-                    n7 [label="b"]
+                    n7 [label="{while}"]
                     n8 [label="b"]
-                    n9 [label="{while}"]
-                    n10 [label="{compound}"]
-                    n11 [label="{if}"]
-                    n12 [label="predicate"]
-                    n13 [label="{if predicate}"]
-                    n14 [label="{defer}"]
-                    n15 [label="{compound}"]
+                    n9 [label="b"]
+                    n10 [label="{if b}"]
+                    n11 [label="{compound}"]
+                    n12 [label="{if}"]
+                    n13 [label="predicate"]
+                    n14 [label="{if predicate}"]
+                    n15 [label="{defer}"]
                     n16 [label="{compound}"]
-                    n17 [label="{break outer}"]
-                    n18 [label="{exp}"]
-                    n19 [label="{defer}"]
-                    n20 [label="deferred"]
-                    n21 [label="{compound}"]
-                    n22 [label="{exp}"]
-                    n23 [label="deferred"]
-                    n24 [label="exit"]
+                    n17 [label="{compound}"]
+                    n18 [label="{break outer}"]
+                    n19 [label="{exp}"]
+                    n20 [label="{defer}"]
+                    n21 [label="deferred"]
+                    n22 [label="{compound}"]
+                    n23 [label="{exp}"]
+                    n24 [label="deferred"]
+                    n25 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
-                    n9 -> n4 [color="#aa3333", penwidth=0.5]
+                    n10 -> n4 [color="#aa3333", label="false", penwidth=0.5]
                     n4 -> n5
                     n4 -> n6
-                    n23 -> n6
+                    n24 -> n6
                     n5 -> n7
-                    n20 -> n7 [color="#aa3333", penwidth=0.5]
+                    n21 -> n7 [color="#aa3333", penwidth=0.5]
                     n6 -> n8
                     n7 -> n9
                     n9 -> n10
-                    n10 -> n11
+                    n10 -> n11 [label="true"]
                     n11 -> n12
                     n12 -> n13
-                    n13 -> n14 [label="false"]
-                    n13 -> n15 [label="true"]
-                    n14 -> n16
+                    n13 -> n14
+                    n14 -> n15 [label="false"]
+                    n14 -> n16 [label="true"]
                     n15 -> n17
                     n16 -> n18
                     n17 -> n19
                     n18 -> n20
                     n19 -> n21
-                    n21 -> n22
+                    n20 -> n22
                     n22 -> n23
-                    n8 -> n24
+                    n23 -> n24
+                    n8 -> n25
                 }
                 """
         )
@@ -3011,19 +3097,21 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="v"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{continue}"]
-                    n7 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="v"]
+                    n5 [label="{if v}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{continue}"]
+                    n8 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n6 -> n3 [color="#aa3333", penwidth=0.5]
+                    n7 -> n3 [color="#aa3333", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
-                    n4 -> n7
+                    n5 -> n6 [label="true"]
+                    n6 -> n7
+                    n5 -> n8 [label="false"]
                 }
                 """
         )
@@ -3051,23 +3139,25 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="v"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{continue}"]
-                    n7 [label="{exp}"]
-                    n8 [label="v"]
-                    n9 [label="exit"]
+                    n3 [label="{while}"]
+                    n4 [label="v"]
+                    n5 [label="{if v}"]
+                    n6 [label="{compound}"]
+                    n7 [label="{continue}"]
+                    n8 [label="{exp}"]
+                    n9 [label="v"]
+                    n10 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n6 -> n3 [color="#aa3333", penwidth=0.5]
-                    n8 -> n3
+                    n7 -> n3 [color="#aa3333", penwidth=0.5]
+                    n9 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
-                    n7 -> n8
-                    n4 -> n9
+                    n5 -> n6 [label="true"]
+                    n6 -> n7
+                    n8 -> n9
+                    n5 -> n10 [label="false"]
                 }
                 """
         )
@@ -3111,48 +3201,50 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 [label="a"]
                     n4 [label="{for}"]
                     n5 [label="{compound}"]
-                    n6 [label="b"]
-                    n7 [label="{while}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{if}"]
-                    n10 [label="predicate"]
-                    n11 [label="{if predicate}"]
-                    n12 [label="{compound}"]
+                    n6 [label="{while}"]
+                    n7 [label="b"]
+                    n8 [label="{if b}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{if}"]
+                    n11 [label="predicate"]
+                    n12 [label="{if predicate}"]
                     n13 [label="{defer}"]
                     n14 [label="{compound}"]
-                    n15 [label="{continue outer}"]
-                    n16 [label="{defer}"]
+                    n15 [label="{compound}"]
+                    n16 [label="{continue outer}"]
                     n17 [label="{exp}"]
-                    n18 [label="deferred"]
-                    n19 [label="{compound}"]
-                    n20 [label="{exp}"]
-                    n21 [label="deferred"]
-                    n22 [label="exit"]
+                    n18 [label="{defer}"]
+                    n19 [label="deferred"]
+                    n20 [label="{compound}"]
+                    n21 [label="{exp}"]
+                    n22 [label="deferred"]
+                    n23 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
-                    n7 -> n4 [color="#aa3333", penwidth=0.5]
-                    n21 -> n4 [color="#aa3333", penwidth=0.5]
+                    n8 -> n4 [color="#aa3333", label="false", penwidth=0.5]
+                    n22 -> n4 [color="#aa3333", penwidth=0.5]
                     n4 -> n5
                     n5 -> n6
-                    n18 -> n6 [color="#aa3333", penwidth=0.5]
+                    n19 -> n6 [color="#aa3333", penwidth=0.5]
                     n6 -> n7
                     n7 -> n8
-                    n8 -> n9
+                    n8 -> n9 [label="true"]
                     n9 -> n10
                     n10 -> n11
-                    n11 -> n12 [label="true"]
-                    n11 -> n13 [label="false"]
-                    n13 -> n14
-                    n12 -> n15
-                    n15 -> n16
-                    n14 -> n17
-                    n17 -> n18
-                    n16 -> n19
-                    n19 -> n20
+                    n11 -> n12
+                    n12 -> n13 [label="false"]
+                    n12 -> n14 [label="true"]
+                    n13 -> n15
+                    n14 -> n16
+                    n15 -> n17
+                    n16 -> n18
+                    n17 -> n19
+                    n18 -> n20
                     n20 -> n21
-                    n4 -> n22
+                    n21 -> n22
+                    n4 -> n23
                 }
                 """
         )
@@ -3458,33 +3550,35 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="a"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{exp}"]
+                    n3 [label="{while}"]
+                    n4 [label="a"]
+                    n5 [label="{if a}"]
+                    n6 [label="{compound}"]
                     n7 [label="{exp}"]
-                    n8 [label="d"]
-                    n9 [label="c"]
-                    n10 [label="{defer}"]
-                    n11 [label="{compound}"]
-                    n12 [label="{exp}"]
-                    n13 [label="b"]
-                    n14 [label="exit"]
+                    n8 [label="{exp}"]
+                    n9 [label="d"]
+                    n10 [label="c"]
+                    n11 [label="{defer}"]
+                    n12 [label="{compound}"]
+                    n13 [label="{exp}"]
+                    n14 [label="b"]
+                    n15 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n13 -> n3 [color="#aa3333", penwidth=0.5]
+                    n14 -> n3 [color="#aa3333", penwidth=0.5]
                     n3 -> n4
                     n4 -> n5
-                    n4 -> n6
-                    n5 -> n7
+                    n5 -> n6 [label="true"]
+                    n5 -> n7 [label="false"]
                     n6 -> n8
                     n7 -> n9
-                    n9 -> n10
+                    n8 -> n10
                     n10 -> n11
                     n11 -> n12
                     n12 -> n13
-                    n8 -> n14
+                    n13 -> n14
+                    n9 -> n15
                 }
                 """
         )
@@ -3516,43 +3610,45 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="a"]
-                    n4 [label="{while}"]
-                    n5 [label="{compound}"]
-                    n6 [label="{exp}"]
+                    n3 [label="{while}"]
+                    n4 [label="a"]
+                    n5 [label="{if a}"]
+                    n6 [label="{compound}"]
                     n7 [label="{exp}"]
-                    n8 [label="d"]
-                    n9 [label="c"]
-                    n10 [label="{break}"]
-                    n11 [label="{defer}"]
-                    n12 [label="{compound}"]
-                    n13 [label="{exp}"]
-                    n14 [label="b"]
-                    n15 [label="{defer}"]
-                    n16 [label="{compound}"]
-                    n17 [label="{exp}"]
-                    n18 [label="b"]
-                    n19 [label="exit"]
+                    n8 [label="{exp}"]
+                    n9 [label="d"]
+                    n10 [label="c"]
+                    n11 [label="{break}"]
+                    n12 [label="{defer}"]
+                    n13 [label="{compound}"]
+                    n14 [label="{exp}"]
+                    n15 [label="b"]
+                    n16 [label="{defer}"]
+                    n17 [label="{compound}"]
+                    n18 [label="{exp}"]
+                    n19 [label="b"]
+                    n20 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n18 -> n3
+                    n19 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n4 -> n6
-                    n14 -> n6
-                    n5 -> n7
+                    n5 -> n6 [label="true"]
+                    n5 -> n7 [label="false"]
+                    n15 -> n7
                     n6 -> n8
                     n7 -> n9
-                    n9 -> n10
+                    n8 -> n10
                     n10 -> n11
                     n11 -> n12
                     n12 -> n13
                     n13 -> n14
-                    n15 -> n16
+                    n14 -> n15
                     n16 -> n17
                     n17 -> n18
-                    n8 -> n19
+                    n18 -> n19
+                    n9 -> n20
                 }
                 """
         )

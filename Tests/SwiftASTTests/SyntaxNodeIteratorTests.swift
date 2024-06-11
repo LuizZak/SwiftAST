@@ -228,11 +228,15 @@ class SyntaxNodeIteratorTests: XCTestCase {
             .if(.constant(true), body: [.do([.break()])], else: [.do([.continue()])]),
             iteratesAs: [
                 Statement.if(.constant(true), body: [.do([.break()])], else: [.do([.continue()])]),
-                Expression.constant(true),
+                [
+                    .init(expression: .constant(true))
+                ] as ConditionalClauses,
                 Statement.compound([.do([.break()])]),
                 Statement.compound([.do([.continue()])]),
+                ConditionalClauseElement.init(expression: .constant(true)),
                 Statement.do([.break()]),
                 Statement.do([.continue()]),
+                Expression.constant(true),
                 Statement.compound([.break()]),
                 Statement.compound([.continue()]),
                 Statement.break(),
@@ -242,16 +246,26 @@ class SyntaxNodeIteratorTests: XCTestCase {
     }
 
     func testIfLet() {
+        let stmt: Statement =
+            .ifLet(
+                .expression(.identifier("a")), .constant(true),
+                body: [.do([.break()])],
+                else: [.do([.continue()])]
+            )
         assertStatement(
-            .ifLet(.expression(.identifier("a")), .constant(true), body: [.do([.break()])], else: [.do([.continue()])]),
+            stmt,
             iteratesAs: [
                 Statement.ifLet(.expression(.identifier("a")), .constant(true), body: [.do([.break()])], else: [.do([.continue()])]),
-                Expression.identifier("a"),
-                Expression.constant(true),
+                [
+                    .init(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                ] as ConditionalClauses,
                 Statement.compound([.do([.break()])]),
                 Statement.compound([.do([.continue()])]),
+                ConditionalClauseElement(pattern: .expression(.identifier("a")), expression: .constant(true)),
                 Statement.do([.break()]),
                 Statement.do([.continue()]),
+                Expression.identifier("a"),
+                Expression.constant(true),
                 Statement.compound([.break()]),
                 Statement.compound([.continue()]),
                 Statement.break(),
@@ -260,7 +274,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
         )
     }
 
-    func testIfLet_multipleBindings() {
+    func testIf_multipleClauses() {
         let stmt: Statement =
             .if(clauses: [
                 .init(pattern: .expression(.identifier("a")), expression: .constant(true)),
@@ -270,14 +284,20 @@ class SyntaxNodeIteratorTests: XCTestCase {
             stmt,
             iteratesAs: [
                 stmt,
+                [
+                    .init(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                    .init(pattern: .expression(.identifier("b")), expression: .constant(false)),
+                ] as ConditionalClauses,
+                Statement.compound([.do([.break()])]),
+                Statement.compound([.do([.continue()])]),
+                ConditionalClauseElement(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                ConditionalClauseElement(pattern: .expression(.identifier("b")), expression: .constant(false)),
+                Statement.do([.break()]),
+                Statement.do([.continue()]),
                 Expression.identifier("a"),
                 Expression.constant(true),
                 Expression.identifier("b"),
                 Expression.constant(false),
-                Statement.compound([.do([.break()])]),
-                Statement.compound([.do([.continue()])]),
-                Statement.do([.break()]),
-                Statement.do([.continue()]),
                 Statement.compound([.break()]),
                 Statement.compound([.continue()]),
                 Statement.break(),
@@ -338,13 +358,47 @@ class SyntaxNodeIteratorTests: XCTestCase {
             .while(.constant(true), body: [.break(), .continue()]),
             iteratesAs: [
                 Statement.while(.constant(true), body: [.break(), .continue()]),
-                Expression.constant(true),
+                [
+                    .init(expression: .constant(true)),
+                ] as ConditionalClauses,
                 Statement.compound([
                     .break(),
                     .continue(),
                 ]),
+                ConditionalClauseElement(expression: .constant(true)),
                 Statement.break(),
                 Statement.continue(),
+                Expression.constant(true),
+            ]
+        )
+    }
+
+    func testWhileStatement_multipleClauses() {
+        let stmt: Statement =
+            .while(clauses: [
+                .init(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                .init(pattern: .expression(.identifier("b")), expression: .constant(false)),
+            ], body: [.break(), .continue()])
+        assertStatement(
+            stmt,
+            iteratesAs: [
+                stmt,
+                [
+                    .init(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                    .init(pattern: .expression(.identifier("b")), expression: .constant(false)),
+                ] as ConditionalClauses,
+                Statement.compound([
+                    .break(),
+                    .continue(),
+                ]),
+                ConditionalClauseElement(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                ConditionalClauseElement(pattern: .expression(.identifier("b")), expression: .constant(false)),
+                Statement.break(),
+                Statement.continue(),
+                Expression.identifier("a"),
+                Expression.constant(true),
+                Expression.identifier("b"),
+                Expression.constant(false),
             ]
         )
     }
@@ -1269,6 +1323,44 @@ extension SyntaxNodeIteratorTests {
                     line: expected.line
                 )
 
+            case (let exp as ConditionalClauses, let act as ConditionalClauses):
+                if exp.isEqual(to: act) { continue }
+
+                XCTFail(
+                    """
+                    Expected index \(i) of iterator are unequal conditional clauses:
+
+                    Expected:
+                    
+                    \(dumpNode(exp))
+
+                    Found:
+                    
+                    \(dumpNode(act))
+                    """,
+                    file: expected.file,
+                    line: expected.line
+                )
+
+            case (let exp as ConditionalClauseElement, let act as ConditionalClauseElement):
+                if exp.isEqual(to: act) { continue }
+
+                XCTFail(
+                    """
+                    Expected index \(i) of iterator are unequal conditional clause elements:
+
+                    Expected:
+                    
+                    \(dumpNode(exp))
+
+                    Found:
+                    
+                    \(dumpNode(act))
+                    """,
+                    file: expected.file,
+                    line: expected.line
+                )
+
             default:
                 XCTFail(
                     """
@@ -1364,9 +1456,49 @@ extension SyntaxNodeIteratorTests {
     }
 
     func dumpNode(_ node: SyntaxNode) -> String {
-        var string = ""
-        dump(node, to: &string)
-        return string
+        switch node {
+        case let node as Expression:
+            return node.description
+
+        case let stmt as Statement:
+            return "\(stmt)"
+
+        case let clauses as ConditionalClauses:
+            return "\(clauses)"
+
+        case let clause as ConditionalClauseElement:
+            return clause.description
+
+        case let catchBlock as CatchBlock:
+            let body = dumpNode(catchBlock.body)
+
+            if let pattern = catchBlock.pattern {
+                return "catch let \(pattern.description) \(body)"
+            }
+
+            return "catch \(body)"
+
+        case let block as SwitchCase:
+            let syntax = dumpNode(block.body)
+
+            return syntax
+
+        case let block as SwitchDefaultCase:
+            let syntax = dumpNode(block.body)
+
+            return syntax.description
+
+        case let decl as StatementVariableDeclaration:
+            var result = "\(decl.identifier): \(decl.type)"
+            if let exp = decl.initialization {
+                result += " = \(exp)"
+            }
+
+            return result
+
+        default:
+            return "<unknown SyntaxNode type \(type(of: node))>"
+        }
 
         /* TODO: Re-implement pretty-printing of AST for tests
         switch node {
