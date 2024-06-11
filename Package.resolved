@@ -1,6 +1,24 @@
 {
-  "originHash" : "bdb3df9a91973dc7160c26966c15c8541363ffdc0641288ebcbed31ffd21feb5",
+  "originHash" : "79cadc5fc2f793101e94705b5b62aa3bd7213af0e26d0067553799135d6ea579",
   "pins" : [
+    {
+      "identity" : "minidigraph",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LuizZak/MiniDigraph.git",
+      "state" : {
+        "revision" : "e1314571b60a17563d8c847fde19e4cd545b16ec",
+        "version" : "0.2.1"
+      }
+    },
+    {
+      "identity" : "minigraphviz",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/LuizZak/MiniGraphviz.git",
+      "state" : {
+        "revision" : "aa15c50cf8027dae6dde860a40987c238070d849",
+        "version" : "0.1.0"
+      }
+    },
     {
       "identity" : "minilexer",
       "kind" : "remoteSourceControl",
@@ -8,6 +26,15 @@
       "state" : {
         "revision" : "71cc272f4613d1e45e1eacab33fa2f77c6311007",
         "version" : "0.10.0"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "64889f0c732f210a935a0ad7cda38f77f876262d",
+        "version" : "509.1.1"
       }
     }
   ],
