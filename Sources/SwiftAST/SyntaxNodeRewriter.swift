@@ -260,29 +260,6 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         return stmt
     }
 
-    /// Visits a `guard` statement with this visitor
-    ///
-    /// - Parameter stmt: A GuardStatement to visit
-    /// - Returns: Result of visiting the `guard` statement node
-    open func visitGuard(_ stmt: GuardStatement) -> Statement {
-        stmt.exp = visitExpression(stmt.exp)
-        stmt.elseBody = _visitCompound(stmt.elseBody)
-
-        return stmt
-    }
-
-    /// Visits an `if` statement with this visitor
-    ///
-    /// - Parameter stmt: An `IfStatement` to visit
-    /// - Returns: Result of visiting the `if` statement node
-    open func visitIf(_ stmt: IfStatement) -> Statement {
-        stmt.conditionalClauses = visitConditionalClauses(stmt.conditionalClauses)
-        stmt.body = _visitCompound(stmt.body)
-        stmt.elseBody = stmt.elseBody.map { _visitCompound($0) }
-
-        return stmt
-    }
-
     /// Visits a conditional clause list of a conditional statement with this
     /// visitor
     ///
@@ -302,6 +279,57 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         clause.expression = visitExpression(clause.expression)
 
         return clause
+    }
+
+    /// Visits a `guard` statement with this visitor
+    ///
+    /// - Parameter stmt: A GuardStatement to visit
+    /// - Returns: Result of visiting the `guard` statement node
+    open func visitGuard(_ stmt: GuardStatement) -> Statement {
+        stmt.exp = visitExpression(stmt.exp)
+        stmt.elseBody = _visitCompound(stmt.elseBody)
+
+        return stmt
+    }
+
+    /// Visits an `if` statement with this visitor
+    ///
+    /// - Parameter stmt: An `IfStatement` to visit
+    /// - Returns: Result of visiting the `if` statement node
+    open func visitIf(_ stmt: IfStatement) -> Statement {
+        stmt.conditionalClauses = visitConditionalClauses(stmt.conditionalClauses)
+        stmt.body = _visitCompound(stmt.body)
+        stmt.elseBody = stmt.elseBody.map(visitElseBody)
+
+        return stmt
+    }
+
+    /// Visits an `if` statement's else block with this visitor
+    ///
+    /// - Parameter stmt: An `if` statement's else block to visit
+    open func visitElseBody(_ stmt: IfStatement.ElseBody) -> IfStatement.ElseBody {
+        switch stmt {
+        case .else(let stmt):
+            return .else(_visitCompound(stmt))
+        case .elseIf(let elseIf):
+            let result = visitIf(elseIf)
+            if let elseIf = result as? IfStatement {
+                return .elseIf(elseIf)
+            }
+
+            return .else([result])
+        }
+    }
+
+    /// Visits a `while` statement with this visitor
+    ///
+    /// - Parameter stmt: A `WhileStatement` to visit
+    /// - Returns: Result of visiting the `while` statement node
+    open func visitWhile(_ stmt: WhileStatement) -> Statement {
+        stmt.exp = visitExpression(stmt.exp)
+        stmt.body = _visitCompound(stmt.body)
+
+        return stmt
     }
 
     /// Visits a `switch` statement with this visitor
@@ -335,17 +363,6 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         defaultCase.body = _visitCompound(defaultCase.body)
 
         return defaultCase
-    }
-
-    /// Visits a `while` statement with this visitor
-    ///
-    /// - Parameter stmt: A `WhileStatement` to visit
-    /// - Returns: Result of visiting the `while` statement node
-    open func visitWhile(_ stmt: WhileStatement) -> Statement {
-        stmt.exp = visitExpression(stmt.exp)
-        stmt.body = _visitCompound(stmt.body)
-
-        return stmt
     }
 
     /// Visits a `do/while` statement with this visitor

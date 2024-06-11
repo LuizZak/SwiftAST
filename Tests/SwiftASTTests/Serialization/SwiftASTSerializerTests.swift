@@ -34,9 +34,11 @@ class SwiftASTSerializerTests: XCTestCase {
                     .return(.constant(1.0)),
                     .throw(.identifier("Error").dot("error")),
                 ],
-                else: [
+                elseIf: .if(clauses: [.init(pattern: .identifier("a"), expression: .constant(0))], body: [
                     .return(.constant(1))
-                ]
+                ], else: [
+                    .return(.constant(2))
+                ])
             ),
             .switch(
                 .parens(.constant("abc")).dot("def").sub(.constant(1)).call([.constant(1)]),

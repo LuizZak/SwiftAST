@@ -272,7 +272,19 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
 
         visitConditionalClauses(stmt.conditionalClauses)
         visitStatement(stmt.body)
-        stmt.elseBody.map(visitStatement)
+        stmt.elseBody.map(visitElseBody)
+    }
+
+    /// Visits an `if` statement's else block with this visitor
+    ///
+    /// - Parameter stmt: An `if` statement's else block to visit
+    public func visitElseBody(_ stmt: IfStatement.ElseBody) {
+        switch stmt {
+        case .else(let stmt):
+            visitCompound(stmt)
+        case .elseIf(let elseIf):
+            visitIf(elseIf)
+        }
     }
 
     /// Visits a `switch` statement with this visitor

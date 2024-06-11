@@ -24,8 +24,8 @@ public class IfStatement: Statement, StatementKindType {
     public var body: CompoundStatement {
         didSet { oldValue.parent = nil; body.parent = self }
     }
-    public var elseBody: CompoundStatement? {
-        didSet { oldValue?.parent = nil; elseBody?.parent = self }
+    public var elseBody: ElseBody? {
+        didSet { oldValue?.setParent(nil); elseBody?.setParent(self) }
     }
 
     /// If non-nil, the expression of this if statement must be resolved to a
@@ -50,7 +50,7 @@ public class IfStatement: Statement, StatementKindType {
             body
         ]
 
-        if let elseBody = elseBody {
+        if let elseBody = elseBody?.statement {
             result.append(elseBody)
         }
 
@@ -64,9 +64,23 @@ public class IfStatement: Statement, StatementKindType {
     public convenience init(
         exp: Expression,
         body: CompoundStatement,
-        elseBody: CompoundStatement?,
+        else elseBody: CompoundStatement?,
         pattern: Pattern?
     ) {
+        self.init(
+            clauses: .init(pattern: pattern, expression: exp),
+            body: body,
+            elseBody: elseBody.map(ElseBody.else)
+        )
+    }
+
+    public convenience init(
+        exp: Expression,
+        body: CompoundStatement,
+        elseBody: ElseBody?,
+        pattern: Pattern? = nil
+    ) {
+
         self.init(
             clauses: .init(pattern: pattern, expression: exp),
             body: body,
@@ -74,10 +88,23 @@ public class IfStatement: Statement, StatementKindType {
         )
     }
 
+    public convenience init(
+        clauses: ConditionalClauses,
+        body: CompoundStatement,
+        else elseBody: CompoundStatement?
+    ) {
+
+        self.init(
+            clauses: clauses,
+            body: body,
+            elseBody: elseBody.map(ElseBody.else)
+        )
+    }
+
     public init(
         clauses: ConditionalClauses,
         body: CompoundStatement,
-        elseBody: CompoundStatement?
+        elseBody: ElseBody?
     ) {
 
         self.conditionalClauses = clauses
@@ -88,7 +115,7 @@ public class IfStatement: Statement, StatementKindType {
 
         conditionalClauses.parent = self
         body.parent = self
-        elseBody?.parent = self
+        elseBody?.setParent(self)
     }
 
     public required init(from decoder: Decoder) throws {
@@ -96,13 +123,13 @@ public class IfStatement: Statement, StatementKindType {
 
         conditionalClauses = try container.decode(ConditionalClauses.self, forKey: .conditionalClauses)
         body = try container.decodeStatement(CompoundStatement.self, forKey: .body)
-        elseBody = try container.decodeStatementIfPresent(CompoundStatement.self, forKey: .elseBody)
+        elseBody = try container.decodeIfPresent(ElseBody.self, forKey: .elseBody)
 
         try super.init(from: container.superDecoder())
 
         exp.parent = self
         body.parent = self
-        elseBody?.parent = self
+        elseBody?.setParent(self)
         pattern?.setParent(self)
     }
 
@@ -110,10 +137,9 @@ public class IfStatement: Statement, StatementKindType {
     public override func copy() -> IfStatement {
         let copy =
             IfStatement(
-                exp: exp.copy(),
+                clauses: conditionalClauses.copy(),
                 body: body.copy(),
-                elseBody: elseBody?.copy(),
-                pattern: pattern?.copy()
+                elseBody: elseBody?.copy()
             )
             .copyMetadata(from: self)
 
@@ -146,7 +172,7 @@ public class IfStatement: Statement, StatementKindType {
 
         try container.encode(conditionalClauses, forKey: .conditionalClauses)
         try container.encodeStatement(body, forKey: .body)
-        try container.encodeStatementIfPresent(elseBody, forKey: .elseBody)
+        try container.encodeIfPresent(elseBody, forKey: .elseBody)
 
         try super.encode(to: container.superEncoder())
     }
@@ -179,7 +205,7 @@ public extension Statement {
         else elseBody: CompoundStatement? = nil
     ) -> IfStatement {
 
-        IfStatement(exp: exp, body: body, elseBody: elseBody, pattern: nil)
+        IfStatement(exp: exp, body: body, else: elseBody, pattern: nil)
     }
 
     /// Creates a `IfStatement` instance for an if-let binding using the given
@@ -192,7 +218,7 @@ public extension Statement {
         else elseBody: CompoundStatement? = nil
     ) -> IfStatement {
 
-        IfStatement(exp: exp, body: body, elseBody: elseBody, pattern: pattern)
+        IfStatement(exp: exp, body: body, else: elseBody, pattern: pattern)
     }
 
     /// Creates a `IfStatement` instance using the given conditional clauses
@@ -203,6 +229,125 @@ public extension Statement {
         else elseBody: CompoundStatement? = nil
     ) -> IfStatement {
 
+        IfStatement(clauses: clauses, body: body, else: elseBody)
+    }
+
+    /// Creates a `IfStatement` instance using the given condition expression
+    /// and compound statement as its body, optionally specifying an else block.
+    static func `if`(
+        _ exp: Expression,
+        body: CompoundStatement,
+        elseIf stmt: IfStatement
+    ) -> IfStatement {
+
+        IfStatement(exp: exp, body: body, elseBody: .elseIf(stmt))
+    }
+
+    /// Creates a `IfStatement` instance using the given conditional clauses
+    /// and compound statement as its body, with a given if statement as an
+    /// else-if block.
+    static func `if`(
+        clauses: ConditionalClauses,
+        body: CompoundStatement,
+        elseIf stmt: IfStatement
+    ) -> IfStatement {
+
+        IfStatement(clauses: clauses, body: body, elseBody: .elseIf(stmt))
+    }
+
+    /// Creates a `IfStatement` instance using the given conditional clauses
+    /// and compound statement as its body, with a given else block.
+    static func `if`(
+        clauses: ConditionalClauses,
+        body: CompoundStatement,
+        elseBody: IfStatement.ElseBody
+    ) -> IfStatement {
+
         IfStatement(clauses: clauses, body: body, elseBody: elseBody)
+    }
+}
+
+// MARK: - Else/ElseIf Structure
+public extension IfStatement {
+
+    /// Describes the else statement of an `if` statement.
+    enum ElseBody: Codable, Equatable {
+        /// An else statement.
+        case `else`(CompoundStatement)
+
+        /// A nested `if` statement.
+        case elseIf(IfStatement)
+
+        public var statement: Statement? {
+            switch self {
+            case .else(let stmt): return stmt
+            case .elseIf(let stmt): return stmt
+            }
+        }
+
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            let discriminator = try container.decode(String.self, forKey: .discriminator)
+
+            switch discriminator {
+            case "else":
+                self = try .else(
+                    container.decodeStatement(forKey: .payload)
+                )
+
+            case "elseIf":
+                self = try .elseIf(
+                    container.decodeStatement(forKey: .payload)
+                )
+
+            default:
+                throw DecodingError.dataCorruptedError(
+                    forKey: CodingKeys.discriminator,
+                    in: container,
+                    debugDescription: "Invalid discriminator tag \(discriminator)"
+                )
+            }
+        }
+
+        @inlinable
+        public func copy() -> Self {
+            switch self {
+            case .else(let stmts):
+                return .else(stmts.copy())
+
+            case .elseIf(let stmt):
+                return .elseIf(stmt.copy())
+            }
+        }
+
+        internal func setParent(_ node: SyntaxNode?) {
+            switch self {
+            case .else(let stmts):
+                stmts.parent = node
+
+            case .elseIf(let stmt):
+                stmt.parent = node
+            }
+        }
+
+        public func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+
+            switch self {
+            case .else(let stmts):
+                try container.encode("else", forKey: .discriminator)
+                try container.encodeStatement(stmts, forKey: .payload)
+
+            case .elseIf(let stmt):
+                try container.encode("elseIf", forKey: .discriminator)
+                try container.encodeStatement(stmt, forKey: .payload)
+            }
+        }
+
+        public enum CodingKeys: String, CodingKey {
+            case discriminator
+            case payload
+        }
     }
 }

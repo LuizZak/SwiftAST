@@ -11,18 +11,18 @@ public extension ValueMatcher where T: Statement {
             if let value = value as? T {
                 return self(matches: value)
             }
-            
+
             return false
         }
     }
-    
+
 }
 
 @inlinable
 public func hasElse() -> SyntaxMatcher<IfStatement> {
-    SyntaxMatcher().keyPath(\.elseBody, !isNil())
+    SyntaxMatcher().keyPath(\.elseBody, .equals(.none))
 }
 
 extension Statement: Matchable {
-    
+
 }

@@ -47,7 +47,6 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
     /// Visits a `guard` statement with this visitor
     ///
     /// - Parameter stmt: A `guard` statement to visit
-    /// - Returns: Result of visiting the `guard` statement node
     public func visitGuard(_ stmt: GuardStatement, state: State) {
         let state = listener(stmt, state)
 
@@ -61,7 +60,28 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
         let state = listener(stmt, state)
 
         visitStatement(stmt.body, state: state)
-        stmt.elseBody.map { visitStatement($0, state: state) }
+        stmt.elseBody.map { visitElseBody($0, state: state) }
+    }
+
+    /// Visits an `if` statement's else block with this visitor
+    ///
+    /// - Parameter stmt: An `if` statement's else block to visit
+    public func visitElseBody(_ stmt: IfStatement.ElseBody, state: State) {
+        switch stmt {
+        case .else(let stmt):
+            visitCompound(stmt, state: state)
+        case .elseIf(let elseIf):
+            visitIf(elseIf, state: state)
+        }
+    }
+
+    /// Visits a `while` statement with this visitor
+    ///
+    /// - Parameter stmt: A WhileStatement to visit
+    public func visitWhile(_ stmt: WhileStatement, state: State) {
+        let state = listener(stmt, state)
+
+        visitStatement(stmt.body, state: state)
     }
 
     /// Visits a `switch` statement with this visitor
@@ -94,15 +114,6 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
         let state = listener(defaultCase, state)
 
         visitStatement(defaultCase.body, state: state)
-    }
-
-    /// Visits a `while` statement with this visitor
-    ///
-    /// - Parameter stmt: A WhileStatement to visit
-    public func visitWhile(_ stmt: WhileStatement, state: State) {
-        let state = listener(stmt, state)
-
-        visitStatement(stmt.body, state: state)
     }
 
     /// Visits a `do/while` statement with this visitor

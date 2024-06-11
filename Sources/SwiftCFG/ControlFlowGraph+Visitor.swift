@@ -129,7 +129,7 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
 
         let body = stmt.body.accept(self)
-        let elseBody = stmt.elseBody.map(visitStatement)
+        let elseBody = stmt.elseBody.map(visitElseBody)
 
         if let elseBody = elseBody {
             return node
@@ -143,6 +143,15 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
                 .then(body)
                 .resolvingJumps(kind: .conditionalClauseFail, to: body.exit)
                 .finalized()
+        }
+    }
+
+    func visitElseBody(_ stmt: IfStatement.ElseBody) -> CFGVisitResult {
+        switch stmt {
+        case .else(let stmts):
+            return visitCompound(stmts)
+        case .elseIf(let elseIf):
+            return visitIf(elseIf)
         }
     }
 

@@ -740,17 +740,15 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 body: [
                     .expression(.identifier("ifBody")),
                 ],
-                else: [
-                    .if(
-                        .identifier("predicate2"),
-                        body: [
-                            .expression(.identifier("ifElseIfBody")),
-                        ],
-                        else: [
-                            .expression(.identifier("ifElseIfElseBody")),
-                        ]
-                    ),
-                ]
+                elseIf: .if(
+                    .identifier("predicate2"),
+                    body: [
+                        .expression(.identifier("ifElseIfBody")),
+                    ],
+                    else: [
+                        .expression(.identifier("ifElseIfElseBody")),
+                    ]
+                )
             ),
         ]
 
@@ -766,21 +764,20 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 [label="{if}"]
                     n4 [label="predicate"]
                     n5 [label="{if predicate}"]
-                    n6 [label="{compound}"]
+                    n6 [label="{if}"]
                     n7 [label="{compound}"]
-                    n8 [label="{if}"]
+                    n8 [label="predicate2"]
                     n9 [label="{exp}"]
-                    n10 [label="predicate2"]
+                    n10 [label="{if predicate2}"]
                     n11 [label="ifBody"]
-                    n12 [label="{if predicate2}"]
+                    n12 [label="{compound}"]
                     n13 [label="{compound}"]
-                    n14 [label="{compound}"]
+                    n14 [label="{exp}"]
                     n15 [label="{exp}"]
-                    n16 [label="{exp}"]
-                    n17 [label="ifElseIfBody"]
-                    n18 [label="ifElseIfElseBody"]
-                    n19 [label="exit"]
-                
+                    n16 [label="ifElseIfBody"]
+                    n17 [label="ifElseIfElseBody"]
+                    n18 [label="exit"]
+
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
@@ -791,16 +788,15 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n7 -> n9
                     n8 -> n10
                     n9 -> n11
-                    n10 -> n12
-                    n12 -> n13 [label="true"]
-                    n12 -> n14 [label="false"]
+                    n10 -> n12 [label="true"]
+                    n10 -> n13 [label="false"]
+                    n12 -> n14
                     n13 -> n15
                     n14 -> n16
                     n15 -> n17
+                    n11 -> n18
                     n16 -> n18
-                    n11 -> n19
-                    n17 -> n19
-                    n18 -> n19
+                    n17 -> n18
                 }
                 """
         )
