@@ -197,7 +197,7 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         for (i, clause) in totalClauses.enumerated() {
             var clauseResult = clause.result
 
-            if i == totalClauses.count - 1 {
+            if i == totalClauses.count - 1 && stmt.defaultCase != nil {
                 clauseResult.removeJumps(kind: .switchCasePatternFail)
             }
 
@@ -215,16 +215,21 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             } else {
                 result.resolveJumps(
                     caseClauses[i - 1].result.unresolvedJumps(ofKind: .fallthrough),
-                    to: clause.fallthroughTarget
+                    to: clause.fallthroughTarget,
+                    debugLabel: "fallthrough"
                 )
                 result.resolveJumps(
                     caseClauses[i - 1].result.unresolvedJumps(ofKind: .switchCasePatternFail),
-                    to: clauseResult.entry
+                    to: clauseResult.entry,
+                    debugLabel: "pattern fail"
                 )
             }
         }
 
-        result.resolveJumpsToExit(kind: .switchCasePatternFail)
+        result.resolveJumpsToExit(
+            kind: .switchCasePatternFail,
+            debugLabel: "pattern fail"
+        )
 
         return result.finalized()
     }
@@ -239,11 +244,13 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
                     $0.then($1)
                 }
             )
+            .then(CFGVisitResult(debugLabel: "pattern success"))
             .resolvingJumps(
                 kind: .conditionalClauseFail,
                 to: CFGVisitResult(
                     forUnresolvedJump: .switchCasePatternFail,
-                    id: nextId()
+                    id: nextId(),
+                    debugLabel: "pattern fail"
                 )
             )
 

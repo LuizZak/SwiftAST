@@ -14,6 +14,18 @@ public struct CFGVisitResult {
         graph.exit
     }
 
+    /// Initializes an empty CFG visit result.
+    init(debugLabel: String? = nil) {
+        graph = ControlFlowGraph(
+            entry: ControlFlowGraphEntryNode(node: MarkerSyntaxNode()),
+            exit: ControlFlowGraphExitNode(node: MarkerSyntaxNode())
+        )
+        unresolvedJumps = []
+
+        let edge = graph.addEdge(from: entry, to: exit)
+        edge.debugLabel = debugLabel
+    }
+
     /// Initializes a graph from a syntax node, `entry -> syntaxNode -> exit`.
     init(forSyntaxNode syntaxNode: SyntaxNode, id: Int) {
         self.init(forNode: ControlFlowGraphNode(node: syntaxNode, id: id))
@@ -33,7 +45,8 @@ public struct CFGVisitResult {
     init(
         forUnresolvedJumpSyntaxNode syntaxNode: SyntaxNode,
         kind: UnresolvedJump.Kind,
-        id: Int
+        id: Int,
+        debugLabel: String? = nil
     ) {
 
         let node = ControlFlowGraphNode(node: syntaxNode, id: id)
@@ -52,7 +65,8 @@ public struct CFGVisitResult {
         graph.prepend(node, before: exit)
         graph.removeEdge(from: node, to: exit)
         graph.addNode(jump.node)
-        graph.addEdge(from: node, to: jump.node)
+        let edge = graph.addEdge(from: node, to: jump.node)
+        edge.debugLabel = debugLabel
 
         unresolvedJumps = [jump]
     }
@@ -61,7 +75,11 @@ public struct CFGVisitResult {
     /// connection to the exit.
     ///
     /// `entry -> jump X-> exit`.
-    init(forUnresolvedJump kind: UnresolvedJump.Kind, id: Int) {
+    init(
+        forUnresolvedJump kind: UnresolvedJump.Kind,
+        id: Int,
+        debugLabel: String? = nil
+    ) {
         self.init()
 
         let jump = UnresolvedJump(
@@ -75,6 +93,8 @@ public struct CFGVisitResult {
 
         graph.prepend(jump.node, before: exit)
         graph.removeEdge(from: jump.node, to: exit)
+
+        graph.edge(from: jump.node, to: exit)?.debugLabel = debugLabel
 
         unresolvedJumps = [jump]
     }
@@ -142,17 +162,6 @@ public struct CFGVisitResult {
         edge.debugLabel = debugLabel
 
         unresolvedJumps = [jump]
-    }
-
-    /// Initializes an empty CFG visit result.
-    init() {
-        graph = ControlFlowGraph(
-            entry: ControlFlowGraphEntryNode(node: MarkerSyntaxNode()),
-            exit: ControlFlowGraphExitNode(node: MarkerSyntaxNode())
-        )
-        unresolvedJumps = []
-
-        graph.addEdge(from: entry, to: exit)
     }
 
     /// Returns a list of unresolved jumps from this graph result that match a
