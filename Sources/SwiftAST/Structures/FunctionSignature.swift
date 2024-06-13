@@ -76,17 +76,17 @@ public struct FunctionSignature: Hashable {
             _recreateAliases()
         }
     }
-    
+
     /// Gets a function identifier for this function's name and parameter labels.
     public var asIdentifier: FunctionIdentifier {
         _asIdentifier
     }
-    
+
     /// The canonical selector signature for this function signature.
     public var asSelector: SelectorSignature {
         _asSelector
     }
-    
+
     // TODO: Support supplying type attributes for function signatures
     /// Returns a `SwiftType.block`-equivalent type for this function signature
     public var swiftClosureType: BlockSwiftType {
@@ -95,14 +95,14 @@ public struct FunctionSignature: Hashable {
             parameters: parameters.map(\.type)
         )
     }
-    
+
     /// Returns a new function signature where parameters and return type have
     /// their nullability stripped off.
     public var droppingNullability: FunctionSignature {
         let parameters = self.parameters.map {
             ParameterSignature(label: $0.label, name: $0.name, type: $0.type.deepUnwrapped)
         }
-        
+
         return FunctionSignature(
             name: name,
             parameters: parameters,
@@ -111,7 +111,7 @@ public struct FunctionSignature: Hashable {
             isMutating: isMutating
         )
     }
-    
+
     public init(
         name: String,
         parameters: [ParameterSignature] = [],
@@ -120,7 +120,7 @@ public struct FunctionSignature: Hashable {
         isMutating: Bool = false,
         isThrowing: Bool = false
     ) {
-        
+
         self.traits = []
         self.name = name
         self.returnType = returnType
@@ -135,14 +135,14 @@ public struct FunctionSignature: Hashable {
         self.isMutating = isMutating
         self.isThrowing = isThrowing
     }
-    
+
     public init(
         name: String,
         parameters: [ParameterSignature] = [],
         returnType: SwiftType = .void,
         traits: Traits
     ) {
-        
+
         self.traits = traits
         self.name = name
         self.returnType = returnType
@@ -151,12 +151,20 @@ public struct FunctionSignature: Hashable {
         _asIdentifier = FunctionIdentifier(name: name, parameters: parameters)
         _asSelector = SelectorSignature(isStatic: traits.contains(.static), keywords: [name] + parameters.map(\.label))
     }
-    
+
     private mutating func _recreateAliases() {
         _asIdentifier = FunctionIdentifier(name: name, parameters: parameters)
         _asSelector = SelectorSignature(isStatic: isStatic, keywords: [name] + parameters.map(\.label))
     }
-    
+
+    /// Returns a copy of `self` with a given set of traits appended to the
+    /// current trait set.
+    public func addingTraits(_ traits: Traits) -> Self {
+        var copy = self
+        copy.traits.formUnion(traits)
+        return copy
+    }
+
     /// Returns a set of possible selector signature variations for this function
     /// signature when permuting over default argument type variations.
     ///
@@ -187,48 +195,48 @@ public struct FunctionSignature: Hashable {
         if !parameters.contains(where: \.hasDefaultValue) {
             return [asSelector]
         }
-        
+
         let defaultArgIndices =
             parameters.enumerated()
                 .filter(\.element.hasDefaultValue)
                 .map(\.offset)
-        
+
         if defaultArgIndices.isEmpty {
             return [asSelector]
         }
-        
+
         // Use a simple counter which increments sequentially, and use the bit
         // representation of the counter to produce the permutations.
         // Each bit represents the nth parameter with a default value, with 1
         // being _with_ the parameter, and 0 being _without_ it.
         let combinations = 1 << defaultArgIndices.count
-        
+
         var set: Set<SelectorSignature> = []
-        
+
         for i in 0..<combinations {
             var keywords: [String?] = [name]
             var nextDefaultArgIndex = 0
-            
+
             for param in parameters {
                 if !param.hasDefaultValue {
                     keywords.append(param.label)
                     continue
                 }
-                
+
                 // Check if bit is set
                 if (i >> nextDefaultArgIndex) & 1 == 1 {
                     keywords.append(param.label)
                 }
-                
+
                 nextDefaultArgIndex += 1
             }
-            
+
             set.insert(SelectorSignature(isStatic: isStatic, keywords: keywords))
         }
-        
+
         return set
     }
-    
+
     /// Returns a set of possible function identifier signature variations for
     /// this function signature when permuting over default argument type variations.
     ///
@@ -250,48 +258,48 @@ public struct FunctionSignature: Hashable {
         if !parameters.contains(where: \.hasDefaultValue) {
             return [asIdentifier]
         }
-        
+
         let defaultArgIndices =
             parameters.enumerated()
                 .filter(\.element.hasDefaultValue)
                 .map(\.offset)
-        
+
         if defaultArgIndices.isEmpty {
             return [asIdentifier]
         }
-        
+
         // Use a simple counter which increments sequentially, and use the bit
         // representation of the counter to produce the permutations.
         // Each bit represents the nth parameter with a default value, with 1
         // being _with_ the parameter, and 0 being _without_ it.
         let combinations = 1 << defaultArgIndices.count
-        
+
         var set: Set<FunctionIdentifier> = []
-        
+
         for i in 0..<combinations {
             var paramLabels: [String?] = []
             var nextDefaultArgIndex = 0
-            
+
             for param in parameters {
                 if !param.hasDefaultValue {
                     paramLabels.append(param.label)
                     continue
                 }
-                
+
                 // Check if bit is set
                 if (i >> nextDefaultArgIndex) & 1 == 1 {
                     paramLabels.append(param.label)
                 }
-                
+
                 nextDefaultArgIndex += 1
             }
-            
+
             set.insert(FunctionIdentifier(name: name, argumentLabels: paramLabels))
         }
-        
+
         return set
     }
-    
+
     /// Returns `true` iff `self` and `other` match using Swift signature matching
     /// rules.
     ///
@@ -310,7 +318,7 @@ public struct FunctionSignature: Hashable {
         if parameters.count != other.parameters.count {
             return false
         }
-        
+
         for (p1, p2) in zip(parameters, other.parameters) {
             if p1.label != p2.label {
                 return false
@@ -319,16 +327,16 @@ public struct FunctionSignature: Hashable {
                 return false
             }
         }
-        
+
         return true
     }
-    
+
     /// Returns `true` iff `self` and `other` match using Objective-C signature
     /// matching rules.
     public func matchesAsSelector(_ other: FunctionSignature) -> Bool {
         asSelector == other.asSelector
     }
-    
+
     /// Returns `true` iff `self` and `other` match using C signature matching
     /// rules.
     ///
@@ -380,18 +388,18 @@ public struct FunctionSignature: Hashable {
 }
 
 extension FunctionSignature: Codable {
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         try traits = container.decode(Traits.self, forKey: .traits)
         try name = container.decode(String.self, forKey: .name)
         try returnType = container.decode(SwiftType.self, forKey: .returnType)
         try parameters = container.decode([ParameterSignature].self, forKey: .parameters)
-        
+
         _recreateAliases()
     }
-    
+
     public enum CodingKeys: String, CodingKey {
         case name
         case returnType
@@ -403,7 +411,7 @@ extension FunctionSignature: Codable {
 extension FunctionSignature: CustomStringConvertible {
     public var description: String {
         var result = ""
-        
+
         let traitDesc = traits.description
         if !traitDesc.isEmpty {
             result += traitDesc + " "
@@ -411,17 +419,17 @@ extension FunctionSignature: CustomStringConvertible {
 
         result += "func "
         result += name
-        
+
         result += TypeFormatter.asString(parameters: parameters)
 
         if isThrowing {
             result += " throws"
         }
-        
+
         if returnType != .void {
             result += " -> \(TypeFormatter.stringify(returnType))"
         }
-        
+
         return result
     }
 }
@@ -430,7 +438,7 @@ public extension Sequence where Element == ParameterSignature {
     func argumentLabels() -> [String?] {
         map(\.label)
     }
-    
+
     func subscriptArgumentLabels() -> [String?] {
         map { $0.label == $0.name ? nil : $0.label }
     }

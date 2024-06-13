@@ -3,8 +3,9 @@ public struct ParameterSignature: Hashable, Codable {
     public var name: String
     public var type: SwiftType
     public var isVariadic: Bool
+    // TODO: Support Expression as a default value.
     public var hasDefaultValue: Bool
-    
+
     /// Initializes a new parameter signature with a parameter that has a name
     /// and label of the same value `name`.
     ///
@@ -17,7 +18,7 @@ public struct ParameterSignature: Hashable, Codable {
         self.isVariadic = isVariadic
         self.hasDefaultValue = hasDefaultValue
     }
-    
+
     /// Initializes a new parameter signature with a given set of values.
     public init(label: String?, name: String, type: SwiftType, isVariadic: Bool = false, hasDefaultValue: Bool = false) {
         self.label = label

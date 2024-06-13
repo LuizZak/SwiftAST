@@ -112,15 +112,15 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
         let sortedAttributes = attributes.sorted {
             $0.description < $1.description
         }
-        
+
         let attributeString = sortedAttributes
             .map(\.description)
             .joined(separator: " ")
-        
+
         let parameterList = parameters
             .map(\.description)
             .joined(separator: ", ")
-        
+
         return (attributeString.isEmpty ? "" : attributeString + " ")
             + "("
             + parameterList
@@ -133,12 +133,19 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
         parameters: [SwiftType],
         attributes: Set<BlockTypeAttribute> = []
     ) {
-        
+
         self.returnType = returnType
         self.parameters = parameters
         self.attributes = attributes
     }
-    
+
+    /// Returns a copy of `self` with a given set of block type attributes appended.
+    public func addingAttributes(_ attributes: some Sequence<BlockTypeAttribute>) -> Self {
+        var copy = self
+        copy.attributes.formUnion(attributes)
+        return copy
+    }
+
     public static func swiftBlock(
         returnType: SwiftType,
         parameters: [SwiftType] = []
@@ -146,7 +153,7 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
 
         .init(returnType: returnType, parameters: parameters, attributes: [])
     }
-    
+
     /// Returns a block type that is the same as the input, but with any .optional
     /// or .implicitUnwrappedOptional types unwrapped to non optional, including
     /// any block parameters.
@@ -165,14 +172,14 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
             type.returnType,
             removeUnspecifiedNullabilityOnly: removeUnspecifiedNullabilityOnly
         )
-        
+
         let parameters = type.parameters.map {
             SwiftType.asNonnullDeep(
                 $0,
                 removeUnspecifiedNullabilityOnly: removeUnspecifiedNullabilityOnly
             )
         }
-        
+
         return .init(
             returnType: returnType,
             parameters: parameters,
@@ -187,19 +194,19 @@ public enum BlockTypeAttribute: Hashable, CustomStringConvertible {
         switch self {
         case .autoclosure:
             return "@autoclosure"
-            
+
         case .escaping:
             return "@escaping"
-            
+
         case .convention(let c):
             return "@convention(\(c.rawValue))"
         }
     }
-    
+
     case autoclosure
     case escaping
     case convention(Convention)
-    
+
     public enum Convention: String, Hashable {
         case block
         case c
@@ -221,7 +228,7 @@ public extension SwiftType {
             return nil
         }
     }
-    
+
     /// If this Swift type is a nominal typename, returns the inner type name as
     /// a string, and if it's a nested type, returns the last nominal type's name
     var lastNominalTypeName: String? {
@@ -234,7 +241,7 @@ public extension SwiftType {
             return nil
         }
     }
-    
+
     /// Whether this type requires surrounding parenthesis when this type is used
     /// within an optional or metatype.
     var requiresSurroundingParens: Bool {
@@ -245,7 +252,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     /// Returns `true` if this type is a block type
     var isBlock: Bool {
         switch self {
@@ -255,7 +262,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     /// Returns `true` if this type is either an optional, an implicitly unwrapped
     /// optional, or a 'nullability-unspecified' optional.
     var isOptional: Bool {
@@ -266,7 +273,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     var isMetatype: Bool {
         switch self {
         case .metatype:
@@ -275,7 +282,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     var isImplicitlyUnwrapped: Bool {
         switch self {
         case .implicitUnwrappedOptional:
@@ -284,7 +291,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     var canBeImplicitlyUnwrapped: Bool {
         switch self {
         case .implicitUnwrappedOptional, .nullabilityUnspecified:
@@ -293,7 +300,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     var isNullabilityUnspecified: Bool {
         switch self {
         case .nullabilityUnspecified:
@@ -302,7 +309,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     /// Returns `true` if this type represents a nominal type.
     /// Except for blocks, meta-types and tuples, all types are considered nominal
     /// types.
@@ -314,7 +321,7 @@ public extension SwiftType {
             return true
         }
     }
-    
+
     /// Returns `true` iff this SwiftType is a `.protocolComposition` case.
     var isProtocolComposition: Bool {
         switch self {
@@ -324,7 +331,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     /// Returns `true` if this type is a `.typeName`, a `.genericTypeName`, or a
     /// `.protocolComposition` type.
     var isProtocolComposable: Bool {
@@ -335,7 +342,7 @@ public extension SwiftType {
             return false
         }
     }
-    
+
     /// If this type is an `.optional`, `.implicitUnwrappedOptional`, or
     /// `.nullabilityUnspecified` type, returns an unwrapped version of self.
     /// The return is unwrapped only once.
@@ -345,12 +352,12 @@ public extension SwiftType {
              .implicitUnwrappedOptional(let type),
              .nullabilityUnspecified(let type):
             return type
-            
+
         default:
             return self
         }
     }
-    
+
     /// If this type is an `.optional`, `.implicitUnwrappedOptional`, or
     /// `.nullabilityUnspecified` type, returns an unwrapped version of self.
     /// The return is then recursively unwrapped again until a non-optional base
@@ -361,33 +368,33 @@ public extension SwiftType {
              .implicitUnwrappedOptional(let type),
              .nullabilityUnspecified(let type):
             return type.deepUnwrapped
-            
+
         default:
             return self
         }
     }
-    
+
     /// Returns `self` wrapped over an `.optional` case.
     var asOptional: SwiftType {
         .optional(self)
     }
-    
+
     /// Returns `self` wrapped over an `.implicitUnwrappedOptional` case.
     var asImplicitUnwrapped: SwiftType {
         .implicitUnwrappedOptional(self)
     }
-    
+
     /// Returns `self` wrapped over an `.nullabilityUnspecified` case.
     var asNullabilityUnspecified: SwiftType {
         .nullabilityUnspecified(self)
     }
-    
+
     /// Returns a greater than zero number that indicates how many layers of
     /// optional types this type contains until the first non-optional type.
     var optionalityDepth: Int {
         return isOptional ? 1 + unwrapped.optionalityDepth : 0
     }
-    
+
     /// Returns this type, wrapped in the same optionality depth as another given
     /// type.
     ///
@@ -396,7 +403,7 @@ public extension SwiftType {
     func withSameOptionalityAs(_ type: SwiftType) -> SwiftType {
         type.wrappingOther(self.deepUnwrapped)
     }
-    
+
     /// In case this type represents an optional value, returns a new optional
     /// type with the same optionality as this type, but wrapping over a given
     /// type.
@@ -416,7 +423,7 @@ public extension SwiftType {
             return type
         }
     }
-    
+
     static func typeName(_ name: String) -> SwiftType {
         .nominal(.typeName(name))
     }
@@ -430,7 +437,7 @@ public extension SwiftType {
             )
         )
     }
-    
+
     static func swiftBlock(
         returnType: SwiftType,
         parameters: [SwiftType] = []
@@ -438,12 +445,12 @@ public extension SwiftType {
 
         .block(.swiftBlock(returnType: returnType, parameters: parameters))
     }
-    
+
     /// Convenience for `SwiftType.nominal(.generic(name, parameters: parameters))`
     static func generic(_ name: String, parameters: GenericArgumentSwiftType) -> SwiftType {
         .nominal(.generic(name, parameters: parameters))
     }
-    
+
     /// Returns a type that is the same as the input, but with any .optional or
     /// .implicitUnwrappedOptional types unwrapped to non optional, including
     /// block parameters.
@@ -457,9 +464,9 @@ public extension SwiftType {
         _ type: SwiftType,
         removeUnspecifiedNullabilityOnly: Bool = false
     ) -> SwiftType {
-        
+
         var result: SwiftType = type
-        
+
         if removeUnspecifiedNullabilityOnly {
             if case .nullabilityUnspecified(let inner) = type {
                 result = inner
@@ -467,7 +474,7 @@ public extension SwiftType {
         } else {
             result = type.deepUnwrapped
         }
-        
+
         switch result {
         case let .block(blockType):
             result = .block(
@@ -476,11 +483,11 @@ public extension SwiftType {
                     removeUnspecifiedNullabilityOnly: removeUnspecifiedNullabilityOnly
                 )
             )
-            
+
         default:
             break
         }
-        
+
         return result
     }
 }
@@ -490,17 +497,17 @@ extension NominalSwiftType: CustomStringConvertible {
         switch self {
         case .typeName(let name):
             return name
-            
+
         case let .generic(name, params):
             return name + "<" + params.map(\.description).joined(separator: ", ") + ">"
         }
     }
-    
+
     public var typeNameValue: String {
         switch self {
         case .typeName(let typeName),
              .generic(let typeName, _):
-            
+
             return typeName
         }
     }
@@ -515,7 +522,7 @@ extension ProtocolCompositionComponent: CustomStringConvertible {
             return nominal.description
         }
     }
-    
+
     public static func typeName(_ name: String) -> ProtocolCompositionComponent {
         .nominal(.typeName(name))
     }
@@ -532,47 +539,47 @@ extension SwiftType: CustomStringConvertible {
         switch self {
         case .nominal(let type):
             return type.description
-            
+
         case let .block(block):
             return block.description
-            
+
         case .optional(let type):
             return type.descriptionWithParens + "?"
-            
+
         case .implicitUnwrappedOptional(let type):
             return type.descriptionWithParens + "!"
-            
+
         case .nullabilityUnspecified(let type):
             return type.descriptionWithParens + "!"
-            
+
         case let .protocolComposition(types):
             return types.map(\.description).joined(separator: " & ")
-            
+
         case let .metatype(innerType):
             return innerType.descriptionWithParens + ".Type"
-            
+
         case .tuple(.empty):
             return "Void"
-            
+
         case let .tuple(.types(inner)):
             return "(" + inner.map(\.description).joined(separator: ", ") + ")"
-            
+
         case .nested(let items):
             return items.map(\.description).joined(separator: ".")
-            
+
         case .array(let type):
             return "[\(type)]"
-            
+
         case let .dictionary(key, value):
             return "[\(key): \(value)]"
         }
     }
-    
+
     private var descriptionWithParens: String {
         if requiresSurroundingParens {
             return "(\(self))"
         }
-        
+
         return self.description
     }
 }
@@ -581,7 +588,7 @@ extension SwiftType: CustomStringConvertible {
 extension SwiftType: Codable {
     public init(from decoder: Decoder) throws {
         let string: String
-        
+
         if decoder.codingPath.isEmpty {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             string = try container.decode(String.self, forKey: .type)
@@ -589,10 +596,10 @@ extension SwiftType: Codable {
             let container = try decoder.singleValueContainer()
             string = try container.decode(String.self)
         }
-        
+
         self = try SwiftTypeParser.parse(from: string)
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         if encoder.codingPath.isEmpty {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -602,7 +609,7 @@ extension SwiftType: Codable {
             try container.encode(description)
         }
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case type
     }
@@ -612,35 +619,35 @@ extension SwiftType: Codable {
 public struct OneOrMore<T> {
     public var first: T
     var remaining: [T]
-    
+
     /// Returns the number of items on this `OneOrMore` list.
     ///
     /// Due to semantics of this list type, this value is always `>= 1`.
     public var count: Int {
         remaining.count + 1
     }
-    
+
     public var last: T {
         remaining.last ?? first
     }
-    
+
     public init(first: T, remaining: [T]) {
         self.first = first
         self.remaining = remaining
     }
-    
+
     /// Creates a `OneOrMore` enum list with a given collection.
     /// The collection must have at least two elements.
     ///
     /// - precondition: `collection.count >= 1`
     public static func fromCollection<C>(_ collection: C) -> OneOrMore
         where C: BidirectionalCollection, C.Element == T, C.Index == Int {
-            
+
         precondition(collection.count >= 1)
-        
+
         return OneOrMore(first: collection[0], remaining: Array(collection.dropFirst(1)))
     }
-    
+
     /// Shortcut for creating a `OneOrMore` list with a given item
     public static func one(_ value: T) -> OneOrMore {
         OneOrMore(first: value, remaining: [])
@@ -651,24 +658,24 @@ public struct TwoOrMore<T> {
     public var first: T
     public var second: T
     var remaining: [T]
-    
+
     /// Returns the number of items on this `TwoOrMore` list.
     ///
     /// Due to semantics of this list type, this value is always `>= 2`.
     public var count: Int {
         remaining.count + 2
     }
-    
+
     public var last: T {
         remaining.last ?? second
     }
-    
+
     public init(first: T, second: T, remaining: [T]) {
         self.first = first
         self.second = second
         self.remaining = remaining
     }
-    
+
     /// Creates a `TwoOrMore` enum list with a given collection.
     /// The collection must have at least two elements.
     ///
@@ -676,12 +683,12 @@ public struct TwoOrMore<T> {
     public static func fromCollection<C>(
         _ collection: C
     ) -> TwoOrMore where C: BidirectionalCollection, C.Element == T, C.Index == Int {
-        
+
         precondition(collection.count >= 2)
-        
+
         return TwoOrMore(first: collection[0], second: collection[1], remaining: Array(collection.dropFirst(2)))
     }
-    
+
     /// Shortcut for creating a `TwoOrMore` list with two given items
     public static func two(_ value1: T, _ value2: T) -> TwoOrMore {
         TwoOrMore(first: value1, second: value2, remaining: [])
@@ -693,20 +700,20 @@ extension OneOrMore: Sequence {
     public func makeIterator() -> Iterator {
         Iterator(current: self)
     }
-    
+
     public struct Iterator: IteratorProtocol {
         private var current: OneOrMore
         private var index: Index = 0
-        
+
         init(current: OneOrMore) {
             self.current = current
         }
-        
+
         public mutating func next() -> T? {
             defer {
                 index += 1
             }
-            
+
             return index < current.endIndex ? current[index] : nil
         }
     }
@@ -716,20 +723,20 @@ extension TwoOrMore: Sequence {
     public func makeIterator() -> Iterator {
         Iterator(current: self)
     }
-    
+
     public struct Iterator: IteratorProtocol {
         private var current: TwoOrMore
         private var index: Index = 0
-        
+
         init(current: TwoOrMore) {
             self.current = current
         }
-        
+
         public mutating func next() -> T? {
             defer {
                 index += 1
             }
-            
+
             return index < current.endIndex ? current[index] : nil
         }
     }
@@ -743,7 +750,7 @@ extension OneOrMore: Collection {
     public var endIndex: Int {
         remaining.count + 1
     }
-    
+
     public subscript(index: Int) -> T {
         switch index {
         case 0:
@@ -752,7 +759,7 @@ extension OneOrMore: Collection {
             return remaining[rem - 1]
         }
     }
-    
+
     public func index(after i: Int) -> Int {
         return i + 1
     }
@@ -765,7 +772,7 @@ extension TwoOrMore: Collection {
     public var endIndex: Int {
         return remaining.count + 2
     }
-    
+
     public subscript(index: Int) -> T {
         switch index {
         case 0:
@@ -776,7 +783,7 @@ extension TwoOrMore: Collection {
             return remaining[rem - 2]
         }
     }
-    
+
     public func index(after i: Int) -> Int {
         i + 1
     }
@@ -814,23 +821,23 @@ extension TwoOrMore: ExpressibleByArrayLiteral {
 public extension OneOrMore {
     static func + (lhs: OneOrMore, rhs: OneOrMore) -> OneOrMore {
         let remaining = lhs.remaining + [rhs.first] + rhs.remaining
-        
+
         return .init(first: lhs.first, remaining: remaining)
     }
-    
+
     static func + (lhs: [T], rhs: OneOrMore) -> OneOrMore {
         let remaining = [rhs.first] + rhs.remaining
-        
+
         if lhs.count > 1 {
             return .init(first: lhs[0], remaining: [lhs[1]] + remaining)
         }
         if lhs.count == 1 {
             return .init(first: lhs[0], remaining: remaining)
         }
-        
+
         return rhs
     }
-    
+
     static func + (lhs: OneOrMore, rhs: [T]) -> OneOrMore {
         return .init(first: lhs.first, remaining: lhs.remaining + rhs)
     }
@@ -839,28 +846,28 @@ public extension OneOrMore {
 public extension TwoOrMore {
     static func + (lhs: TwoOrMore, rhs: TwoOrMore) -> TwoOrMore {
         let remaining = lhs.remaining + [rhs.first, rhs.second] + rhs.remaining
-        
+
         return .init(first: lhs.first, second: lhs.second, remaining: remaining)
     }
-    
+
     static func + (lhs: [T], rhs: TwoOrMore) -> TwoOrMore {
         let remaining = [rhs.first, rhs.second] + rhs.remaining
-        
+
         if lhs.count >= 2 {
             return .init(first: lhs[0],
                          second: lhs[1],
                          remaining: remaining)
         }
-        
+
         if lhs.count == 1 {
             return .init(first: lhs[0],
                          second: remaining[0],
                          remaining: Array(remaining.dropFirst()))
         }
-        
+
         return rhs
     }
-    
+
     static func + (lhs: TwoOrMore, rhs: [T]) -> TwoOrMore {
         return .init(first: lhs.first, second: lhs.second, remaining: lhs.remaining + rhs)
     }
