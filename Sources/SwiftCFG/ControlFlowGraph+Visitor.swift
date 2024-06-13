@@ -195,11 +195,7 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             totalClauses.append(defaultClause)
         }
         for (i, clause) in totalClauses.enumerated() {
-            var clauseResult = clause.result
-
-            if i == totalClauses.count - 1 && stmt.defaultCase != nil {
-                clauseResult.removeJumps(kind: .switchCasePatternFail)
-            }
+            let clauseResult = clause.result
 
             result = result
                 .inserting(clauseResult)
@@ -226,10 +222,7 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             }
         }
 
-        result.resolveJumpsToExit(
-            kind: .switchCasePatternFail,
-            debugLabel: "pattern fail"
-        )
+        result.removeJumps(kind: .switchCasePatternFail)
 
         return result.finalized()
     }

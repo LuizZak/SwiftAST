@@ -1276,34 +1276,33 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 [label="switchExp"]
                     n4 [label="{switch}"]
                     n5 [label="{case patternA}"]
-                    n6 [label="{compound}"]
-                    n7 [label="{case patternB}"]
+                    n6 [label="{case patternB}"]
+                    n7 [label="{compound}"]
                     n8 [label="{compound}"]
                     n9 [label="{exp}"]
                     n10 [label="{exp}"]
                     n11 [label="case1"]
                     n12 [label="case2"]
                     n13 [label="exit"]
-
+                
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6 [label="pattern success"]
-                    n5 -> n7 [label="pattern fail"]
-                    n7 -> n8 [label="pattern success"]
-                    n6 -> n9
+                    n5 -> n6 [label="pattern fail"]
+                    n5 -> n7 [label="pattern success"]
+                    n6 -> n8 [label="pattern success"]
+                    n7 -> n9
                     n8 -> n10
                     n9 -> n11
                     n10 -> n12
-                    n7 -> n13 [label="pattern fail"]
                     n11 -> n13
                     n12 -> n13
                 }
                 """
         )
         XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
     }
 
     func testSwitchStatement_withDefaultCase() {
@@ -1652,14 +1651,13 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n9 -> n11
                     n10 -> n12
                     n11 -> n13
-                    n7 -> n14 [label="pattern fail"]
                     n12 -> n14
                     n13 -> n14
                 }
                 """
         )
         XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
     }
 
     func testSwitchStatement_casesWithMultiplePatterns_withWherePattern() {
@@ -1715,8 +1713,8 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n5 [label="{case [patternA where whereClauseA, expressionB where whereClauseB, patternC, patternD where whereClauseD]}"]
                     n6 [label="whereClauseA"]
                     n7 [label="{case patternB}"]
-                    n8 [label="{compound}"]
-                    n9 [label="expressionB"]
+                    n8 [label="expressionB"]
+                    n9 [label="{compound}"]
                     n10 [label="whereClauseB"]
                     n11 [label="{exp}"]
                     n12 [label="whereClauseD"]
@@ -1733,26 +1731,25 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n5 -> n6
                     n5 -> n7 [label="pattern fail"]
                     n6 -> n7 [label="pattern fail"]
-                    n9 -> n7 [label="pattern fail"]
+                    n8 -> n7 [label="pattern fail"]
                     n10 -> n7 [label="pattern fail"]
                     n12 -> n7 [label="pattern fail"]
-                    n7 -> n8 [label="pattern success"]
-                    n6 -> n9
-                    n9 -> n10
-                    n8 -> n11
+                    n6 -> n8
+                    n7 -> n9 [label="pattern success"]
+                    n8 -> n10
+                    n9 -> n11
                     n10 -> n12
                     n11 -> n13
                     n12 -> n14 [label="pattern success"]
                     n14 -> n15
                     n15 -> n16
-                    n7 -> n17 [label="pattern fail"]
                     n13 -> n17
                     n16 -> n17
                 }
                 """
         )
         XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
     }
 
     func testSwitchStatement_casesWithMultiplePatterns_withWherePattern_withThrowingExpressionPattern() {
@@ -1806,8 +1803,8 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 [label="switchExp"]
                     n4 [label="{switch}"]
                     n5 [label="{case [patternA where whereClauseA, try expressionB where whereClauseB, patternC, patternD where whereClauseD]}"]
-                    n6 [label="whereClauseA"]
-                    n7 [label="{case patternB}"]
+                    n6 [label="{case patternB}"]
+                    n7 [label="whereClauseA"]
                     n8 [label="{compound}"]
                     n9 [label="expressionB"]
                     n10 [label="{exp}"]
@@ -1824,14 +1821,14 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6
-                    n5 -> n7 [label="pattern fail"]
-                    n6 -> n7 [label="pattern fail"]
-                    n11 -> n7 [label="pattern fail"]
-                    n12 -> n7 [label="pattern fail"]
-                    n14 -> n7 [label="pattern fail"]
-                    n7 -> n8 [label="pattern success"]
-                    n6 -> n9
+                    n5 -> n6 [label="pattern fail"]
+                    n7 -> n6 [label="pattern fail"]
+                    n11 -> n6 [label="pattern fail"]
+                    n12 -> n6 [label="pattern fail"]
+                    n14 -> n6 [label="pattern fail"]
+                    n5 -> n7
+                    n6 -> n8 [label="pattern success"]
+                    n7 -> n9
                     n8 -> n10
                     n9 -> n11
                     n11 -> n12
@@ -1840,7 +1837,6 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n14 -> n15 [label="pattern success"]
                     n15 -> n16
                     n16 -> n17
-                    n7 -> n18 [label="pattern fail"]
                     n11 -> n18 [label="throws"]
                     n13 -> n18
                     n17 -> n18
@@ -1848,7 +1844,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 """
         )
         XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 4)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
     }
 
     func testSwitchStatement_fallthrough() {
