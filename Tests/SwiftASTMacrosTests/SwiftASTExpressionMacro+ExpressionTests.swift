@@ -125,22 +125,22 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             #ast_expandExpression(nil)
             """#,
             expandedSource: #"""
-            ConstantExpression.constant(
-                Constant.double(123.456)
+            ConstantExpression(
+                constant: Constant.double(123.456)
             )
-            ConstantExpression.constant(
-                Constant.boolean(true)
+            ConstantExpression(
+                constant: Constant.boolean(true)
             )
-            ConstantExpression.constant(
-                Constant.boolean(false)
+            ConstantExpression(
+                constant: Constant.boolean(false)
             )
             ConstantExpression.constant(
                 Constant.int(123456, .decimal)
             )
-            ConstantExpression.constant(
-                Constant.string("aStr \n ing")
+            ConstantExpression(
+                constant: Constant.string("aStr \n ing")
             )
-            ConstantExpression.constant(Constant.nil)
+            ConstantExpression(constant: Constant.nil)
             """#,
             macros: testMacros)
     }
@@ -152,8 +152,8 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             """#,
             expandedSource: #"""
             DictionaryLiteralExpression(pairs: [])
-            DictionaryLiteralExpression(pairs: [ExpressionDictionaryPair(key: ConstantExpression.constant(
-                Constant.string("a")
+            DictionaryLiteralExpression(pairs: [ExpressionDictionaryPair(key: ConstantExpression(
+                constant: Constant.string("a")
                         ), value: IdentifierExpression(identifier: "b"))])
             """#,
             macros: testMacros)
@@ -258,8 +258,8 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             #ast_expandExpression(a is B)
             """#,
             expandedSource: #"""
-            TypeCheckExpression.typeCheck(
-                IdentifierExpression(identifier: "a"),
+            TypeCheckExpression(
+                exp: IdentifierExpression(identifier: "a"),
                 type: SwiftType.nominal(NominalSwiftType.typeName("B"))
             )
             """#,
@@ -268,18 +268,30 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
 
     func testMacro_expression_tryExpression() {
         assertMacroExpansion(#"""
-            #ast_expandExpression(try a(try b))
+            #ast_expandExpression(try? a(try! b, try c))
             """#,
             expandedSource: #"""
-            TryExpression.try(PostfixExpression(
+            TryExpression(
+                mode: TryExpression.Mode.optional,
+                exp: PostfixExpression(
                 exp: IdentifierExpression(identifier: "a"),
                 op: FunctionCallPostfix(
                     arguments: [FunctionArgument(
                 label: nil,
-                expression: TryExpression.try(IdentifierExpression(identifier: "b"))
-                            )]
+                expression: TryExpression(
+                mode: TryExpression.Mode.forced,
+                exp: IdentifierExpression(identifier: "b")
+                            )
+                        ), FunctionArgument(
+                label: nil,
+                expression: TryExpression(
+                mode: TryExpression.Mode.throwable,
+                exp: IdentifierExpression(identifier: "c")
+                            )
+                        )]
                 ).withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
-                ))
+                )
+            )
             """#,
             macros: testMacros)
     }

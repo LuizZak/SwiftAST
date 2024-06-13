@@ -166,7 +166,7 @@ extension SwiftASTConverter {
             let elseBody = try convertCompound(block)
 
             return """
-            IfStatement.if(
+            IfStatement(
                 clauses: \(conditionals),
                 body: \(body),
                 elseBody: .else(\(elseBody))
@@ -177,7 +177,7 @@ extension SwiftASTConverter {
             let elseIf = try convertIf(elseIf)
 
             return """
-            IfStatement.if(
+            IfStatement(
                 clauses: \(conditionals),
                 body: \(body),
                 elseBody: .elseIf(\(elseIf))
@@ -186,9 +186,10 @@ extension SwiftASTConverter {
 
         case nil:
             return """
-            IfStatement.if(
+            IfStatement(
                 clauses: \(conditionals),
-                body: \(body)
+                body: \(body),
+                elseBody: nil
             )
             """
         }
@@ -258,10 +259,10 @@ extension SwiftASTConverter {
 
     static func convertReturn(_ stmt: ReturnStmtSyntax) throws -> ExprSyntax {
         if let expression = stmt.expression {
-            return "ReturnStatement.expression(\(try convertExpression(expression)))"
+            return "ReturnStatement(exp: \(try convertExpression(expression)))"
         }
 
-        return "ReturnStatement.return()"
+        return "ReturnStatement()"
     }
 
     static func convertSwitch(_ stmt: SwitchExprSyntax) throws -> ExprSyntax {
@@ -293,7 +294,7 @@ extension SwiftASTConverter {
 
     static func convertThrow(_ stmt: ThrowStmtSyntax) throws -> ExprSyntax {
         return """
-        ThrowStatement.throw(\(try convertExpression(stmt.expression)))
+        ThrowStatement(exp: \(try convertExpression(stmt.expression)))
         """
     }
 
@@ -330,7 +331,7 @@ extension SwiftASTConverter {
         let body = try convertCompound(stmt.body)
 
         return """
-        WhileStatement.while(
+        WhileStatement(
             clauses: \(conditionals),
             body: \(body)
         )

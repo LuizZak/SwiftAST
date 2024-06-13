@@ -200,7 +200,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [IfStatement.if(
+                body: CompoundStatement(statements: [IfStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -208,7 +208,8 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
                             ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                                    )])
+                                    )]),
+                elseBody: nil
                         )])
             )
             """#,
@@ -229,7 +230,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [IfStatement.if(
+                body: CompoundStatement(statements: [IfStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -261,7 +262,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [IfStatement.if(
+                body: CompoundStatement(statements: [IfStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -270,7 +271,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
                                     )]),
-                elseBody: .elseIf(IfStatement.if(
+                elseBody: .elseIf(IfStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "c")
@@ -278,7 +279,8 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
                                     ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "d")]
-                                            )])
+                                            )]),
+                elseBody: nil
                                 ))
                         )])
             )
@@ -386,7 +388,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [ReturnStatement.return(), ReturnStatement.expression(IdentifierExpression(identifier: "a"))])
+                body: CompoundStatement(statements: [ReturnStatement(), ReturnStatement(exp: IdentifierExpression(identifier: "a"))])
             )
             """#,
             macros: testMacros)
@@ -442,7 +444,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [ThrowStatement.throw(IdentifierExpression(identifier: "abc"))])
+                body: CompoundStatement(statements: [ThrowStatement(exp: IdentifierExpression(identifier: "abc"))])
             )
             """#,
             macros: testMacros)
@@ -533,11 +535,11 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [WhileStatement.while(
+                body: CompoundStatement(statements: [WhileStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
-                expression: ConstantExpression.constant(
-                Constant.boolean(true )
+                expression: ConstantExpression(
+                constant: Constant.boolean(true )
                                     )
                                 )]
                             ),

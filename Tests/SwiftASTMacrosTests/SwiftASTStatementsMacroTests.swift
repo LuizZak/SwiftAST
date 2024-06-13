@@ -6,12 +6,12 @@ import SwiftSyntaxMacrosTestSupport
 
 class SwiftASTStatementsMacroTests: XCTestCase {
     let testMacros: [String: Macro.Type] = [
-        "ast_expandStatement": SwiftASTStatementsMacro.self,
+        "ast_expandStatements": SwiftASTStatementsMacro.self,
     ]
 
     func testMacro_compoundStatement() {
         assertMacroExpansion("""
-            #ast_expandStatement({
+            #ast_expandStatements({
                 let a: Int = 0
                 print(a.description)
             })
@@ -49,14 +49,14 @@ class SwiftASTStatementsMacroTests: XCTestCase {
 
     func testMacro_singleStatement_false() {
         assertMacroExpansion("""
-            #ast_expandStatement(singleStatement: false, {
+            #ast_expandStatements(singleStatement: false, {
                 if a {
                     b
                 }
             })
             """,
             expandedSource: #"""
-            CompoundStatement(statements: [IfStatement.if(
+            CompoundStatement(statements: [IfStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -64,7 +64,8 @@ class SwiftASTStatementsMacroTests: XCTestCase {
                         ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                                )])
+                                )]),
+                elseBody: nil
                     )])
             """#,
             macros: testMacros)
@@ -72,14 +73,14 @@ class SwiftASTStatementsMacroTests: XCTestCase {
 
     func testMacro_singleStatement_true() {
         assertMacroExpansion("""
-            #ast_expandStatement(singleStatement: true, {
+            #ast_expandStatements(singleStatement: true, {
                 if a {
                     b
                 }
             })
             """,
             expandedSource: #"""
-            IfStatement.if(
+            IfStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -87,7 +88,8 @@ class SwiftASTStatementsMacroTests: XCTestCase {
                 ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                        )])
+                        )]),
+                elseBody: nil
             )
             """#,
             macros: testMacros)
@@ -97,10 +99,10 @@ class SwiftASTStatementsMacroTests: XCTestCase {
 
     func testMacro_diagnostics_expectedClosureArgument() {
         assertDiagnostics("""
-            #ast_expandStatement()
+            #ast_expandStatements()
             """,
             expandedSource: #"""
-            #ast_expandStatement()
+            #ast_expandStatements()
             """#, [
                 DiagnosticSpec(
                     message: "Expected a closure expression",
@@ -112,10 +114,10 @@ class SwiftASTStatementsMacroTests: XCTestCase {
 
     func testMacro_diagnostics_singleStatement_notBoolean() {
         assertDiagnostics("""
-            #ast_expandStatement(singleStatement: identifier, { })
+            #ast_expandStatements(singleStatement: identifier, { })
             """,
             expandedSource: #"""
-            #ast_expandStatement(singleStatement: identifier, { })
+            #ast_expandStatements(singleStatement: identifier, { })
             """#, [
                 DiagnosticSpec(
                     message: "Expected 'singleStatement' argument to be a boolean literal value.",
@@ -127,10 +129,10 @@ class SwiftASTStatementsMacroTests: XCTestCase {
 
     func testMacro_diagnostics_singleStatement_emptyClosure() {
         assertDiagnostics("""
-            #ast_expandStatement(singleStatement: true, { })
+            #ast_expandStatements(singleStatement: true, { })
             """,
             expandedSource: #"""
-            #ast_expandStatement(singleStatement: true, { })
+            #ast_expandStatements(singleStatement: true, { })
             """#, [
                 DiagnosticSpec(
                     message: "Expected at least one statement within the closure with 'singleStatement'",
@@ -142,10 +144,10 @@ class SwiftASTStatementsMacroTests: XCTestCase {
 
     func testMacro_diagnostics_unknownLabel() {
         assertDiagnostics("""
-            #ast_expandStatement(label: true, { })
+            #ast_expandStatements(label: true, { })
             """,
             expandedSource: #"""
-            #ast_expandStatement(label: true, { })
+            #ast_expandStatements(label: true, { })
             """#, [
                 DiagnosticSpec(
                     message: "Unrecognized argument label 'label'",

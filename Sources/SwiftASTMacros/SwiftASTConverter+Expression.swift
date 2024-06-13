@@ -207,27 +207,27 @@ extension SwiftASTConverter {
         }
         if let expr = expr.as(FloatLiteralExprSyntax.self) {
             return """
-            ConstantExpression.constant(
-                Constant.double(\(expr))
+            ConstantExpression(
+                constant: Constant.double(\(expr))
             )
             """
         }
         if let expr = expr.as(BooleanLiteralExprSyntax.self) {
             return """
-            ConstantExpression.constant(
-                Constant.boolean(\(expr))
+            ConstantExpression(
+                constant: Constant.boolean(\(expr))
             )
             """
         }
         if expr.is(NilLiteralExprSyntax.self) {
             return """
-            ConstantExpression.constant(Constant.nil)
+            ConstantExpression(constant: Constant.nil)
             """
         }
         if let expr = expr.as(StringLiteralExprSyntax.self) {
             return """
-            ConstantExpression.constant(
-                Constant.string(\(expr))
+            ConstantExpression(
+                constant: Constant.string(\(expr))
             )
             """
         }
@@ -407,16 +407,28 @@ extension SwiftASTConverter {
 
     static func convertTypeCheck(_ expr: IsExprSyntax) throws -> ExprSyntax {
         return """
-        TypeCheckExpression.typeCheck(
-            \(try convertExpression(expr.expression)),
+        TypeCheckExpression(
+            exp: \(try convertExpression(expr.expression)),
             type: \(try convertType(expr.type))
         )
         """
     }
 
     static func convertTryExpression(_ expr: TryExprSyntax) throws -> ExprSyntax {
+        let mode: ExprSyntax
+        if expr.questionOrExclamationMark?.tokenKind == .postfixQuestionMark {
+            mode = "TryExpression.Mode.optional"
+        } else if expr.questionOrExclamationMark?.tokenKind == .exclamationMark {
+            mode = "TryExpression.Mode.forced"
+        } else {
+            mode = "TryExpression.Mode.throwable"
+        }
+
         return """
-        TryExpression.try(\(try convertExpression(expr.expression)))
+        TryExpression(
+            mode: \(mode),
+            exp: \(try convertExpression(expr.expression))
+        )
         """
     }
 
