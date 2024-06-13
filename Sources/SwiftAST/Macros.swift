@@ -16,7 +16,16 @@ macro ast_expandExpression<T>(_: T) -> Expression =
 macro ast_expandType<T>() -> SwiftType =
     #externalMacro(module: "SwiftASTMacros", type: "SwiftASTTypeMacro")
 
-func test() {
-    //#ast_expandType<[Int: String]>()
-
-}
+/// Expands an input Swift closure expression as an equivalent SwiftAST
+/// `CompoundStatement` hierarchy.
+///
+/// If `singleStatement` is `true` in the call site, the macro expands only
+/// the first statement within the closure.
+///
+/// The macro implementation expects `T` to resolve to a closure type.
+///
+/// Errors during macro expansion will result in an `UnknownStatement` being
+/// returned, and an error being raised in the editor.
+@freestanding(expression)
+macro ast_expandStatements<T>(singleStatement: Bool = false, _: T) -> Statement =
+    #externalMacro(module: "SwiftASTMacros", type: "SwiftASTExpressionMacro")
