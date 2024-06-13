@@ -284,6 +284,25 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             macros: testMacros)
     }
 
+    func testMacro_firstExpressionIn() {
+        assertMacroExpansion(#"""
+            #ast_expandExpression(firstExpressionIn: { (a: String, b: Int) in
+                a.count + b
+            })
+            """#,
+            expandedSource: #"""
+            BinaryExpression(
+                lhs: PostfixExpression(
+                exp: IdentifierExpression(identifier: "a"),
+                op: MemberPostfix(name: "count").withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
+                ),
+                op: SwiftOperator.add,
+                rhs: IdentifierExpression(identifier: "b")
+            )
+            """#,
+            macros: testMacros)
+    }
+
     // MARK: - Diagnostics tests
 
     func testMacro_diagnostic_blockLiteral_signature_noReturnType() {
@@ -507,6 +526,43 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
                     message: "Switch statements in place of expressions are not supported by SwiftAST's Expression type.",
                     line: 1,
                     column: 23
+                )
+            ])
+    }
+
+    func testMacro_diagnostic_firstExpressionIn_nonBlockArgument() {
+        assertDiagnostics("""
+            #ast_expandExpression(firstExpressionIn: true)
+            """,
+            expandedSource: #"""
+            #ast_expandExpression(firstExpressionIn: true)
+            """#, [
+                DiagnosticSpec(
+                    message: "Expected 'firstExpressionIn' argument to be a closure literal.",
+                    line: 1,
+                    column: 1
+                ),
+            ])
+    }
+
+    func testMacro_diagnostic_firstExpressionIn_nonExpressionFirstArgument() {
+        assertDiagnostics("""
+            #ast_expandExpression(firstExpressionIn: { })
+            #ast_expandExpression(firstExpressionIn: { return })
+            """,
+            expandedSource: #"""
+            #ast_expandExpression(firstExpressionIn: { })
+            #ast_expandExpression(firstExpressionIn: { return })
+            """#, [
+                DiagnosticSpec(
+                    message: "Expected 'firstExpressionIn' closure to contain an expression as its first statement.",
+                    line: 1,
+                    column: 1
+                ),
+                DiagnosticSpec(
+                    message: "Expected 'firstExpressionIn' closure to contain an expression as its first statement.",
+                    line: 2,
+                    column: 1
                 )
             ])
     }

@@ -7,6 +7,18 @@
 macro ast_expandExpression<T>(_: T) -> Expression =
     #externalMacro(module: "SwiftASTMacros", type: "SwiftASTExpressionMacro")
 
+/// Expands an input Swift expression within an input closure's first statement
+/// as an equivalent SwiftAST `Expression` hierarchy.
+///
+/// The macro implementation expects `T` to resolve to a closure type, with its
+/// first statement the expression to synthesize.
+///
+/// Errors during macro expansion will result in an `UnknownExpression` being
+/// returned, and an error being raised in the editor.
+@freestanding(expression)
+macro ast_expandExpression<T>(firstArgumentIn: T) -> Expression =
+    #externalMacro(module: "SwiftASTMacros", type: "SwiftASTExpressionMacro")
+
 /// Expands an input Swift type as an equivalent SwiftAST `SwiftAST`
 /// hierarchy.
 ///

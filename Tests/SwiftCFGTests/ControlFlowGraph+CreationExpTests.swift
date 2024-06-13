@@ -1,6 +1,7 @@
 import SwiftAST
 import XCTest
 
+@testable import SwiftAST
 @testable import SwiftCFG
 
 class ControlFlowGraph_CreationExpTests: XCTestCase {

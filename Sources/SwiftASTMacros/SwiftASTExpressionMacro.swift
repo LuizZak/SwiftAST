@@ -34,6 +34,8 @@ public struct SwiftASTExpressionMacro: ExpressionMacro {
 }
 
 class SwiftASTExpressionMacroImplementation {
+    static let arg_firstExpressionIn = "firstExpressionIn"
+
     let node: any FreestandingMacroExpansionSyntax
     let context: any MacroExpansionContext
 
@@ -46,7 +48,9 @@ class SwiftASTExpressionMacroImplementation {
     }
 
     func expand() throws -> ExprSyntax {
-        guard let inputExpression = node.arguments.first?.expression else {
+        guard
+            let inputExpression = try firstArgumentInExpression() ?? node.arguments.first?.expression
+        else {
             throw MacroError.message("Expected expression as first argument of macro")
         }
 
@@ -58,6 +62,51 @@ class SwiftASTExpressionMacroImplementation {
         }
 
         return result
+    }
+
+    func firstArgumentInExpression() throws -> ExprSyntax? {
+        for argument in node.arguments {
+            guard let label = argument.label?.trimmed.description else {
+                continue
+            }
+
+            switch label {
+            case Self.arg_firstExpressionIn:
+                guard let value = argument.expression.as(ClosureExprSyntax.self) else {
+                    throw MacroError.message("""
+                    Expected '\(Self.arg_firstExpressionIn)' argument to be a closure literal.
+                    """)
+                }
+                guard
+                    let firstItem = value.statements.first,
+                    case .expr(let firstExpression) = firstItem.item
+                else {
+                    throw MacroError.message("""
+                    Expected '\(Self.arg_firstExpressionIn)' closure to contain an expression as its first statement.
+                    """)
+                }
+
+                return firstExpression
+            default:
+                throw MacroError.message("""
+                Unrecognized argument label '\(label)'
+                """)
+            }
+        }
+
+        return nil
+    }
+
+    func closureArgument() throws -> ClosureExprSyntax {
+        for argument in node.arguments where argument.label == nil {
+            guard let inputClosure = argument.expression.as(ClosureExprSyntax.self) else {
+                throw MacroError.message("Expected a closure expression")
+            }
+
+            return inputClosure
+        }
+
+        throw MacroError.message("Expected a closure expression")
     }
 
     func basicFormat() -> BasicFormat {
