@@ -3,18 +3,28 @@ import XCTest
 
 class MemberPostfixTests: XCTestCase {
     func testDescription() {
-        let sut = MemberPostfix(name: "member")
+        let sut = MemberPostfix(name: "member", argumentNames: nil)
         XCTAssertEqual(sut.description, ".member")
     }
 
+    func testArgumentNamesEmptyDescription() {
+        let sut = MemberPostfix(name: "member", argumentNames: [])
+        XCTAssertEqual(sut.description, ".member()")
+    }
+
+    func testArgumentNamesNonEmptyDescription() {
+        let sut = MemberPostfix(name: "member", argumentNames: [.init(identifier: "a"), .init(identifier: "_")])
+        XCTAssertEqual(sut.description, ".member(a:_:)")
+    }
+
     func testSafeOptionalDescription() {
-        let sut = MemberPostfix(name: "member")
+        let sut = MemberPostfix(name: "member", argumentNames: nil)
         sut.optionalAccessKind = .safeUnwrap
         XCTAssertEqual(sut.description, "?.member")
     }
 
     func testForceUnwrapOptionalDescription() {
-        let sut = MemberPostfix(name: "member")
+        let sut = MemberPostfix(name: "member", argumentNames: nil)
         sut.optionalAccessKind = .forceUnwrap
         XCTAssertEqual(sut.description, "!.member")
     }

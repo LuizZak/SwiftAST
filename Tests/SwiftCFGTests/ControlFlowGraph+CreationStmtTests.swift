@@ -516,7 +516,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 .expression(.identifier("preError")),
                 .throw(.identifier("Error")),
                 .expression(.identifier("postError")),
-            ]).catch([
+            ]).catch(pattern: .identifier("a"), [
                 .expression(.identifier("errorHandler 1")),
             ]).catch([
                 .expression(.identifier("errorHandler 2")),
@@ -541,7 +541,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n8 [label="preError"]
                     n9 [label="Error"]
                     n10 [label="{throw Error}"]
-                    n11 [label="{catch}"]
+                    n11 [label="{catch a}"]
                     n12 [label="{compound}"]
                     n13 [label="{exp}"]
                     n14 [label="errorHandler 1"]

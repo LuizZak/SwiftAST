@@ -1,6 +1,6 @@
-public protocol ValueMatcherConvertible {
+public protocol ValueMatcherConvertible<Target> {
     associatedtype Target
-    
+
     func asMatcher() -> ValueMatcher<Target>
 }
 

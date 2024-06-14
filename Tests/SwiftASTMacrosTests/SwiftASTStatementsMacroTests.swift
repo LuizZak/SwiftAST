@@ -37,7 +37,10 @@ class SwiftASTStatementsMacroTests: XCTestCase {
                 label: nil,
                 expression: PostfixExpression(
                 exp: IdentifierExpression(identifier: "a"),
-                op: MemberPostfix(name: "description").withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
+                op: MemberPostfix(
+                    name: "description",
+                    argumentNames: nil
+                ).withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
                                             )
                                         )]
                 ).withOptionalAccess(kind: Postfix.OptionalAccessKind.none)

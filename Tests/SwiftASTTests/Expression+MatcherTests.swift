@@ -28,7 +28,6 @@ class Expression_MatcherTests: XCTestCase {
         XCTAssertFalse(sut.matches(Expression.constant(0)))
         XCTAssertFalse(sut.matches(Expression.identifier("test")))
         XCTAssertFalse(sut.matches(Expression.identifier("test").dot("abc").dot("thing")))
-
     }
 
     func testMatchInvertedPostfixPostfixAccess() {
@@ -64,6 +63,70 @@ class Expression_MatcherTests: XCTestCase {
         XCTAssertFalse(
             sut.matches(
                 Expression.identifier("a").sub(.identifier("b")).sub(.constant(0)).dot("c")
+            )
+        )
+    }
+
+    func testMatchPostfixMember() {
+        let sut = Expression.matcher(
+            ValueMatcher<IdentifierExpression>()
+                .dot("b")
+        ).anyExpression()
+
+        // a.b
+        XCTAssertTrue(
+            sut.matches(
+                Expression.identifier("a").dot("b")
+            )
+        )
+        // a.b(c:_:)
+        XCTAssertFalse(
+            sut.matches(
+                Expression.identifier("a").dot("b", argumentNames: ["c", "_"])
+            )
+        )
+        // a.b(c:_:d:)
+        XCTAssertFalse(
+            sut.matches(
+                Expression.identifier("a").dot("b", argumentNames: ["c", "_", "d"])
+            )
+        )
+        // a.c(c:_:)
+        XCTAssertFalse(
+            sut.matches(
+                Expression.identifier("a").dot("c", argumentNames: ["c", "_"])
+            )
+        )
+    }
+
+    func testMatchPostfixMemberArgumentNames() {
+        let sut = Expression.matcher(
+            ValueMatcher<IdentifierExpression>()
+                .dot("b", argumentNames: ValueMatcher.equals(to: [.init(identifier: "c"), .init(identifier: "_")]))
+        ).anyExpression()
+
+        // a.b(c:_:)
+        XCTAssert(
+            sut.matches(
+                Expression.identifier("a").dot("b", argumentNames: ["c", "_"])
+            )
+        )
+        // a.b(c:_:d:)
+        XCTAssertFalse(
+            sut.matches(
+                Expression.identifier("a").dot("b", argumentNames: ["c", "_", "d"])
+            )
+        )
+        // a.b
+        XCTAssertFalse(
+            sut.matches(
+                Expression.identifier("a").dot("b")
+            )
+        )
+        // a.c(c:_:)
+        XCTAssertFalse(
+            sut.matches(
+                Expression.identifier("a").dot("c", argumentNames: ["c", "_"])
             )
         )
     }

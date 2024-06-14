@@ -1,18 +1,16 @@
 public typealias SyntaxMatcher<T> = ValueMatcher<T> where T: SyntaxNode
 
 public extension ValueMatcher where T: SyntaxNode {
-    
     @inlinable
     func anySyntaxNode() -> ValueMatcher<SyntaxNode> {
         ValueMatcher<SyntaxNode>().match { (value) -> Bool in
             if let value = value as? T {
                 return self.matches(value)
             }
-            
+
             return false
         }
     }
-    
 }
 
 @inlinable
@@ -26,13 +24,12 @@ public func ident(_ matcher: MatchRule<String>) -> SyntaxMatcher<IdentifierExpre
 }
 
 public extension ValueMatcher where T: Expression {
-
     @inlinable
     func isTyped(_ type: SwiftType, ignoringNullability: Bool = false) -> ValueMatcher {
         if !ignoringNullability {
             return keyPath(\.resolvedType, equals: type)
         }
-        
+
         return keyPath(\.resolvedType, .closure { $0?.deepUnwrapped == type })
     }
 
@@ -41,34 +38,58 @@ public extension ValueMatcher where T: Expression {
         if !ignoringNullability {
             return keyPath(\.expectedType, equals: type)
         }
-        
+
         return keyPath(\.expectedType, .closure { $0?.deepUnwrapped == type })
     }
 
+    /// Matches if the postfix is a member access.
     @inlinable
     func dot<S>(_ member: S) -> SyntaxMatcher<PostfixExpression>
         where S: ValueMatcherConvertible, S.Target == String {
-        
+
         SyntaxMatcher<PostfixExpression>()
             .match(.closure { postfix -> Bool in
                 guard let exp = postfix.exp as? T else {
                     return false
                 }
-                
+
                 return self.matches(exp)
             })
             .keyPath(\.op.asMember?.name, member.asMatcher())
+            .keyPath(\.op.asMember?.argumentNames, isNil())
+    }
+
+    /// Matches if the postfix is a function member access with a given name and
+    /// list of argument names.
+    @inlinable
+    func dot<MemberMatcher, ArgumentsMatcher>(
+        _ member: MemberMatcher,
+        argumentNames: ArgumentsMatcher
+    ) -> SyntaxMatcher<PostfixExpression>
+        where MemberMatcher: ValueMatcherConvertible, MemberMatcher.Target == String,
+            ArgumentsMatcher: ValueMatcherConvertible, ArgumentsMatcher.Target == [MemberPostfix.ArgumentName]? {
+
+        SyntaxMatcher<PostfixExpression>()
+            .match(.closure { postfix -> Bool in
+                guard let exp = postfix.exp as? T else {
+                    return false
+                }
+
+                return self.matches(exp)
+            })
+            .keyPath(\.op.asMember?.name, member.asMatcher())
+            .keyPath(\.op.asMember?.argumentNames, argumentNames.asMatcher())
     }
 
     @inlinable
     func subscribe(arguments matchers: [ValueMatcher<FunctionArgument>]) -> SyntaxMatcher<PostfixExpression> {
-            
+
         SyntaxMatcher<PostfixExpression>()
             .match(.closure { postfix -> Bool in
                 guard let exp = postfix.exp as? T else {
                     return false
                 }
-                
+
                 return self.matches(exp)
             })
             .keyPath(\.op.asSubscription?.arguments.count, equals: matchers.count)
@@ -79,7 +100,7 @@ public extension ValueMatcher where T: Expression {
                             return false
                         }
                     }
-                    
+
                     return true
                 })
             }
@@ -92,7 +113,7 @@ public extension ValueMatcher where T: Expression {
                 guard let exp = postfix.exp as? T else {
                     return false
                 }
-                
+
                 return self.matches(exp)
             }
             .keyPath(\.op.asFunctionCall?.arguments, equals: args)
@@ -105,7 +126,7 @@ public extension ValueMatcher where T: Expression {
                 guard let exp = postfix.exp as? T else {
                     return false
                 }
-                
+
                 return self.matches(exp)
             }
             .keyPath(\.op.asFunctionCall?.arguments.count, equals: matchers.count)
@@ -116,7 +137,7 @@ public extension ValueMatcher where T: Expression {
                             return false
                         }
                     }
-                    
+
                     return true
                 })
             }
@@ -130,7 +151,7 @@ public extension ValueMatcher where T: Expression {
     @inlinable
     func binary<E>(op: SwiftOperator, rhs: E) -> SyntaxMatcher<BinaryExpression>
         where E: ValueMatcherConvertible, E.Target == Expression {
-                
+
         SyntaxMatcher<BinaryExpression>()
             .keyPath(\.op, .equals(op))
             .keyPath(\.rhs, rhs.asMatcher())
@@ -139,7 +160,7 @@ public extension ValueMatcher where T: Expression {
     @inlinable
     func assignment<E>(op: SwiftOperator, rhs: E) -> SyntaxMatcher<AssignmentExpression>
         where E: ValueMatcherConvertible, E.Target == Expression {
-        
+
         SyntaxMatcher<AssignmentExpression>()
             .keyPath(\.op, .equals(op))
             .keyPath(\.rhs, rhs.asMatcher())
@@ -159,23 +180,22 @@ public extension ValueMatcher where T == FunctionArgument {
 }
 
 public extension ValueMatcher where T: PostfixExpression {
-    
     typealias PostfixMatcher = ValueMatcher<[PostfixChainInverter.Postfix]>
-    
+
     /// Matches if the postfix is a function invocation.
     @inlinable
     static var isFunctionCall: ValueMatcher<T> {
         ValueMatcher<T>()
             .keyPath(\.op, .isType(FunctionCallPostfix.self))
     }
-    
+
     /// Matches if the postfix is a member access.
     @inlinable
     static var isMemberAccess: ValueMatcher<T> {
         ValueMatcher<T>()
             .keyPath(\.op, .isType(MemberPostfix.self))
     }
-    
+
     /// Matches if the postfix is a subscription.
     @inlinable
     static var isSubscription: ValueMatcher<T> {
@@ -183,12 +203,27 @@ public extension ValueMatcher where T: PostfixExpression {
             .keyPath(\.op, .isType(SubscriptPostfix.self))
     }
 
+    /// Matches if the postfix is a member access with a given member name.
     @inlinable
     static func isMemberAccess(forMember name: String) -> ValueMatcher<T> {
         ValueMatcher<T>()
             .keyPath(\.op, .isType(MemberPostfix.self))
     }
-    
+
+    /// Matches if the postfix is a member access to a function with a given
+    /// member name and argument names.
+    @inlinable
+    static func isFunctionMemberAccess(forMember name: String, argumentNames: [String]) -> ValueMatcher<T> {
+        ValueMatcher<T>()
+            .keyPath(\.op, .closure({ postfix in
+                guard let member = postfix as? MemberPostfix else {
+                    return false
+                }
+
+                return member.name == name && member.argumentNames?.map(\.identifier) == argumentNames
+            }))
+    }
+
     /// Opens a context for matching postfix operation chains using an inverted
     /// traversal method (left-most to right-most).
     ///
@@ -202,70 +237,69 @@ public extension ValueMatcher where T: PostfixExpression {
     /// postfix matcher constructed using the closure.
     @inlinable
     func inverted(_ closure: (PostfixMatcher) -> PostfixMatcher) -> ValueMatcher<T> {
-        
         let matcher = closure(PostfixMatcher())
-        
+
         return match { value -> Bool in
             let chain = PostfixChainInverter(expression: value).invert()
-            
+
             return matcher.matches(chain)
         }
     }
 }
 
 public extension ValueMatcher where T == PostfixChainInverter.Postfix {
-    
     /// Matches if the postfix is a function invocation.
     @inlinable
     static var isFunctionCall: ValueMatcher<T> {
         ValueMatcher<T>()
             .keyPath(\.postfix, .isType(FunctionCallPostfix.self))
     }
-    
+
     /// Matches if the postfix is a member access.
     @inlinable
     static var isMemberAccess: ValueMatcher<T> {
         ValueMatcher<T>()
             .keyPath(\.postfix, .isType(MemberPostfix.self))
     }
-    
+
     /// Matches if the postfix is a subscription.
     @inlinable
     static var isSubscription: ValueMatcher<T> {
         ValueMatcher<T>()
             .keyPath(\.postfix, .isType(SubscriptPostfix.self))
     }
-    
 }
 
 public extension ValueMatcher where T: Expression {
-
+    /// Returns a type-erased version of this value matcher to match against any
+    /// expression, performing a type cast back to the specialized subtype during
+    /// matching.
     @inlinable
     func anyExpression() -> ValueMatcher<Expression> {
         ValueMatcher<Expression>().match { (value) -> Bool in
             if let value = value as? T {
                 return self(matches: value)
             }
-            
+
             return false
         }
     }
-    
 }
 
 public extension ValueMatcher where T: Expression {
-
+    /// Matches against a `ConstantExpression` of `Constant.nil`.
     @inlinable
     static var `nil`: ValueMatcher<Expression> {
         ValueMatcher<Expression>().match { exp in
             guard let constant = exp as? ConstantExpression else {
                 return false
             }
-            
+
             return constant.constant == .nil
         }
     }
 
+    /// Matches against `<value> != nil`, `nil != <value>`, or `<value>`.
     @inlinable
     static func nilCheck(against value: Expression) -> ValueMatcher<Expression> {
         ValueMatcher<Expression>().match { exp in
@@ -281,11 +315,12 @@ public extension ValueMatcher where T: Expression {
             if exp == value {
                 return true
             }
-            
+
             return false
         }
     }
 
+    /// Matches against `<value> == nil`, `nil == <value>`, or `!<value>`.
     @inlinable
     static func nilCompare(against value: Expression) -> ValueMatcher<Expression> {
         ValueMatcher<Expression>().match { exp in
@@ -301,58 +336,60 @@ public extension ValueMatcher where T: Expression {
             if exp.asMatchable() == .unary(op: SwiftOperator.negate, value) {
                 return true
             }
-            
+
             return false
         }
     }
 
+    /// Returns a value matcher that matches against the first sub-expression
+    /// that matches a given matcher.
     @inlinable
     static func findAny(thatMatches matcher: ValueMatcher) -> ValueMatcher {
         ValueMatcher().match { exp in
-            
+
             let sequence = SyntaxNodeSequence(node: exp, inspectBlocks: false)
-            
+
             for e in sequence.compactMap({ $0 as? T }) {
                 if matcher(matches: e) {
                     return true
                 }
             }
-            
+
             return false
         }
     }
-    
 }
 
 public extension ValueMatcher where T == Expression {
 
+    /// Matches against `<op> <lhs>`, with a type-erased `UnaryExpression` matcher.
     @inlinable
     static func unary<O, E>(op: O, _ exp: E) -> ValueMatcher<Expression>
         where O: ValueMatcherConvertible, E: ValueMatcherConvertible,
         O.Target == SwiftOperator, E.Target == Expression {
-        
+
         ValueMatcher<UnaryExpression>()
                 .keyPath(\.op, op.asMatcher())
                 .keyPath(\.exp, exp.asMatcher())
                 .anyExpression()
     }
 
+    /// Matches against `<lhs> <op> <rhs>`, with a type-erased `BinaryExpression`
+    /// matcher.
     @inlinable
     static func binary<O, E>(lhs: E, op: O, rhs: E) -> ValueMatcher<Expression>
         where O: ValueMatcherConvertible, E: ValueMatcherConvertible,
         O.Target == SwiftOperator, E.Target == Expression {
-        
+
         ValueMatcher<BinaryExpression>()
                 .keyPath(\.lhs, lhs.asMatcher())
                 .keyPath(\.op, op.asMatcher())
                 .keyPath(\.rhs, rhs.asMatcher())
                 .anyExpression()
     }
-    
 }
 
 public extension Expression {
-    
     func asMatchable() -> ExpressionMatchable {
         ExpressionMatchable(exp: self)
     }
@@ -361,31 +398,20 @@ public extension Expression {
     static func matcher<T: Expression>(_ matcher: SyntaxMatcher<T>) -> SyntaxMatcher<T> {
         matcher
     }
-    
 }
 
 public struct ExpressionMatchable {
     public var exp: Expression
-    
+
     @inlinable
     public static func == (lhs: ExpressionMatchable, rhs: ValueMatcher<Expression>) -> Bool {
         rhs(matches: lhs.exp)
     }
 }
 
-extension Expression: Matchable {
-    
-}
-
-extension Expression: ValueMatcherConvertible {
-    
-}
-extension SwiftOperator: ValueMatcherConvertible {
-    
-}
-extension SwiftType: ValueMatcherConvertible {
-    
-}
-extension String: ValueMatcherConvertible {
-    
-}
+extension Expression: Matchable { }
+extension Expression: ValueMatcherConvertible { }
+extension SwiftOperator: ValueMatcherConvertible { }
+extension SwiftType: ValueMatcherConvertible { }
+extension String: ValueMatcherConvertible { }
+extension Optional: ValueMatcherConvertible where Wrapped == [MemberPostfix.ArgumentName] { }

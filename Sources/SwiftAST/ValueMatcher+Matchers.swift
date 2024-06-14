@@ -1,5 +1,3 @@
-
-
 @inlinable
 public func not<T>(_ rule: ValueMatcher<T>) -> ValueMatcher<T> {
     ValueMatcher().match(closure: { !rule(matches: $0) })
@@ -45,7 +43,6 @@ public extension ValueMatcher where T: Equatable {
     static func equals(to value: T) -> ValueMatcher<T> {
         ValueMatcher().match(if: SwiftAST.equals(value))
     }
-    
 }
 
 public extension ValueMatcher where T: Collection {
@@ -53,7 +50,6 @@ public extension ValueMatcher where T: Collection {
     func hasCount(_ count: MatchRule<Int>) -> ValueMatcher<T> {
         keyPath(\.count, count)
     }
-    
 }
 
 public extension ValueMatcher where T: Collection {
@@ -63,11 +59,10 @@ public extension ValueMatcher where T: Collection {
             guard index < value.endIndex else {
                 return false
             }
-            
+
             return matcher(matches: value[index])
         }
     }
-    
 }
 
 public extension ValueMatcher where T: Collection, T.Element: Equatable {
@@ -75,18 +70,17 @@ public extension ValueMatcher where T: Collection, T.Element: Equatable {
     func atIndex(_ index: T.Index, equals value: T.Element) -> ValueMatcher<T> {
         atIndex(index, rule: .equals(value))
     }
-    
+
     @inlinable
     func atIndex(_ index: T.Index, rule: MatchRule<T.Element>) -> ValueMatcher<T> {
         match { value in
             guard index < value.endIndex else {
                 return false
             }
-            
+
             return rule.evaluate(value[index])
         }
     }
-    
 }
 
 public extension ValueMatcher {
@@ -113,7 +107,7 @@ public extension ValueMatcher {
     static func == (lhs: Bool, rhs: ValueMatcher) -> ValueMatcher {
         lhs ? rhs : !rhs
     }
-    
+
     @inlinable
     static func == (lhs: ValueMatcher, rhs: Bool) -> ValueMatcher {
         rhs ? lhs : !lhs

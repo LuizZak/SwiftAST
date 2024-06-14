@@ -433,6 +433,34 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
     }
 
+    func testExpression_postfix_member_argumentNames() {
+        let exp: Expression =
+            .identifier("a").dot("b", argumentNames: ["c", "_"])
+
+        let graph = ControlFlowGraph.forExpression(exp)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="a"]
+                    n3 [label="a.b(c:_:)"]
+                    n4 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                }
+                """
+        )
+        XCTAssert(graph.entry.node === exp)
+        XCTAssert(graph.exit.node === exp)
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
+    }
+
     func testExpression_postfix_call_noArguments() {
         let exp: Expression =
             .identifier("a").call()

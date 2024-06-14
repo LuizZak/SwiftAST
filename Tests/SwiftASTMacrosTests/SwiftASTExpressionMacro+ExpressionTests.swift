@@ -191,7 +191,10 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
                 exp: PostfixExpression(
                 exp: PostfixExpression(
                 exp: IdentifierExpression(identifier: "a"),
-                op: MemberPostfix(name: "b").withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
+                op: MemberPostfix(
+                    name: "b",
+                    argumentNames: nil
+                ).withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
                 ),
                 op: FunctionCallPostfix(
                     arguments: []
@@ -204,7 +207,26 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
                         )]
                 ).withOptionalAccess(kind: Postfix.OptionalAccessKind.safeUnwrap)
                 ),
-                op: MemberPostfix(name: "d").withOptionalAccess(kind: Postfix.OptionalAccessKind.safeUnwrap)
+                op: MemberPostfix(
+                    name: "d",
+                    argumentNames: nil
+                ).withOptionalAccess(kind: Postfix.OptionalAccessKind.safeUnwrap)
+            )
+            """#,
+            macros: testMacros)
+    }
+
+    func testMacro_expression_postfix_member_argumentNames() {
+        assertMacroExpansion("""
+            #ast_expandExpression(a.b(c:_:))
+            """,
+            expandedSource: #"""
+            PostfixExpression(
+                exp: IdentifierExpression(identifier: "a"),
+                op: MemberPostfix(
+                    name: "b",
+                    argumentNames: [MemberPostfix.ArgumentName(identifier: "c"), MemberPostfix.ArgumentName(identifier: "_")]
+                ).withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
             )
             """#,
             macros: testMacros)
@@ -306,7 +328,10 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             BinaryExpression(
                 lhs: PostfixExpression(
                 exp: IdentifierExpression(identifier: "a"),
-                op: MemberPostfix(name: "count").withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
+                op: MemberPostfix(
+                    name: "count",
+                    argumentNames: nil
+                ).withOptionalAccess(kind: Postfix.OptionalAccessKind.none)
                 ),
                 op: SwiftOperator.add,
                 rhs: IdentifierExpression(identifier: "b")
@@ -418,21 +443,6 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
                     message: "PostfixExpression does not currently support implicit base postfix member accesses.",
                     line: 1,
                     column: 23
-                )
-            ])
-    }
-
-    func testMacro_diagnostic_postfix_member_argumentNames() {
-        assertDiagnostics("""
-            #ast_expandExpression(a.b(_:))
-            """,
-            expandedSource: #"""
-            UnknownExpression(context: UnknownASTContext("a.b(_:)"))
-            """#, [
-                DiagnosticSpec(
-                    message: "PostfixExpression does not currently support member function references.",
-                    line: 1,
-                    column: 26
                 )
             ])
     }

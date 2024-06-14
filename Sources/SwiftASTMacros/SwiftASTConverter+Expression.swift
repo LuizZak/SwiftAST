@@ -281,11 +281,14 @@ extension SwiftASTConverter {
 
         let baseExprInfo = try managePostfixBase(base)
         let optionalAccess = baseExprInfo.optionalAccess
+        var argumentNames: ExprSyntax = "nil"
 
-        if let argumentNames = expr.declName.argumentNames {
-            throw argumentNames.ext_error(message: """
-            PostfixExpression does not currently support member function references.
-            """)
+        if let argNames = expr.declName.argumentNames {
+            var names: [ExprSyntax] = []
+            for name in argNames.arguments {
+                names.append("MemberPostfix.ArgumentName(identifier: \(stringLiteral(name.name)))")
+            }
+            argumentNames = ExprSyntax(ArrayExprSyntax(expressions: names))
         }
 
         let memberName = expr.declName.baseName
@@ -293,7 +296,10 @@ extension SwiftASTConverter {
         return """
         PostfixExpression(
             exp: \(baseExprInfo.base),
-            op: MemberPostfix(name: \(stringLiteral(memberName))).withOptionalAccess(kind: \(optionalAccess.asSwiftASTExpr))
+            op: MemberPostfix(
+                name: \(stringLiteral(memberName)),
+                argumentNames: \(argumentNames)
+            ).withOptionalAccess(kind: \(optionalAccess.asSwiftASTExpr))
         )
         """
     }
