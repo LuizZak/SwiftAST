@@ -1,5 +1,5 @@
 /// Conditional clause of of a conditional statement.
-public final class ConditionalClauses: SyntaxNode, Codable {
+public final class ConditionalClauses: SyntaxNode, Equatable, Codable {
     /// The set of clauses for this conditional clause.
     ///
     /// A valid conditional clause always has at least one clause element, and
@@ -76,6 +76,10 @@ public final class ConditionalClauses: SyntaxNode, Codable {
         try container.encode(self.clauses, forKey: CodingKeys.clauses)
     }
 
+    public static func == (lhs: ConditionalClauses, rhs: ConditionalClauses) -> Bool {
+        lhs.isEqual(to: rhs)
+    }
+
     private enum CodingKeys: CodingKey {
         case clauses
     }
@@ -88,7 +92,7 @@ extension ConditionalClauses: ExpressibleByArrayLiteral {
 }
 
 /// Conditional clause element for a conditional clause of a conditional statement.
-public class ConditionalClauseElement: SyntaxNode, Codable {
+public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
     /// An optional pattern that the expression is bound to.
     public var pattern: Pattern? {
         didSet { oldValue?.setParent(nil); pattern?.setParent(self) }
@@ -152,6 +156,10 @@ public class ConditionalClauseElement: SyntaxNode, Codable {
 
     public func isEqual(to other: ConditionalClauseElement) -> Bool {
         self.pattern == other.pattern && self.expression.isEqual(to: other.expression)
+    }
+
+    public static func == (lhs: ConditionalClauseElement, rhs: ConditionalClauseElement) -> Bool {
+        lhs.isEqual(to: rhs)
     }
 
     private enum CodingKeys: CodingKey {
