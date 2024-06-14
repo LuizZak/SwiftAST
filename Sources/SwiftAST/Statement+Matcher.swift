@@ -20,7 +20,7 @@ public extension ValueMatcher where T: Statement {
 
 @inlinable
 public func hasElse() -> SyntaxMatcher<IfStatement> {
-    SyntaxMatcher().keyPath(\.elseBody, .equals(.none))
+    SyntaxMatcher().keyPath(\.elseBody, .negated(.equals(.none)))
 }
 
 extension Statement: Matchable {
