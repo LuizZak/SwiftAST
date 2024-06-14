@@ -29,6 +29,10 @@ public final class ConditionalClauses: SyntaxNode, Equatable, Codable {
         )
 
         self.clauses = clauses
+
+        super.init()
+
+        self.clauses.forEach { $0.parent = self }
     }
 
     /// Convenience initializer for generating conditional clauses with a single
@@ -39,13 +43,13 @@ public final class ConditionalClauses: SyntaxNode, Equatable, Codable {
         ])
     }
 
-    public required init(from decoder: any Decoder) throws {
+    public required convenience init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.clauses = try container.decode(
+        self.init(clauses: try container.decode(
             [ConditionalClauseElement].self,
             forKey: CodingKeys.clauses
-        )
+        ))
     }
 
     @inlinable
@@ -133,13 +137,18 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
         self.expression = expression
 
         super.init()
+
+        self.pattern?.setParent(self)
+        self.expression.parent = self
     }
 
-    public required init(from decoder: any Decoder) throws {
+    public required convenience init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.pattern = try container.decodeIfPresent(Pattern.self, forKey: .pattern)
-        self.expression = try container.decodeExpression(forKey: .expression)
+        self.init(
+            pattern: try container.decodeIfPresent(Pattern.self, forKey: .pattern),
+            expression: try container.decodeExpression(forKey: .expression)
+        )
     }
 
     public override func copy() -> ConditionalClauseElement {
