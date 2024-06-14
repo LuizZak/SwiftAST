@@ -219,7 +219,7 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     ///
     /// - Parameter stmt: A GuardStatement to visit
     open func visitGuard(_ stmt: GuardStatement) {
-        visitExpression(stmt.exp)
+        visitConditionalClauses(stmt.conditionalClauses)
         visitStatement(stmt.elseBody)
     }
 
@@ -227,7 +227,7 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     ///
     /// - Parameter stmt: An IfStatement to visit
     open func visitIf(_ stmt: IfStatement) {
-        visitExpression(stmt.exp)
+        visitConditionalClauses(stmt.conditionalClauses)
         visitStatement(stmt.body)
         stmt.elseBody.map(visitElseBody)
     }
@@ -284,7 +284,7 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     ///
     /// - Parameter stmt: A WhileStatement to visit
     open func visitWhile(_ stmt: WhileStatement) {
-        visitExpression(stmt.exp)
+        visitConditionalClauses(stmt.conditionalClauses)
         visitStatement(stmt.body)
     }
 

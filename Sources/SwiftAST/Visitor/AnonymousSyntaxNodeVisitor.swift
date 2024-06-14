@@ -322,7 +322,7 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
     public func visitWhile(_ stmt: WhileStatement) {
         listener(stmt)
 
-        visitExpression(stmt.exp)
+        visitConditionalClauses(stmt.conditionalClauses)
         visitStatement(stmt.body)
     }
 

@@ -7,6 +7,9 @@ public class GuardStatement: Statement, StatementKindType {
     public var conditionalClauses: ConditionalClauses {
         didSet { oldValue.parent = nil; conditionalClauses.parent = self }
     }
+    public var elseBody: CompoundStatement {
+        didSet { oldValue.parent = nil; elseBody.parent = self }
+    }
 
     /// Convenience for `conditionalClauses.clauses[0]`.
     internal var firstClause: ConditionalClauseElement {
@@ -17,12 +20,10 @@ public class GuardStatement: Statement, StatementKindType {
     /// Gets the first conditional clause expression in this guard statement.
     ///
     /// Convenience for `conditionalClauses.clauses[0].expression`.
+    @available(*, deprecated, message: "Use conditionalClauses instead")
     public var exp: Expression {
         get { firstClause.expression }
         set { firstClause.expression = newValue }
-    }
-    public var elseBody: CompoundStatement {
-        didSet { oldValue.parent = nil; elseBody.parent = self }
     }
 
     /// If non-nil, the expression of this guard statement must be resolved to a
@@ -31,12 +32,14 @@ public class GuardStatement: Statement, StatementKindType {
     /// This is used to create guard-let statements.
     ///
     /// Convenience for `conditionalClauses.clauses[0].pattern`.
+    @available(*, deprecated, message: "Use conditionalClauses instead")
     public var pattern: Pattern? {
         get { firstClause.pattern }
         set { firstClause.pattern = newValue }
     }
 
     /// Returns whether this `GuardExpression` represents a guard-let statement.
+    @available(*, deprecated, renamed: "conditionalClauses.hasBindings", message: "Use conditionalClauses.hasBindings instead")
     public var isGuardLet: Bool {
         pattern != nil
     }
@@ -90,8 +93,6 @@ public class GuardStatement: Statement, StatementKindType {
                 elseBody: elseBody.copy()
             )
             .copyMetadata(from: self)
-
-        copy.pattern = pattern?.copy()
 
         return copy
     }

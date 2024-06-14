@@ -13,6 +13,15 @@ public final class ConditionalClauses: SyntaxNode, Equatable, Codable {
         clauses
     }
 
+    /// Returns `true` if any of the contained clauses within this conditional
+    /// clause list contain a `Pattern.valueBindingPatterns` pattern.
+    ///
+    /// If no conditional clause contains any patterns, `false` is returned,
+    /// instead.
+    public var hasBindings: Bool {
+        clauses.contains(where: \.hasBindings)
+    }
+
     public init(clauses: [ConditionalClauseElement]) {
         assert(
             !clauses.isEmpty,
@@ -109,6 +118,14 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
         } else {
             return [expression]
         }
+    }
+
+    /// Returns `true` if the pattern associated with this conditional clause
+    /// contains `Pattern.valueBindingPatterns`.
+    ///
+    /// If this conditional clause contains no pattern, `false` is returned, instead.
+    public var hasBindings: Bool {
+        pattern?.hasBindings ?? false
     }
 
     public init(pattern: Pattern? = nil, expression: Expression) {

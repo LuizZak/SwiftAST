@@ -7,6 +7,12 @@ public class IfStatement: Statement, StatementKindType {
     public var conditionalClauses: ConditionalClauses {
         didSet { oldValue.parent = nil; conditionalClauses.parent = self }
     }
+    public var body: CompoundStatement {
+        didSet { oldValue.parent = nil; body.parent = self }
+    }
+    public var elseBody: ElseBody? {
+        didSet { oldValue?.setParent(nil); elseBody?.setParent(self) }
+    }
 
     /// Convenience for `conditionalClauses.clauses[0]`.
     internal var firstClause: ConditionalClauseElement {
@@ -17,15 +23,10 @@ public class IfStatement: Statement, StatementKindType {
     /// Gets the first conditional clause expression in this if statement.
     ///
     /// Convenience for `conditionalClauses.clauses[0].expression`.
+    @available(*, deprecated, message: "Use conditionalClauses instead")
     public var exp: Expression {
         get { firstClause.expression }
         set { firstClause.expression = newValue }
-    }
-    public var body: CompoundStatement {
-        didSet { oldValue.parent = nil; body.parent = self }
-    }
-    public var elseBody: ElseBody? {
-        didSet { oldValue?.setParent(nil); elseBody?.setParent(self) }
     }
 
     /// If non-nil, the expression of this if statement must be resolved to a
@@ -34,14 +35,16 @@ public class IfStatement: Statement, StatementKindType {
     /// This is used to create if-let statements.
     ///
     /// Convenience for `conditionalClauses.clauses[0].pattern`.
+    @available(*, deprecated, message: "Use conditionalClauses instead")
     public var pattern: Pattern? {
         get { firstClause.pattern }
         set { firstClause.pattern = newValue }
     }
 
     /// Returns whether this `IfExpression` represents an if-let statement.
+    @available(*, deprecated, renamed: "conditionalClauses.hasBindings", message: "Use conditionalClauses.hasBindings instead")
     public var isIfLet: Bool {
-        pattern != nil
+        conditionalClauses.clauses.contains(where: \.hasBindings)
     }
 
     public override var children: [SyntaxNode] {
@@ -127,10 +130,9 @@ public class IfStatement: Statement, StatementKindType {
 
         try super.init(from: container.superDecoder())
 
-        exp.parent = self
+        conditionalClauses.parent = self
         body.parent = self
         elseBody?.setParent(self)
-        pattern?.setParent(self)
     }
 
     @inlinable
@@ -142,8 +144,6 @@ public class IfStatement: Statement, StatementKindType {
                 elseBody: elseBody?.copy()
             )
             .copyMetadata(from: self)
-
-        copy.pattern = pattern?.copy()
 
         return copy
     }

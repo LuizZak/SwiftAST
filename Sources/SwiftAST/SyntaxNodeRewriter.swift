@@ -293,7 +293,7 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
     /// - Parameter stmt: A GuardStatement to visit
     /// - Returns: Result of visiting the `guard` statement node
     open func visitGuard(_ stmt: GuardStatement) -> Statement {
-        stmt.exp = visitExpression(stmt.exp)
+        stmt.conditionalClauses = visitConditionalClauses(stmt.conditionalClauses)
         stmt.elseBody = _visitCompound(stmt.elseBody)
 
         return stmt
@@ -334,7 +334,7 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
     /// - Parameter stmt: A `WhileStatement` to visit
     /// - Returns: Result of visiting the `while` statement node
     open func visitWhile(_ stmt: WhileStatement) -> Statement {
-        stmt.exp = visitExpression(stmt.exp)
+        stmt.conditionalClauses = visitConditionalClauses(stmt.conditionalClauses)
         stmt.body = _visitCompound(stmt.body)
 
         return stmt

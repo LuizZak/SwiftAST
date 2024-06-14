@@ -7,6 +7,12 @@ public class WhileStatement: Statement, StatementKindType {
     public var conditionalClauses: ConditionalClauses {
         didSet { oldValue.parent = nil; conditionalClauses.parent = self }
     }
+    public var body: CompoundStatement {
+        didSet {
+            oldValue.parent = nil
+            body.parent = self
+        }
+    }
 
     /// Convenience for `conditionalClauses.clauses[0]`.
     internal var firstClause: ConditionalClauseElement {
@@ -17,15 +23,10 @@ public class WhileStatement: Statement, StatementKindType {
     /// Gets the first conditional clause expression in this while statement.
     ///
     /// Convenience for `conditionalClauses.clauses[0].expression`.
+    @available(*, deprecated, message: "Use conditionalClauses instead")
     public var exp: Expression {
         get { firstClause.expression }
         set { firstClause.expression = newValue }
-    }
-    public var body: CompoundStatement {
-        didSet {
-            oldValue.parent = nil
-            body.parent = self
-        }
     }
 
     public override var children: [SyntaxNode] {

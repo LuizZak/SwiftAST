@@ -33,6 +33,23 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
         }
     }
 
+    /// Returns `true` if `self` of one of its sub patterns is a `Pattern.valueBindingPattern`.
+    public var hasBindings: Bool {
+        switch self {
+        case .valueBindingPattern:
+            return true
+
+        case .tuple(let patterns):
+            return patterns.contains(where: \.hasBindings)
+
+        case .asType(let pattern, _):
+            return pattern.hasBindings
+
+        case .expression, .identifier, .wildcard:
+            return false
+        }
+    }
+
     /// Returns a list of sub-expressions contained within this pattern.
     public var subExpressions: [Expression] {
         switch self {

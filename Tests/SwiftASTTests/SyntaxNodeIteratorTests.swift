@@ -273,13 +273,13 @@ class SyntaxNodeIteratorTests: XCTestCase {
         assertStatement(
             stmt,
             iteratesAs: [
-                Statement.ifLet(.expression(.identifier("a")), .constant(true), body: [.do([.break()])], else: [.do([.continue()])]),
+                stmt,
                 [
-                    .init(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                    .init(pattern: .valueBindingPattern(constant: true, .expression(.identifier("a"))), expression: .constant(true)),
                 ] as ConditionalClauses,
                 Statement.compound([.do([.break()])]),
                 Statement.compound([.do([.continue()])]),
-                ConditionalClauseElement(pattern: .expression(.identifier("a")), expression: .constant(true)),
+                ConditionalClauseElement(pattern: .valueBindingPattern(constant: true, .expression(.identifier("a"))), expression: .constant(true)),
                 Statement.do([.break()]),
                 Statement.do([.continue()]),
                 Expression.identifier("a"),
