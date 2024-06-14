@@ -209,8 +209,8 @@ public extension Statement {
     }
 
     /// Creates a `IfStatement` instance for an if-let binding using the given
-    /// pattern and condition expression and compound statement as its body,
-    /// optionally specifying an else block.
+    /// pattern wrapped in a valueBindingPattern, condition expression, and
+    /// compound statement as its body, optionally specifying an else block.
     static func ifLet(
         _ pattern: Pattern,
         _ exp: Expression,
@@ -218,7 +218,12 @@ public extension Statement {
         else elseBody: CompoundStatement? = nil
     ) -> IfStatement {
 
-        IfStatement(exp: exp, body: body, else: elseBody, pattern: pattern)
+        IfStatement(
+            exp: exp,
+            body: body,
+            else: elseBody,
+            pattern: .valueBindingPattern(constant: true, pattern)
+        )
     }
 
     /// Creates a `IfStatement` instance using the given conditional clauses
