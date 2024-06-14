@@ -529,57 +529,6 @@ extension SwiftASTConverter {
     }
 }
 
-// MARK: Pattern conversion
-
-extension SwiftASTConverter {
-    static func convertPattern(_ pattern: PatternSyntax) throws -> ExprSyntax {
-        if let value = pattern.as(ExpressionPatternSyntax.self) {
-            return try convertPattern(value)
-        }
-        if let value = pattern.as(IdentifierPatternSyntax.self) {
-            return try convertPattern(value)
-        }
-        if let value = pattern.as(TuplePatternSyntax.self) {
-            return try convertPattern(value)
-        }
-        if let value = pattern.as(WildcardPatternSyntax.self) {
-            return try convertPattern(value)
-        }
-
-        throw pattern.ext_error(message: "Unsupported pattern kind \(pattern.kind)")
-    }
-
-    static func convertPattern(_ pattern: ExpressionPatternSyntax) throws -> ExprSyntax {
-        return """
-        Pattern.expression(\(try convertExpression(pattern.expression)))
-        """
-    }
-
-    static func convertPattern(_ pattern: IdentifierPatternSyntax) throws -> ExprSyntax {
-        return "Pattern.identifier(\(stringLiteral(pattern.identifier)))"
-    }
-
-    static func convertPattern(_ pattern: TuplePatternSyntax) throws -> ExprSyntax {
-        var elements: [ExprSyntax] = []
-
-        for element in pattern.elements {
-            if element.label != nil {
-                throw element.ext_error(message: "Tuple patterns don't support labels")
-            }
-
-            elements.append(try convertPattern(element.pattern))
-        }
-
-        return """
-        Pattern.tuple(\(ArrayExprSyntax(expressions: elements)))
-        """
-    }
-
-    static func convertPattern(_ pattern: WildcardPatternSyntax) throws -> ExprSyntax {
-        return "Pattern.wildcard"
-    }
-}
-
 // MARK: - SwiftOperator conversion
 
 extension SwiftASTConverter {

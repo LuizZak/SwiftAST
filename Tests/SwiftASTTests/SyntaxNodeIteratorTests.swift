@@ -966,6 +966,38 @@ class SyntaxNodeIteratorTests: XCTestCase {
         )
     }
 
+    func testPattern() {
+        let stmt: IfStatement = .if(
+            clauses: [
+                .init(
+                    pattern: .tuple([
+                        .valueBindingPattern(constant: true, .identifier("a")),
+                        .asType(
+                            .tuple([
+                                .valueBindingPattern(constant: false, .identifier("b")),
+                                .expression(.constant(true)),
+                            ]),
+                            .int
+                        ),
+                    ]),
+                    expression: .identifier("d")
+                ),
+            ],
+            body: []
+        )
+        assertStatement(
+            stmt,
+            iteratesAs: [
+                stmt,
+                stmt.conditionalClauses,
+                Statement.compound([]),
+                stmt.conditionalClauses.clauses[0],
+                Expression.constant(true),
+                Expression.identifier("d"),
+            ]
+        )
+    }
+
     /// When visiting expressions within blocks, enqueue them such that they happen
     /// only after expressions within the depth the block where visited.
     /// This allows the search to occur in a more controller breadth-first manner.

@@ -57,6 +57,7 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         switch exp.value {
         case .expression(let innerExp):
             exp.value = .expression(visitExpression(innerExp))
+
         case .type: break
         }
 
@@ -235,6 +236,12 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         case .tuple(let patterns):
             return .tuple(patterns.map(visitPattern))
 
+        case .asType(let pattern, let type):
+            return .asType(visitPattern(pattern), type)
+
+        case .valueBindingPattern(let constant, let pattern):
+            return .valueBindingPattern(constant: constant, visitPattern(pattern))
+
         case .identifier, .wildcard:
             return ptn
         }
@@ -311,6 +318,7 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         switch stmt {
         case .else(let stmt):
             return .else(_visitCompound(stmt))
+
         case .elseIf(let elseIf):
             let result = visitIf(elseIf)
             if let elseIf = result as? IfStatement {

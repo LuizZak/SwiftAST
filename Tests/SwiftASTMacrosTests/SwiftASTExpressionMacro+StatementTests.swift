@@ -550,6 +550,36 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             macros: testMacros)
     }
 
+    func testMacro_pattern_valueBindingPattern() {
+        assertMacroExpansion("""
+            #ast_expandExpression({
+                switch a {
+                case let b: break
+                default: break
+                }
+            })
+            """,
+            expandedSource: #"""
+            BlockLiteralExpression(
+                parameters: [],
+                returnType: SwiftType.void,
+                body: CompoundStatement(statements: [SwitchStatement(
+                exp: IdentifierExpression(identifier: "a"),
+                cases: [SwitchCase(
+                casePatterns: [SwitchCase.CasePattern(
+                pattern: Pattern.valueBindingPattern(constant: true, Pattern.identifier("b"))
+                                        )],
+                body: CompoundStatement(statements: [BreakStatement(targetLabel: nil)])
+                                )],
+                defaultCase: SwitchDefaultCase(
+                    statements: [BreakStatement(targetLabel: nil)]
+                )
+                        )])
+            )
+            """#,
+            macros: testMacros)
+    }
+
     // MARK: Diagnostics tests
 
     func testMacro_diagnostic_unsupportedDecl() {
@@ -1018,6 +1048,70 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
                     message: "VariableDeclarationsStatement does not support non-identifier bindings.",
                     line: 2,
                     column: 9
+                )
+            ])
+    }
+
+    // Currently emitting incorrect diagnostics due to the way SwiftSyntax parses
+    // the pattern binding, for now just ignore this diagnostics test
+    func x_testMacro_diagnostic_pattern_unsupported_enumCasePattern() {
+        assertDiagnostics("""
+            #ast_expandExpression({
+                switch a {
+                case .b(let b): break
+                default: break
+                }
+            })
+            """,
+            expandedSource: #"""
+            UnknownExpression(context: UnknownASTContext("{\n    switch a {\n    case .b(let b): break\n    default: break\n    }\n}"))
+            """#, [
+                DiagnosticSpec(
+                    message: "Unsupported pattern kind EnumCasePattern",
+                    line: 3,
+                    column: 10
+                )
+            ])
+    }
+
+    // Currently emitting incorrect diagnostics due to the way SwiftSyntax parses
+    // the pattern binding, for now just ignore this diagnostics test
+    func x_testMacro_diagnostic_pattern_unsupported_optionalPattern() {
+        assertDiagnostics("""
+            #ast_expandExpression({
+                switch a {
+                case let b?: break
+                default: break
+                }
+            })
+            """,
+            expandedSource: #"""
+            UnknownExpression(context: UnknownASTContext("{\n    switch a {\n    case let b?: break\n    default: break\n    }\n}"))
+            """#, [
+                DiagnosticSpec(
+                    message: "Unsupported pattern kind optionalPattern",
+                    line: 3,
+                    column: 10
+                )
+            ])
+    }
+
+    func testMacro_diagnostic_pattern_unsupported_typeCastingIsPattern() {
+        assertDiagnostics("""
+            #ast_expandExpression({
+                switch a {
+                case is Int: break
+                default: break
+                }
+            })
+            """,
+            expandedSource: #"""
+            UnknownExpression(context: UnknownASTContext("{\n    switch a {\n    case is Int: break\n    default: break\n    }\n}"))
+            """#, [
+                DiagnosticSpec(
+                    message: "Unsupported pattern kind isTypePattern",
+                    line: 3,
+                    column: 10
                 )
             ])
     }

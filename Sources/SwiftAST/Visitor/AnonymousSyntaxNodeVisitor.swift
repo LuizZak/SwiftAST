@@ -205,16 +205,7 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
     ///
     /// - Parameter ptn: A Pattern to visit
     public func visitPattern(_ ptn: Pattern) {
-        switch ptn {
-        case .expression(let exp):
-            visitExpression(exp)
-
-        case .tuple(let patterns):
-            patterns.forEach(visitPattern)
-
-        case .identifier, .wildcard:
-            break
-        }
+        ptn.subExpressions.forEach(visitExpression)
     }
 
     /// Visits a statement node

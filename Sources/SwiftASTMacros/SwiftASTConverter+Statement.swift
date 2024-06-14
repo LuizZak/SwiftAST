@@ -401,6 +401,79 @@ extension SwiftASTConverter {
     }
 }
 
+// MARK: Pattern conversion
+
+extension SwiftASTConverter {
+    static func convertPattern(_ pattern: PatternSyntax) throws -> ExprSyntax {
+        if let value = pattern.as(ExpressionPatternSyntax.self) {
+            return try convertPattern(value)
+        }
+        if let value = pattern.as(IdentifierPatternSyntax.self) {
+            return try convertPattern(value)
+        }
+        if let value = pattern.as(TuplePatternSyntax.self) {
+            return try convertPattern(value)
+        }
+        if let value = pattern.as(WildcardPatternSyntax.self) {
+            return try convertPattern(value)
+        }
+        if let value = pattern.as(ValueBindingPatternSyntax.self) {
+            return try convertPattern(value)
+        }
+
+        throw pattern.ext_error(message: "Unsupported pattern kind \(pattern.kind)")
+    }
+
+    static func convertPattern(_ pattern: ExpressionPatternSyntax) throws -> ExprSyntax {
+        return """
+        Pattern.expression(\(try convertExpression(pattern.expression)))
+        """
+    }
+
+    static func convertPattern(_ pattern: IdentifierPatternSyntax) throws -> ExprSyntax {
+        return "Pattern.identifier(\(stringLiteral(pattern.identifier)))"
+    }
+
+    static func convertPattern(_ pattern: TuplePatternSyntax) throws -> ExprSyntax {
+        var elements: [ExprSyntax] = []
+
+        for element in pattern.elements {
+            if element.label != nil {
+                throw element.ext_error(message: "Tuple patterns don't support labels")
+            }
+
+            elements.append(try convertPattern(element.pattern))
+        }
+
+        return """
+        Pattern.tuple(\(ArrayExprSyntax(expressions: elements)))
+        """
+    }
+
+    static func convertPattern(_ pattern: ValueBindingPatternSyntax) throws -> ExprSyntax {
+        switch pattern.bindingSpecifier.tokenKind {
+        case .keyword(.var):
+            return """
+            Pattern.valueBindingPattern(constant: false, \(try convertPattern(pattern.pattern)))
+            """
+
+        case .keyword(.let):
+            return """
+            Pattern.valueBindingPattern(constant: true, \(try convertPattern(pattern.pattern)))
+            """
+
+        default:
+            throw pattern.bindingSpecifier.ext_error(message: """
+            Unrecognized binding specifier in pattern
+            """)
+        }
+    }
+
+    static func convertPattern(_ pattern: WildcardPatternSyntax) throws -> ExprSyntax {
+        return "Pattern.wildcard"
+    }
+}
+
 // MARK: - Do statement helpers
 
 extension SwiftASTConverter {
