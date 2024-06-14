@@ -362,8 +362,8 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n5 -> n6
                     n6 -> n7
                     n15 -> n7 [color="#aa3333", penwidth=0.5]
-                    n7 -> n8
-                    n7 -> n9
+                    n7 -> n8 [label="next"]
+                    n7 -> n9 [label="end"]
                     n8 -> n10
                     n9 -> n11
                     n10 -> n12

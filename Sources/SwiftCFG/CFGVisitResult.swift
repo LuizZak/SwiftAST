@@ -1,5 +1,15 @@
 import SwiftAST
 
+/// The result of a ControlFlowGraph's visit of a syntax node. Contains a graph
+/// and unresolved jumps that can be realized into edges of the same, or another
+/// graph.
+///
+/// The graph always has an entry and exit nodes, and is usually (but not
+/// necessarily always) laid out in sequential order like so:
+///
+/// ```
+/// entry -> <nodes> -> exit
+/// ```
 public struct CFGVisitResult {
     public var graph: ControlFlowGraph
     public var unresolvedJumps: [UnresolvedJump]

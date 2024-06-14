@@ -322,6 +322,29 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
                 body: CompoundStatement(statements: [ForStatement(
                 pattern: Pattern.identifier("a"),
                 exp: IdentifierExpression(identifier: "b"),
+                whereClause: nil,
+                body: CompoundStatement(statements: [])
+                        )])
+            )
+            """#,
+            macros: testMacros)
+    }
+
+    func testMacro_for_whereClause() {
+        assertMacroExpansion("""
+            #ast_expandExpression({
+                for a in b where c {
+                }
+            })
+            """,
+            expandedSource: #"""
+            BlockLiteralExpression(
+                parameters: [],
+                returnType: SwiftType.void,
+                body: CompoundStatement(statements: [ForStatement(
+                pattern: Pattern.identifier("a"),
+                exp: IdentifierExpression(identifier: "b"),
+                whereClause: IdentifierExpression(identifier: "c"),
                 body: CompoundStatement(statements: [])
                         )])
             )
@@ -673,7 +696,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_switchStatement_interleavedIfConfig() {
+    func testMacro_diagnostic_switch_interleavedIfConfig() {
         assertDiagnostics("""
             #ast_expandExpression({
                 switch a {
@@ -694,7 +717,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_switchStatement_twoDefaultCases() {
+    func testMacro_diagnostic_switch_twoDefaultCases() {
         assertDiagnostics("""
             #ast_expandExpression({
                 switch a {
@@ -714,7 +737,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_forStatement_casePattern() {
+    func testMacro_diagnostic_for_casePattern() {
         assertDiagnostics("""
             #ast_expandExpression({
                 for case a in b {
@@ -732,7 +755,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_forStatement_try() {
+    func testMacro_diagnostic_for_try() {
         assertDiagnostics("""
             #ast_expandExpression({
                 for try a in b {
@@ -750,7 +773,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_forStatement_await() {
+    func testMacro_diagnostic_for_await() {
         assertDiagnostics("""
             #ast_expandExpression({
                 for await a in b {
@@ -768,25 +791,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_forStatementWhereClause() {
-        assertDiagnostics("""
-            #ast_expandExpression({
-                for a in b where c {
-                }
-            })
-            """,
-            expandedSource: #"""
-            UnknownExpression(context: UnknownASTContext("{\n    for a in b where c {\n    }\n}"))
-            """#, [
-                DiagnosticSpec(
-                    message: "ForStatement does not support 'where' clauses.",
-                    line: 2,
-                    column: 16
-                )
-            ])
-    }
-
-    func testMacro_diagnostic_forStatement_typeAnnotation() {
+    func testMacro_diagnostic_for_typeAnnotation() {
         assertDiagnostics("""
             #ast_expandExpression({
                 for a: A in b {
@@ -804,7 +809,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_attributes() {
+    func testMacro_diagnostic_localFunction_attributes() {
         assertDiagnostics("""
             #ast_expandExpression({
                 @attribute
@@ -841,7 +846,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_genericParameters() {
+    func testMacro_diagnostic_localFunction_genericParameters() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a<T>() {
@@ -859,7 +864,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_genericWhereClause() {
+    func testMacro_diagnostic_localFunction_genericWhereClause() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a() where T: U {
@@ -877,7 +882,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_noBody() {
+    func testMacro_diagnostic_localFunction_noBody() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a()
@@ -894,7 +899,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_functionSignature_parameterSignature_attributes() {
+    func testMacro_diagnostic_localFunction_functionSignature_parameterSignature_attributes() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a(@B b: Int) {
@@ -912,7 +917,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_functionSignature_parameterSignature_defaultValues() {
+    func testMacro_diagnostic_localFunction_functionSignature_parameterSignature_defaultValues() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a(b: Int = 0) {
@@ -930,7 +935,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_functionSignature_parameterSignature_asyncTrait() {
+    func testMacro_diagnostic_localFunction_functionSignature_parameterSignature_asyncTrait() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a() async {
@@ -948,7 +953,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_functionSignature_parameterSignature_reasyncTrait() {
+    func testMacro_diagnostic_localFunction_functionSignature_parameterSignature_reasyncTrait() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a() reasync {
@@ -966,7 +971,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             ])
     }
 
-    func testMacro_diagnostic_localFunctionStatement_functionSignature_parameterSignature_rethrowsTrait() {
+    func testMacro_diagnostic_localFunction_functionSignature_parameterSignature_rethrowsTrait() {
         assertDiagnostics("""
             #ast_expandExpression({
                 func a() rethrows {

@@ -293,8 +293,8 @@ fileprivate func labelForNode(_ node: ControlFlowGraphNode, graph: ControlFlowGr
     if let endScope = node as? ControlFlowGraphEndScopeNode {
         var reportNode: SwiftAST.SyntaxNode = endScope.scope
 
-        // Try to find a more descriptive scope node instead of using the
-        // compound statement always
+        // Try to find a more descriptive scope node instead of always using the
+        // compound statement
         if endScope.scope is CompoundStatement {
             reportNode = reportNode.parent ?? reportNode
         }

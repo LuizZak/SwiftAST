@@ -223,11 +223,6 @@ extension SwiftASTConverter {
             ForStatement does not support 'await' iterator patterns.
             """)
         }
-        if let whereClause = stmt.whereClause {
-            throw whereClause.ext_error(message: """
-            ForStatement does not support 'where' clauses.
-            """)
-        }
         if let type = stmt.typeAnnotation {
             throw type.ext_error(message: """
             ForStatement does not support type annotations.
@@ -236,12 +231,16 @@ extension SwiftASTConverter {
 
         let pattern = try convertPattern(stmt.pattern)
         let exp = try convertExpression(stmt.sequence)
+        let whereClause =
+            try (stmt.whereClause?.condition).map(convertExpression)
+                ?? "nil"
         let body = try convertCompound(stmt.body)
 
         return """
         ForStatement(
             pattern: \(pattern),
             exp: \(exp),
+            whereClause: \(whereClause),
             body: \(body)
         )
         """

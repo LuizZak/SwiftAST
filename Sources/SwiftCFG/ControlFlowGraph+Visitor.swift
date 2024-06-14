@@ -309,12 +309,28 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
 
         let body = stmt.body.accept(self)
 
-        return exp
-            .then(pattern)
-            .then(head)
-            .then(body)
-            .redirectingEntries(for: body.exit, to: pattern.entry)
-            .branching(from: head.exit, to: body.exit)
+        let result: CFGVisitResult
+
+        if let whereClause = stmt.whereClause {
+            let whereClause = visitExpression(whereClause)
+
+            result = exp
+                .then(pattern)
+                .then(head)
+                .then(whereClause, debugLabel: "next")
+                .then(body, debugLabel: "true")
+                .redirectingEntries(for: body.exit, to: pattern.entry)
+                .branching(from: whereClause.exit, to: body.exit, debugLabel: "false")
+        } else {
+            result = exp
+                .then(pattern)
+                .then(head)
+                .then(body, debugLabel: "next")
+                .redirectingEntries(for: body.exit, to: pattern.entry)
+        }
+
+        return result
+            .branching(from: head.exit, to: body.exit, debugLabel: "end")
             .resolvingJumps(kind: .continue(label: nil), to: pattern.entry)
             .resolvingJumps(kind: .continue(label: stmt.label), to: pattern.entry)
             .resolvingJumps(kind: .break(label: nil), to: body.exit)

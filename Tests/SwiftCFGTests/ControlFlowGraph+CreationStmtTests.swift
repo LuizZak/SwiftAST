@@ -2987,10 +2987,10 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 -> n3
                     n3 -> n4
                     n7 -> n4 [color="#aa3333", penwidth=0.5]
-                    n4 -> n5
+                    n4 -> n5 [label="next"]
                     n5 -> n6
                     n6 -> n7
-                    n4 -> n8
+                    n4 -> n8 [label="end"]
                 }
                 """
         )
@@ -3025,8 +3025,8 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 -> n3
                     n3 -> n4
                     n5 -> n4 [color="#aa3333", penwidth=0.5]
-                    n4 -> n5
-                    n4 -> n6
+                    n4 -> n5 [label="next"]
+                    n4 -> n6 [label="end"]
                 }
                 """
         )
@@ -3071,13 +3071,13 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 -> n4
                     n8 -> n4 [color="#aa3333", label="false", penwidth=0.5]
                     n10 -> n4 [color="#aa3333", penwidth=0.5]
-                    n4 -> n5
+                    n4 -> n5 [label="next"]
                     n5 -> n6
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9 [label="true"]
                     n9 -> n10
-                    n4 -> n11
+                    n4 -> n11 [label="end"]
                 }
                 """
         )
@@ -3121,14 +3121,60 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 -> n3
                     n3 -> n4
                     n8 -> n4 [color="#aa3333", label="false", penwidth=0.5]
-                    n4 -> n5
+                    n4 -> n5 [label="next"]
                     n5 -> n6
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9 [label="true"]
                     n9 -> n10
-                    n4 -> n11
+                    n4 -> n11 [label="end"]
                     n10 -> n11
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
+    func testForLoop_whereClause() {
+        let stmt: CompoundStatement = [
+            Statement.for(
+                .identifier("i"),
+                .identifier("a"),
+                whereClause: .identifier("b"),
+                body: [
+                    .expression(.identifier("c"))
+                ]
+            )
+        ]
+
+        let graph = ControlFlowGraph.forCompoundStatement(stmt)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="{compound}"]
+                    n3 [label="a"]
+                    n4 [label="{for}"]
+                    n5 [label="b"]
+                    n6 [label="{compound}"]
+                    n7 [label="{exp}"]
+                    n8 [label="c"]
+                    n9 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n8 -> n4 [color="#aa3333", penwidth=0.5]
+                    n4 -> n5 [label="next"]
+                    n5 -> n6 [label="true"]
+                    n6 -> n7
+                    n7 -> n8
+                    n4 -> n9 [label="end"]
+                    n5 -> n9 [label="false"]
                 }
                 """
         )
@@ -3505,8 +3551,8 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 -> n3
                     n3 -> n4
                     n10 -> n4 [color="#aa3333", label="false", penwidth=0.5]
-                    n4 -> n5
-                    n4 -> n6
+                    n4 -> n5 [label="next"]
+                    n4 -> n6 [label="end"]
                     n24 -> n6
                     n5 -> n7
                     n21 -> n7 [color="#aa3333", penwidth=0.5]
@@ -3684,7 +3730,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n3 -> n4
                     n8 -> n4 [color="#aa3333", label="false", penwidth=0.5]
                     n22 -> n4 [color="#aa3333", penwidth=0.5]
-                    n4 -> n5
+                    n4 -> n5 [label="next"]
                     n5 -> n6
                     n19 -> n6 [color="#aa3333", penwidth=0.5]
                     n6 -> n7
@@ -3703,7 +3749,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n18 -> n20
                     n20 -> n21
                     n21 -> n22
-                    n4 -> n23
+                    n4 -> n23 [label="end"]
                 }
                 """
         )
