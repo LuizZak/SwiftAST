@@ -154,16 +154,20 @@ public extension Statement {
         GuardStatement(exp: exp, elseBody: elseBody, pattern: nil)
     }
 
-    /// Creates a `GuardStatement` instance for an guard-let binding using the
-    /// given pattern and condition expression and compound statement as its
-    /// body, with a given else block.
+    /// Creates a `GuardStatement` instance for a guard-let binding using the
+    /// given pattern wrapped in a valueBindingPattern, condition expression,
+    /// with a given else block.
     static func guardLet(
         _ pattern: Pattern,
         _ exp: Expression,
         else elseBody: CompoundStatement
     ) -> GuardStatement {
 
-        GuardStatement(exp: exp, elseBody: elseBody, pattern: pattern)
+        GuardStatement(
+            exp: exp,
+            elseBody: elseBody,
+            pattern: .valueBindingPattern(constant: true, pattern)
+        )
     }
 
     /// Creates a `GuardStatement` instance using the given condition clauses
