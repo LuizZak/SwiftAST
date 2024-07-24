@@ -18,6 +18,9 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
     /// A type-cast pattern that matches a pattern against a type.
     indirect case asType(Pattern, SwiftType)
 
+    /// An optional pattern match that unwraps optional values.
+    indirect case optional(Pattern)
+
     /// A wildcard pattern (or `_`).
     case wildcard
 
@@ -42,7 +45,7 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
         case .tuple(let patterns):
             return patterns.contains(where: \.hasBindings)
 
-        case .asType(let pattern, _):
+        case .asType(let pattern, _), .optional(let pattern):
             return pattern.hasBindings
 
         case .expression, .identifier, .wildcard:
@@ -60,7 +63,8 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
             return tuple.flatMap { $0.subExpressions }
 
         case .asType(let inner, _),
-            .valueBindingPattern(_, let inner):
+            .valueBindingPattern(_, let inner),
+            .optional(let inner):
             return inner.subExpressions
 
         case .identifier, .wildcard:
@@ -75,7 +79,8 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
             return patterns
 
         case .asType(let pattern, _),
-            .valueBindingPattern(_, let pattern):
+            .valueBindingPattern(_, let pattern),
+            .optional(let pattern):
             return [pattern]
 
         case .expression, .identifier, .wildcard:
@@ -108,6 +113,11 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
             try self = .valueBindingPattern(
                 constant: container.decode(Bool.self, forKey: .payload0),
                 container.decode(Pattern.self, forKey: .payload1)
+            )
+
+        case "optional":
+            try self = .optional(
+                container.decode(Pattern.self, forKey: .payload0)
             )
 
         case "wildcard":
@@ -148,6 +158,10 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
             try container.encode(constant, forKey: .payload0)
             try container.encode(pattern, forKey: .payload1)
 
+        case .optional(let pattern):
+            try container.encode("optional", forKey: .discriminator)
+            try container.encode(pattern, forKey: .payload0)
+
         case .wildcard:
             try container.encode("wildcard", forKey: .discriminator)
         }
@@ -179,6 +193,9 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
         case .valueBindingPattern(let constant, let pattern):
             return .valueBindingPattern(constant: constant, pattern.copy())
 
+        case .optional(let pattern):
+            return .optional(pattern.copy())
+
         case .wildcard:
             return .wildcard
         }
@@ -195,7 +212,7 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
         case .asType(let pattern, _):
             pattern.setParent(node)
 
-        case .valueBindingPattern(_, let pattern):
+        case .valueBindingPattern(_, let pattern), .optional(let pattern):
             pattern.setParent(node)
 
         case .identifier, .wildcard:
@@ -214,7 +231,7 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
         case .asType(let pattern, _):
             pattern.collect(expressions: &expressions)
 
-        case .valueBindingPattern(_, let pattern):
+        case .valueBindingPattern(_, let pattern), .optional(let pattern):
             pattern.collect(expressions: &expressions)
 
         case .identifier, .wildcard:
@@ -243,6 +260,9 @@ public enum Pattern: Codable, Equatable, ExpressionComponent {
             return subPattern.subPattern(at: subLocation)
 
         case let (.valueBindingPattern(subLocation), .valueBindingPattern(_, subPattern)):
+            return subPattern.subPattern(at: subLocation)
+
+        case let (.optional(subLocation), .optional(subPattern)):
             return subPattern.subPattern(at: subLocation)
 
         default:
@@ -278,6 +298,9 @@ extension Pattern: CustomStringConvertible {
         case .valueBindingPattern(false, let pattern):
             return "var \(pattern)"
 
+        case .optional(let pattern):
+            return "\(pattern)?"
+
         case .wildcard:
             return "_"
         }
@@ -301,4 +324,8 @@ public enum PatternLocation: Hashable {
     /// The sub pattern within a value binding pattern, with a given nested
     /// sub-pattern location.
     indirect case valueBindingPattern(pattern: PatternLocation)
+
+    /// The sub pattern within an optional pattern, with a given nested sub-pattern
+    /// location.
+    indirect case optional(pattern: PatternLocation)
 }

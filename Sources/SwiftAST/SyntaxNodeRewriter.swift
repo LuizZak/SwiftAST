@@ -242,6 +242,9 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         case .valueBindingPattern(let constant, let pattern):
             return .valueBindingPattern(constant: constant, visitPattern(pattern))
 
+        case .optional(let pattern):
+            return .optional(visitPattern(pattern))
+
         case .identifier, .wildcard:
             return ptn
         }

@@ -111,6 +111,10 @@ extension ConditionalClauses: ExpressibleByArrayLiteral {
 
 /// Conditional clause element for a conditional clause of a conditional statement.
 public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
+    /// Whether this conditional clause element requires a 'case' keyword leading
+    /// its pattern.
+    public var isCaseClause: Bool
+
     /// An optional pattern that the expression is bound to.
     public var pattern: Pattern? {
         didSet { oldValue?.setParent(nil); pattern?.setParent(self) }
@@ -137,7 +141,8 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
         pattern?.hasBindings ?? false
     }
 
-    public init(pattern: Pattern? = nil, expression: Expression) {
+    public init(isCaseClause: Bool = false, pattern: Pattern? = nil, expression: Expression) {
+        self.isCaseClause = isCaseClause
         self.pattern = pattern
         self.expression = expression
 
@@ -151,6 +156,7 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         self.init(
+            isCaseClause: try container.decode(Bool.self, forKey: .isCaseClause),
             pattern: try container.decodeIfPresent(Pattern.self, forKey: .pattern),
             expression: try container.decodeExpression(forKey: .expression)
         )
@@ -158,6 +164,7 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
 
     public override func copy() -> ConditionalClauseElement {
         let copy = ConditionalClauseElement(
+            isCaseClause: isCaseClause,
             pattern: pattern?.copy(),
             expression: expression.copy()
         )
@@ -169,6 +176,7 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
+        try container.encode(isCaseClause, forKey: .isCaseClause)
         try container.encodeIfPresent(pattern, forKey: .pattern)
         try container.encodeExpression(expression, forKey: .expression)
     }
@@ -189,7 +197,7 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
     }
 
     public func isEqual(to other: ConditionalClauseElement) -> Bool {
-        self.pattern == other.pattern && self.expression.isEqual(to: other.expression)
+        self.isCaseClause == other.isCaseClause && self.pattern == other.pattern && self.expression.isEqual(to: other.expression)
     }
 
     public static func == (lhs: ConditionalClauseElement, rhs: ConditionalClauseElement) -> Bool {
@@ -197,6 +205,7 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
     }
 
     private enum CodingKeys: CodingKey {
+        case isCaseClause
         case pattern
         case expression
     }
@@ -205,7 +214,12 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
 extension ConditionalClauseElement: CustomStringConvertible {
     public var description: String {
         if let pattern {
-            return "\(pattern) = \(expression)"
+            let trail = "\(pattern) = \(expression)"
+            if isCaseClause {
+                return "case \(trail)"
+            } else {
+                return trail
+            }
         } else {
             return expression.description
         }
