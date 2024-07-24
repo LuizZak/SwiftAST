@@ -54,7 +54,12 @@ public final class ConditionalClauses: SyntaxNode, Equatable, Codable {
 
     @inlinable
     public override func copy() -> ConditionalClauses {
-        ConditionalClauses(clauses: clauses.map { $0.copy() })
+        let copy = ConditionalClauses(
+            clauses: clauses.map { $0.copy() }
+        )
+        copy.metadata = metadata
+
+        return copy
     }
 
     public func isEqual(to other: ConditionalClauses) -> Bool {
@@ -152,10 +157,13 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
     }
 
     public override func copy() -> ConditionalClauseElement {
-        ConditionalClauseElement(
+        let copy = ConditionalClauseElement(
             pattern: pattern?.copy(),
             expression: expression.copy()
         )
+        copy.metadata = metadata
+
+        return copy
     }
 
     public func encode(to encoder: any Encoder) throws {
