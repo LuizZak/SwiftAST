@@ -53,7 +53,7 @@ class ValueMatcherTests: XCTestCase {
     }
 
     func testMatchAST() {
-        let sut = ValueMatcher<Expression>()
+        let sut = ValueMatcher<SwiftAST.Expression>()
             .keyPath(\.asBinary?.lhs.asConstant?.constant, equals: .int(0, .decimal))
 
         XCTAssert(sut.matches(Expression.constant(0).binary(op: .add, rhs: .constant(0))))
@@ -84,12 +84,12 @@ class ValueMatcherTests: XCTestCase {
 
     func testMatchRuleType() {
         XCTAssert(
-            MatchRule<Expression>.isType(ConstantExpression.self).evaluate(
+            MatchRule<SwiftAST.Expression>.isType(ConstantExpression.self).evaluate(
                 ConstantExpression(integerLiteral: 0)
             )
         )
         XCTAssertFalse(
-            MatchRule<Expression>.isType(ConstantExpression.self).evaluate(
+            MatchRule<SwiftAST.Expression>.isType(ConstantExpression.self).evaluate(
                 IdentifierExpression(identifier: "")
             )
         )

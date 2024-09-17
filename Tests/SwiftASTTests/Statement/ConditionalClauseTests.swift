@@ -42,6 +42,6 @@ private func makeSut(_ clauses: [ConditionalClauseElement]) -> ConditionalClause
     .init(clauses: clauses)
 }
 
-private func makeElement(pattern: Pattern? = nil, expression: Expression) -> ConditionalClauseElement {
+private func makeElement(pattern: Pattern? = nil, expression: SwiftAST.Expression) -> ConditionalClauseElement {
     .init(pattern: pattern, expression: expression)
 }

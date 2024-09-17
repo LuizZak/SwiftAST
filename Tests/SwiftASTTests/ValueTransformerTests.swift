@@ -22,7 +22,7 @@ class ValueTransformerTests: XCTestCase {
             .typed(.metatype(for: "UIFont"))
             .dot("fontWithSize")
             .call([
-                .unlabeled(Expression.constant("Helvetica Neue")),
+                .unlabeled(SwiftAST.Expression.constant("Helvetica Neue")),
                 .labeled("size", .constant(11)),
             ])
 
@@ -41,7 +41,7 @@ class ValueTransformerTests: XCTestCase {
 
     func testFailTransformExpression() {
         let transformer =
-            ValueTransformer<Expression, Expression>()
+            ValueTransformer<SwiftAST.Expression, SwiftAST.Expression>()
             .decompose()
             .transformIndex(
                 index: 0,
@@ -270,7 +270,7 @@ class ValueTransformerTests: XCTestCase {
             ])
 
         #sourceLocation(file:"test.swift",line:1)
-        let sut = ValueTransformer<PostfixExpression, Expression>(transformer: { $0 })
+        let sut = ValueTransformer<PostfixExpression, SwiftAST.Expression>(transformer: { $0 })
             // Flatten expressions (breaks postfix expressions into sub-expressions)
             .decompose()
             .validate { $0.count == 2 }

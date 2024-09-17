@@ -174,7 +174,7 @@ extension ControlFlowGraph {
 fileprivate func labelForSyntaxNode(_ node: SwiftAST.SyntaxNode) -> String {
     var label: String
     switch node {
-    case let exp as Expression:
+    case let exp as SwiftAST.Expression:
         label = exp.description
 
     case is CompoundStatement:

@@ -1134,7 +1134,7 @@ extension SyntaxNodeIteratorTests {
     }
 
     private func assertExpression(
-        _ source: Expression,
+        _ source: SwiftAST.Expression,
         inspectingBlocks: Bool = false,
         iteratesAs expected: [SyntaxNode],
         file: StaticString = #filePath,
@@ -1284,7 +1284,7 @@ extension SyntaxNodeIteratorTests {
                     line: expected.line
                 )
 
-            case (let exp as Expression, let act as Expression):
+            case (let exp as SwiftAST.Expression, let act as SwiftAST.Expression):
                 if exp == act { continue }
 
                 assertExpressionsEqual(
@@ -1507,7 +1507,7 @@ extension SyntaxNodeIteratorTests {
 
     func dumpNode(_ node: SyntaxNode) -> String {
         switch node {
-        case let node as Expression:
+        case let node as SwiftAST.Expression:
             return node.description
 
         case let stmt as Statement:

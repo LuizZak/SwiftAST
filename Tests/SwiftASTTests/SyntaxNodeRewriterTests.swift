@@ -41,7 +41,7 @@ class SyntaxNodeRewriterTests: XCTestCase {
     /// information is kept when traversing a syntax tree  and visiting a function
     /// call postfix node
     func testRewriterKeepsFunctionCallPostfixInformation() {
-        let makeNode: () -> Expression = {
+        let makeNode: () -> SwiftAST.Expression = {
             Expression
                 .identifier("a")
                 .optional()
@@ -66,7 +66,7 @@ class SyntaxNodeRewriterTests: XCTestCase {
     /// Tests Postfix.returnType metadata information is kept when traversing a
     /// syntax tree and visiting a subscription postfix node
     func testRewriterKeepsSubscriptInformation() {
-        let makeNode: () -> Expression = {
+        let makeNode: () -> SwiftAST.Expression = {
             Expression.identifier("a").optional().sub(.identifier("b"), type: .int)
         }
         let sut = SyntaxNodeRewriter()
@@ -80,7 +80,7 @@ class SyntaxNodeRewriterTests: XCTestCase {
     /// Tests Postfix.returnType metadata information is kept when traversing a
     /// syntax tree and visiting a member access postfix node
     func testRewriterKeepsMemberInformation() {
-        let makeNode: () -> Expression = {
+        let makeNode: () -> SwiftAST.Expression = {
             Expression.identifier("a").optional().dot("b", type: .int)
         }
         let sut = SyntaxNodeRewriter()

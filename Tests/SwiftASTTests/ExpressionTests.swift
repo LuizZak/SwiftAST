@@ -677,7 +677,7 @@ class ExpressionTests: XCTestCase {
         )
     }
 
-    func anExpression(ident: String = "a") -> Expression {
+    func anExpression(ident: String = "a") -> SwiftAST.Expression {
         return .identifier(ident)
     }
 }

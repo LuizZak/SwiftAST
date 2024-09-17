@@ -26,7 +26,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_arrayLiteral() {
-        let exp: Expression = .arrayLiteral([
+        let exp: SwiftAST.Expression = .arrayLiteral([
                 .identifier("a"),
                 .identifier("b"),
                 .identifier("c"),
@@ -61,7 +61,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_assignment() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").assignment(op: .assign, rhs: .identifier("b"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -91,7 +91,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_assignment_optionalShortCircuiting() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").optional().dot("b").assignment(op: .assign, rhs: .identifier("c"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -124,7 +124,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_assignment_optionalShortCircuiting_rightSide() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").optional().dot("b").assignment(op: .assign, rhs: .identifier("c").optional().dot("d").optional().dot("e"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -162,7 +162,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_blockLiteral() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .block(body: [])
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -188,7 +188,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_cast() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .cast(.identifier("a"), type: .int)
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -216,7 +216,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_cast_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .cast(.identifier("a").binary(op: .nullCoalesce, rhs: .identifier("b")), type: .int)
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -249,7 +249,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_constant() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .constant(0)
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -275,7 +275,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_dictionaryLiteral() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .dictionaryLiteral([
                 .identifier("a"): .identifier("b"),
                 .identifier("c"): .identifier("d"),
@@ -317,7 +317,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_identifier() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a")
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -343,7 +343,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_parens() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .parens(.identifier("a").call())
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -373,7 +373,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_parens_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .parens(.identifier("a").optional().call().optional().dot("b"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -406,7 +406,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_member() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").dot("b")
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -434,7 +434,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_member_argumentNames() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").dot("b", argumentNames: ["c", "_"])
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -462,7 +462,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_call_noArguments() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").call()
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -490,7 +490,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_call_withArguments() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").call([.identifier("b"), .identifier("c")])
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -522,7 +522,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_call_withArguments_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").call([.identifier("b"), .identifier("c").binary(op: .nullCoalesce, rhs: .constant(0)), .identifier("d")])
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -561,7 +561,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_subscript() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").sub(.constant(0))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -591,7 +591,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_subscript_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").sub(.identifier("b").binary(op: .nullCoalesce, rhs: .constant(0)))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -626,7 +626,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_postfix_optional() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").optional().dot("b").optional().sub(.constant(0)).optional().call()
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -662,7 +662,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_prefix() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .prefix(op: .subtract, .identifier("a"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -690,7 +690,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_prefix_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .prefix(op: .subtract, .identifier("a").binary(op: .nullCoalesce, rhs: .identifier("b")))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -723,7 +723,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_selector() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .selector(getter: "a")
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -749,7 +749,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_sizeOf_expression() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .sizeof(.identifier("a"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -777,7 +777,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_sizeOf_expression_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("print").call([.sizeof(.identifier("a").binary(op: .nullCoalesce, rhs: .constant(0)))])
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -814,7 +814,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_sizeOf_type() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .sizeof(type: "A")
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -840,7 +840,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_ternaryExpression() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .ternary(
                 .identifier("a"),
                 true: .identifier("b"),
@@ -877,7 +877,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_ternaryExpression_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .ternary(
                 .identifier("a"),
                 true: .identifier("b").binary(op: .nullCoalesce, rhs: .identifier("c")),
@@ -919,7 +919,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_try() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .try(.identifier("a"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -951,7 +951,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_try_optional() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .try(.identifier("a"), mode: .optional)
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -983,7 +983,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_try_forced() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .try(.identifier("a"), mode: .forced)
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1128,7 +1128,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_try_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").call([
                 .try(.identifier("b").binary(op: .nullCoalesce, rhs: .identifier("c")))
             ])
@@ -1168,7 +1168,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_tuple() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .tuple([
                 .identifier("a"),
                 .identifier("b"),
@@ -1204,7 +1204,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_tuple_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .tuple([
                 .identifier("a").binary(op: .nullCoalesce, rhs: .identifier("b")),
                 .identifier("c"),
@@ -1250,7 +1250,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_typeCheck() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .typeCheck(.identifier("a"), type: .int)
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1278,7 +1278,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_typeCheck_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .typeCheck(.identifier("a").binary(op: .nullCoalesce, rhs: .identifier("b")), type: .int)
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1311,7 +1311,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_unary() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .unary(op: .subtract, .identifier("a"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1339,7 +1339,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_unary_shortCircuit() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .unary(op: .subtract, .identifier("a").binary(op: .nullCoalesce, rhs: .identifier("b")))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1372,7 +1372,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testExpression_unknown() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .unknown(.init(context: "a"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1398,7 +1398,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func tesShortCircuit_andOperand() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").binary(op: .and, rhs: .identifier("b"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1430,7 +1430,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testShortCircuit_orOperand() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").binary(op: .or, rhs: .identifier("b"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1461,7 +1461,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testShortCircuit_nullCoalesceOperand() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .identifier("a").binary(op: .nullCoalesce, rhs: .identifier("b"))
 
         let graph = ControlFlowGraph.forExpression(exp)
@@ -1492,7 +1492,7 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
     }
 
     func testShortCircuit_nestedExpression() {
-        let exp: Expression =
+        let exp: SwiftAST.Expression =
             .arrayLiteral([
                 .identifier("a").binary(op: .and, rhs: .identifier("b")),
                 .identifier("c"),

@@ -41,7 +41,7 @@ internal func assertGraphviz(
 
     let syntaxString: String?
     switch syntaxNode {
-    case let node as Expression:
+    case let node as SwiftAST.Expression:
         // TODO: Re-implement AST pretty-printing in tests
         //syntaxString = ExpressionPrinter.toString(expression: node)
         syntaxString = "\(node)"

@@ -148,7 +148,7 @@ class Expression_MatcherTests: XCTestCase {
 
     func testMatchNilCheck() {
         let exp = Expression.identifier("ident")
-        let sut = ValueMatcher<Expression>.nilCheck(against: exp)
+        let sut = ValueMatcher<SwiftAST.Expression>.nilCheck(against: exp)
 
         XCTAssert(sut.matches(exp.binary(op: .unequals, rhs: .constant(.nil))))
         XCTAssert(sut.matches(Expression.constant(.nil).binary(op: .unequals, rhs: exp)))
@@ -158,7 +158,7 @@ class Expression_MatcherTests: XCTestCase {
 
     func testMatchNilCompare() {
         let exp = Expression.identifier("ident")
-        let sut = ValueMatcher<Expression>.nilCompare(against: exp)
+        let sut = ValueMatcher<SwiftAST.Expression>.nilCompare(against: exp)
 
         XCTAssert(sut.matches(exp.binary(op: .equals, rhs: .constant(.nil))))
         XCTAssert(sut.matches(Expression.constant(.nil).binary(op: .equals, rhs: exp)))
