@@ -75,12 +75,14 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
         edges.filter { $0.end === node }
     }
 
-    /// Returns an existing edge between two nodes, or `nil`, if no edges between
-    /// them currently exist.
+    /// Returns a set of existing edges between two nodes, or `nil`, if no edges
+    /// between them currently exist.
     ///
     /// A reference equality test (===) is used to determine graph node equality.
-    public func edge(from start: Node, to end: Node) -> Edge? {
-        edges.first { $0.start === start && $0.end === end }
+    ///
+    /// - precondition: `start` and `end` are valid nodes within this graph.
+    public func edges(from start: Node, to end: Node) -> Set<Edge> {
+        edges.filter { $0.start === start && $0.end === end }
     }
 
     // MARK: - Internals
@@ -117,7 +119,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
     /// Adds an edge `start -> end` to this graph, if one doesn't already exists.
     @discardableResult
     func ensureEdge(from start: Node, to end: Node) -> Edge {
-        if let existing = edge(from: start, to: end) {
+        if let existing = edges(from: start, to: end).first {
             return existing
         }
 

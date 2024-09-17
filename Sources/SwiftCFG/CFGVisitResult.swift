@@ -104,7 +104,7 @@ public struct CFGVisitResult {
         graph.prepend(jump.node, before: exit)
         graph.removeEdge(from: jump.node, to: exit)
 
-        graph.edge(from: jump.node, to: exit)?.debugLabel = debugLabel
+        graph.edges(from: jump.node, to: exit).first?.debugLabel = debugLabel
 
         unresolvedJumps = [jump]
     }
@@ -581,7 +581,7 @@ public struct CFGVisitResult {
                 graph.addNode(target)
             }
 
-            if let existing = graph.edge(from: node, to: target) {
+            if let existing = graph.edges(from: node, to: target).first {
                 if existing.debugLabel == nil {
                     existing.debugLabel = debugLabel
                 }

@@ -223,7 +223,7 @@ extension ControlFlowGraph {
                 guard containsNode(edge.start) && containsNode(edge.end) else {
                     continue
                 }
-                if let existing = self.edge(from: edge.start, to: edge.end) {
+                if let existing = self.edges(from: edge.start, to: edge.end).first {
                     copyMetadata(from: edge, to: existing)
                     continue
                 }
