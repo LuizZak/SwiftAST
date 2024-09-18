@@ -225,8 +225,8 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
 
     /// Visits an `if` statement with this visitor
     ///
-    /// - Parameter stmt: An IfStatement to visit
-    open func visitIf(_ stmt: IfStatement) {
+    /// - Parameter stmt: An IfExpression to visit
+    open func visitIf(_ stmt: IfExpression) {
         visitConditionalClauses(stmt.conditionalClauses)
         visitStatement(stmt.body)
         stmt.elseBody.map(visitElseBody)
@@ -235,7 +235,7 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     /// Visits an `if` statement's else block with this visitor
     ///
     /// - Parameter stmt: An `if` statement's else block to visit
-    open func visitElseBody(_ stmt: IfStatement.ElseBody) {
+    open func visitElseBody(_ stmt: IfExpression.ElseBody) {
         switch stmt {
         case .else(let stmt):
             visitCompound(stmt)

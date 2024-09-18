@@ -57,9 +57,7 @@ extension SwiftASTConverter {
         }
 
         if let expr = expr.as(IfExprSyntax.self) {
-            throw expr.ext_error(message: """
-            If statements in place of expressions are not supported by SwiftAST's Expression type.
-            """)
+            return try convertIf(expr)
         }
 
         if let expr = expr.as(SwitchExprSyntax.self) {
@@ -436,6 +434,44 @@ extension SwiftASTConverter {
             exp: \(try convertExpression(expr.expression))
         )
         """
+    }
+
+    static func convertIf(_ expr: IfExprSyntax) throws -> ExprSyntax {
+        let conditionals = try convertConditionals(expr.conditions)
+        let body = try convertCompound(expr.body)
+
+        switch expr.elseBody {
+        case .codeBlock(let block):
+            let elseBody = try convertCompound(block)
+
+            return """
+            IfExpression(
+                clauses: \(conditionals),
+                body: \(body),
+                elseBody: .else(\(elseBody))
+            )
+            """
+
+        case .ifExpr(let elseIf):
+            let elseIf = try convertIf(elseIf)
+
+            return """
+            IfExpression(
+                clauses: \(conditionals),
+                body: \(body),
+                elseBody: .elseIf(\(elseIf))
+            )
+            """
+
+        case nil:
+            return """
+            IfExpression(
+                clauses: \(conditionals),
+                body: \(body),
+                elseBody: nil
+            )
+            """
+        }
     }
 
     // MARK: - LabeledExprListSyntax

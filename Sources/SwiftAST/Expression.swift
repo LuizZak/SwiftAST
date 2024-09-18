@@ -87,6 +87,12 @@ public class Expression: SyntaxNode, Codable, ExpressionComponent, Equatable,
         resolvedType == .errorType
     }
 
+    /// Returns `true` if this expression, if present as a standalone expression
+    /// within an expression statement, can be labeled as a statement could.
+    open var isLabelableExpressionType: Bool {
+        return false
+    }
+
     override internal init() {
         super.init()
     }

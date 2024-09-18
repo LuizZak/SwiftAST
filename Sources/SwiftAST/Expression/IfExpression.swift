@@ -1,6 +1,6 @@
-public class IfStatement: Statement, StatementKindType {
-    public var statementKind: StatementKind {
-        .if(self)
+public class IfExpression: Expression, ExpressionKindType {
+    public var expressionKind: ExpressionKind {
+        .ifExpression(self)
     }
 
     /// Gets the main conditional clauses of this if statement.
@@ -60,7 +60,7 @@ public class IfStatement: Statement, StatementKindType {
         return result
     }
 
-    public override var isLabelableStatementType: Bool {
+    public override var isLabelableExpressionType: Bool {
         return true
     }
 
@@ -136,31 +136,25 @@ public class IfStatement: Statement, StatementKindType {
     }
 
     @inlinable
-    public override func copy() -> IfStatement {
+    public override func copy() -> IfExpression {
         let copy =
-            IfStatement(
+            IfExpression(
                 clauses: conditionalClauses.copy(),
                 body: body.copy(),
                 elseBody: elseBody?.copy()
             )
-            .copyMetadata(from: self)
 
         return copy
     }
 
     @inlinable
-    public override func accept<V: StatementVisitor>(_ visitor: V) -> V.StmtResult {
+    public override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.ExprResult {
         visitor.visitIf(self)
     }
 
-    @inlinable
-    public override func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.StmtResult {
-        visitor.visitIf(self, state: state)
-    }
-
-    public override func isEqual(to other: Statement) -> Bool {
+    public override func isEqual(to other: Expression) -> Bool {
         switch other {
-        case let rhs as IfStatement:
+        case let rhs as IfExpression:
             return conditionalClauses.isEqual(to: rhs.conditionalClauses) && body == rhs.body && elseBody == rhs.elseBody
         default:
             return false
@@ -183,32 +177,32 @@ public class IfStatement: Statement, StatementKindType {
         case elseBody
     }
 }
-public extension Statement {
-    /// Returns `self as? IfStatement`.
+public extension Expression {
+    /// Returns `self as? IfExpression`.
     @inlinable
-    var asIf: IfStatement? {
+    var asIf: IfExpression? {
         cast()
     }
 
-    /// Returns `true` if this `Statement` is an instance of `IfStatement`
+    /// Returns `true` if this `Statement` is an instance of `IfExpression`
     /// class.
     @inlinable
     var isIf: Bool {
         asIf != nil
     }
 
-    /// Creates a `IfStatement` instance using the given condition expression
+    /// Creates a `IfExpression` instance using the given condition expression
     /// and compound statement as its body, optionally specifying an else block.
     static func `if`(
         _ exp: Expression,
         body: CompoundStatement,
         else elseBody: CompoundStatement? = nil
-    ) -> IfStatement {
+    ) -> IfExpression {
 
-        IfStatement(exp: exp, body: body, else: elseBody, pattern: nil)
+        IfExpression(exp: exp, body: body, else: elseBody, pattern: nil)
     }
 
-    /// Creates a `IfStatement` instance for an if-let binding using the given
+    /// Creates a `IfExpression` instance for an if-let binding using the given
     /// pattern wrapped in a valueBindingPattern, condition expression, and
     /// compound statement as its body, optionally specifying an else block.
     static func ifLet(
@@ -216,9 +210,9 @@ public extension Statement {
         _ exp: Expression,
         body: CompoundStatement,
         else elseBody: CompoundStatement? = nil
-    ) -> IfStatement {
+    ) -> IfExpression {
 
-        IfStatement(
+        IfExpression(
             exp: exp,
             body: body,
             else: elseBody,
@@ -226,54 +220,161 @@ public extension Statement {
         )
     }
 
-    /// Creates a `IfStatement` instance using the given conditional clauses
+    /// Creates a `IfExpression` instance using the given conditional clauses
     /// and compound statement as its body, optionally specifying an else block.
     static func `if`(
         clauses: ConditionalClauses,
         body: CompoundStatement,
         else elseBody: CompoundStatement? = nil
-    ) -> IfStatement {
+    ) -> IfExpression {
 
-        IfStatement(clauses: clauses, body: body, else: elseBody)
+        IfExpression(clauses: clauses, body: body, else: elseBody)
     }
 
-    /// Creates a `IfStatement` instance using the given condition expression
+    /// Creates a `IfExpression` instance using the given condition expression
     /// and compound statement as its body, optionally specifying an else block.
     static func `if`(
         _ exp: Expression,
         body: CompoundStatement,
-        elseIf stmt: IfStatement
-    ) -> IfStatement {
+        elseIf stmt: IfExpression
+    ) -> IfExpression {
 
-        IfStatement(exp: exp, body: body, elseBody: .elseIf(stmt))
+        IfExpression(exp: exp, body: body, elseBody: .elseIf(stmt))
     }
 
-    /// Creates a `IfStatement` instance using the given conditional clauses
+    /// Creates a `IfExpression` instance using the given conditional clauses
     /// and compound statement as its body, with a given if statement as an
     /// else-if block.
     static func `if`(
         clauses: ConditionalClauses,
         body: CompoundStatement,
-        elseIf stmt: IfStatement
-    ) -> IfStatement {
+        elseIf stmt: IfExpression
+    ) -> IfExpression {
 
-        IfStatement(clauses: clauses, body: body, elseBody: .elseIf(stmt))
+        IfExpression(clauses: clauses, body: body, elseBody: .elseIf(stmt))
     }
 
-    /// Creates a `IfStatement` instance using the given conditional clauses
+    /// Creates a `IfExpression` instance using the given conditional clauses
     /// and compound statement as its body, with a given else block.
     static func `if`(
         clauses: ConditionalClauses,
         body: CompoundStatement,
-        elseBody: IfStatement.ElseBody
-    ) -> IfStatement {
+        elseBody: IfExpression.ElseBody
+    ) -> IfExpression {
 
-        IfStatement(clauses: clauses, body: body, elseBody: elseBody)
+        IfExpression(clauses: clauses, body: body, elseBody: elseBody)
+    }
+}
+public extension Statement {
+    /// Returns an inner expression of `IfExpression` if this statement is an
+    /// `ExpressionsStatement` containing exactly one instance of `IfExpression`.
+    @inlinable
+    var asIf: IfExpression? {
+        guard let expressions: ExpressionsStatement = self.asExpressions else {
+            return nil
+        }
+        guard expressions.expressions.count == 1 else {
+            return nil
+        }
+        return expressions.expressions[0].asIf
+    }
+
+    /// Returns `true` if this `Statement` is an instance of `IfExpression`
+    /// class.
+    @inlinable
+    var isIf: Bool {
+        asIf != nil
+    }
+
+    /// Creates a `IfExpression` instance using the given condition expression
+    /// and compound statement as its body, optionally specifying an else block.
+    static func `if`(
+        _ exp: Expression,
+        body: CompoundStatement,
+        else elseBody: CompoundStatement? = nil
+    ) -> ExpressionsStatement {
+
+        let exp = IfExpression(exp: exp, body: body, else: elseBody, pattern: nil)
+
+        return .expression(exp)
+    }
+
+    /// Creates a `IfExpression` instance for an if-let binding using the given
+    /// pattern wrapped in a valueBindingPattern, condition expression, and
+    /// compound statement as its body, optionally specifying an else block.
+    static func ifLet(
+        _ pattern: Pattern,
+        _ exp: Expression,
+        body: CompoundStatement,
+        else elseBody: CompoundStatement? = nil
+    ) -> ExpressionsStatement {
+
+        let exp = IfExpression(
+            exp: exp,
+            body: body,
+            else: elseBody,
+            pattern: .valueBindingPattern(constant: true, pattern)
+        )
+
+        return .expression(exp)
+    }
+
+    /// Creates a `IfExpression` instance using the given conditional clauses
+    /// and compound statement as its body, optionally specifying an else block.
+    static func `if`(
+        clauses: ConditionalClauses,
+        body: CompoundStatement,
+        else elseBody: CompoundStatement? = nil
+    ) -> ExpressionsStatement {
+
+        let exp = IfExpression(clauses: clauses, body: body, else: elseBody)
+
+        return .expression(exp)
+    }
+
+    /// Creates a `IfExpression` instance using the given condition expression
+    /// and compound statement as its body, optionally specifying an else block.
+    static func `if`(
+        _ exp: Expression,
+        body: CompoundStatement,
+        elseIf stmt: IfExpression
+    ) -> ExpressionsStatement {
+
+        let exp = IfExpression(exp: exp, body: body, elseBody: .elseIf(stmt))
+
+        return .expression(exp)
+    }
+
+    /// Creates a `IfExpression` instance using the given conditional clauses
+    /// and compound statement as its body, with a given if statement as an
+    /// else-if block.
+    static func `if`(
+        clauses: ConditionalClauses,
+        body: CompoundStatement,
+        elseIf stmt: IfExpression
+    ) -> ExpressionsStatement {
+
+        let exp = IfExpression(clauses: clauses, body: body, elseBody: .elseIf(stmt))
+
+        return .expression(exp)
+    }
+
+    /// Creates a `IfExpression` instance using the given conditional clauses
+    /// and compound statement as its body, with a given else block.
+    static func `if`(
+        clauses: ConditionalClauses,
+        body: CompoundStatement,
+        elseBody: IfExpression.ElseBody
+    ) -> ExpressionsStatement {
+
+        let exp = IfExpression(clauses: clauses, body: body, elseBody: elseBody)
+
+        return .expression(exp)
     }
 }
 
 // MARK: - Else/ElseIf Structure
-public extension IfStatement {
+public extension IfExpression {
 
     /// Describes the else statement of an `if` statement.
     enum ElseBody: Codable, Equatable {
@@ -281,12 +382,19 @@ public extension IfStatement {
         case `else`(CompoundStatement)
 
         /// A nested `if` statement.
-        case elseIf(IfStatement)
+        case elseIf(IfExpression)
 
         public var statement: Statement? {
             switch self {
             case .else(let stmt): return stmt
-            case .elseIf(let stmt): return stmt
+            case .elseIf: return nil
+            }
+        }
+
+        public var ifExpression: IfExpression? {
+            switch self {
+            case .elseIf(let ifExpression): return ifExpression
+            case .else: return nil
             }
         }
 
@@ -303,7 +411,7 @@ public extension IfStatement {
 
             case "elseIf":
                 self = try .elseIf(
-                    container.decodeStatement(forKey: .payload)
+                    container.decodeExpression(forKey: .payload)
                 )
 
             default:
@@ -346,7 +454,7 @@ public extension IfStatement {
 
             case .elseIf(let stmt):
                 try container.encode("elseIf", forKey: .discriminator)
-                try container.encodeStatement(stmt, forKey: .payload)
+                try container.encodeExpression(stmt, forKey: .payload)
             }
         }
 

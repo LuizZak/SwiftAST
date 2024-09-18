@@ -55,8 +55,8 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
 
     /// Visits an `if` statement with this visitor
     ///
-    /// - Parameter stmt: An IfStatement to visit
-    public func visitIf(_ stmt: IfStatement, state: State) {
+    /// - Parameter stmt: An IfExpression to visit
+    public func visitIf(_ stmt: IfExpression, state: State) {
         let state = listener(stmt, state)
 
         visitStatement(stmt.body, state: state)
@@ -66,7 +66,7 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
     /// Visits an `if` statement's else block with this visitor
     ///
     /// - Parameter stmt: An `if` statement's else block to visit
-    public func visitElseBody(_ stmt: IfStatement.ElseBody, state: State) {
+    public func visitElseBody(_ stmt: IfExpression.ElseBody, state: State) {
         switch stmt {
         case .else(let stmt):
             visitCompound(stmt, state: state)

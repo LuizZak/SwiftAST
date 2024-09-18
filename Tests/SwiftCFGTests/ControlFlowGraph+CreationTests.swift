@@ -204,23 +204,24 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n4 [label="{compound}"]
                     n5 [label="{exp}"]
                     n6 [label="a"]
-                    n7 [label="{if}"]
-                    n8 [label="b"]
-                    n9 [label="{if b}"]
-                    n10 [label="{compound}"]
-                    n11 [label="{end scope of {do}}"]
-                    n12 [label="c"]
-                    n13 [label="{end scope of {compound}}"]
-                    n14 [label="{throw c}"]
-                    n15 [label="{end scope of {if}}"]
-                    n16 [label="{end scope of {do}}"]
-                    n17 [label="{catch}"]
-                    n18 [label="{compound}"]
-                    n19 [label="{exp}"]
-                    n20 [label="d"]
-                    n21 [label="{end scope of {catch}}"]
-                    n22 [label="{end scope of {if}}"]
-                    n23 [label="exit"]
+                    n7 [label="{exp}"]
+                    n8 [label="{if}"]
+                    n9 [label="b"]
+                    n10 [label="{if b}"]
+                    n11 [label="{compound}"]
+                    n12 [label="{end scope of {do}}"]
+                    n13 [label="c"]
+                    n14 [label="{end scope of {compound}}"]
+                    n15 [label="{throw c}"]
+                    n16 [label="{end scope of {if}}"]
+                    n17 [label="{end scope of {do}}"]
+                    n18 [label="{catch}"]
+                    n19 [label="{compound}"]
+                    n20 [label="{exp}"]
+                    n21 [label="d"]
+                    n22 [label="{end scope of {catch}}"]
+                    n23 [label="{end scope of {if}}"]
+                    n24 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -230,21 +231,22 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
-                    n9 -> n10 [label="true"]
-                    n9 -> n11 [label="false"]
-                    n22 -> n11
-                    n10 -> n12
+                    n9 -> n10
+                    n10 -> n11 [label="true"]
+                    n10 -> n12 [label="false"]
+                    n23 -> n12
                     n11 -> n13
-                    n21 -> n13
                     n12 -> n14
-                    n14 -> n15
+                    n22 -> n14
+                    n13 -> n15
                     n15 -> n16
                     n16 -> n17
                     n17 -> n18
                     n18 -> n19
                     n19 -> n20
                     n20 -> n21
-                    n13 -> n23
+                    n21 -> n22
+                    n14 -> n24
                 }
                 """,
             syntaxNode: stmt
@@ -255,7 +257,7 @@ class ControlFlowGraph_CreationTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
     }
 
-    func testGenerateEndScopes_true_ifStatement() {
+    func testGenerateEndScopes_true_ifExpression() {
         let stmt: CompoundStatement = [
             .variableDeclaration(identifier: "preIf", type: .int, initialization: .constant(0)),
             .if(.constant(true), body: [
@@ -279,18 +281,19 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n3 [label="var preIf: Int"]
                     n4 [label="0"]
                     n5 [label="preIf: Int = 0"]
-                    n6 [label="{if}"]
-                    n7 [label="true"]
-                    n8 [label="{if true}"]
-                    n9 [label="{compound}"]
-                    n10 [label="{exp}"]
-                    n11 [label="var ifBody: Int"]
-                    n12 [label="postIf"]
-                    n13 [label="0"]
-                    n14 [label="{end scope of {compound}}"]
-                    n15 [label="ifBody: Int = 0"]
-                    n16 [label="{end scope of {if}}"]
-                    n17 [label="exit"]
+                    n6 [label="{exp}"]
+                    n7 [label="{if}"]
+                    n8 [label="true"]
+                    n9 [label="{if true}"]
+                    n10 [label="{compound}"]
+                    n11 [label="{exp}"]
+                    n12 [label="var ifBody: Int"]
+                    n13 [label="postIf"]
+                    n14 [label="0"]
+                    n15 [label="{end scope of {compound}}"]
+                    n16 [label="ifBody: Int = 0"]
+                    n17 [label="{end scope of {if}}"]
+                    n18 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -299,16 +302,17 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n5 -> n6
                     n6 -> n7
                     n7 -> n8
-                    n8 -> n9 [label="true"]
-                    n8 -> n10 [label="false"]
-                    n16 -> n10
-                    n9 -> n11
+                    n8 -> n9
+                    n9 -> n10 [label="true"]
+                    n9 -> n11 [label="false"]
+                    n17 -> n11
                     n10 -> n12
                     n11 -> n13
                     n12 -> n14
                     n13 -> n15
-                    n15 -> n16
-                    n14 -> n17
+                    n14 -> n16
+                    n16 -> n17
+                    n15 -> n18
                 }
                 """,
             syntaxNode: stmt
@@ -556,34 +560,36 @@ class ControlFlowGraph_CreationTests: XCTestCase {
                     n2 [label="{compound}"]
                     n3 [label="{do}"]
                     n4 [label="{compound}"]
-                    n5 [label="{if}"]
-                    n6 [label="a.b(try c[0] || true)"]
-                    n7 [label="{catch}"]
-                    n8 [label="{if a.b(try c[0] || true)}"]
-                    n9 [label="{compound}"]
+                    n5 [label="{exp}"]
+                    n6 [label="{if}"]
+                    n7 [label="a.b(try c[0] || true)"]
+                    n8 [label="{catch}"]
+                    n9 [label="{if a.b(try c[0] || true)}"]
                     n10 [label="{compound}"]
-                    n11 [label="{exp}"]
+                    n11 [label="{compound}"]
                     n12 [label="{exp}"]
-                    n13 [label="catchBlock"]
-                    n14 [label="e"]
-                    n15 [label="exit"]
+                    n13 [label="{exp}"]
+                    n14 [label="catchBlock"]
+                    n15 [label="e"]
+                    n16 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
                     n5 -> n6
-                    n6 -> n7 [label="throws"]
-                    n6 -> n8
-                    n8 -> n9 [label="true"]
-                    n7 -> n10
-                    n9 -> n11
+                    n6 -> n7
+                    n7 -> n8 [label="throws"]
+                    n7 -> n9
+                    n9 -> n10 [label="true"]
+                    n8 -> n11
                     n10 -> n12
-                    n12 -> n13
-                    n11 -> n14
-                    n8 -> n15 [label="false"]
-                    n13 -> n15
-                    n14 -> n15
+                    n11 -> n13
+                    n13 -> n14
+                    n12 -> n15
+                    n9 -> n16 [label="false"]
+                    n14 -> n16
+                    n15 -> n16
                 }
                 """,
             syntaxNode: stmt

@@ -23,6 +23,11 @@ public func ident(_ matcher: MatchRule<String>) -> SyntaxMatcher<IdentifierExpre
     SyntaxMatcher().keyPath(\.identifier, matcher)
 }
 
+@inlinable
+public func hasElse() -> SyntaxMatcher<IfExpression> {
+    SyntaxMatcher().keyPath(\.elseBody, .negated(.equals(.none)))
+}
+
 public extension ValueMatcher where T: Expression {
     @inlinable
     func isTyped(_ type: SwiftType, ignoringNullability: Bool = false) -> ValueMatcher {

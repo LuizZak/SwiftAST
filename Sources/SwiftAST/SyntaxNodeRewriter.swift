@@ -302,11 +302,11 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         return stmt
     }
 
-    /// Visits an `if` statement with this visitor
+    /// Visits an `if` expression with this visitor
     ///
-    /// - Parameter stmt: An `IfStatement` to visit
-    /// - Returns: Result of visiting the `if` statement node
-    open func visitIf(_ stmt: IfStatement) -> Statement {
+    /// - Parameter stmt: An `IfExpression` to visit
+    /// - Returns: Result of visiting the `if` expression node
+    open func visitIf(_ stmt: IfExpression) -> Expression {
         stmt.conditionalClauses = visitConditionalClauses(stmt.conditionalClauses)
         stmt.body = _visitCompound(stmt.body)
         stmt.elseBody = stmt.elseBody.map(visitElseBody)
@@ -317,18 +317,18 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
     /// Visits an `if` statement's else block with this visitor
     ///
     /// - Parameter stmt: An `if` statement's else block to visit
-    open func visitElseBody(_ stmt: IfStatement.ElseBody) -> IfStatement.ElseBody {
+    open func visitElseBody(_ stmt: IfExpression.ElseBody) -> IfExpression.ElseBody {
         switch stmt {
         case .else(let stmt):
             return .else(_visitCompound(stmt))
 
         case .elseIf(let elseIf):
             let result = visitIf(elseIf)
-            if let elseIf = result as? IfStatement {
+            if let elseIf = result as? IfExpression {
                 return .elseIf(elseIf)
             }
 
-            return .else([result])
+            return .else([.expression(result)])
         }
     }
 

@@ -157,44 +157,6 @@ extension SwiftASTConverter {
         """
     }
 
-    static func convertIf(_ stmt: IfExprSyntax) throws -> ExprSyntax {
-        let conditionals = try convertConditionals(stmt.conditions)
-        let body = try convertCompound(stmt.body)
-
-        switch stmt.elseBody {
-        case .codeBlock(let block):
-            let elseBody = try convertCompound(block)
-
-            return """
-            IfStatement(
-                clauses: \(conditionals),
-                body: \(body),
-                elseBody: .else(\(elseBody))
-            )
-            """
-
-        case .ifExpr(let elseIf):
-            let elseIf = try convertIf(elseIf)
-
-            return """
-            IfStatement(
-                clauses: \(conditionals),
-                body: \(body),
-                elseBody: .elseIf(\(elseIf))
-            )
-            """
-
-        case nil:
-            return """
-            IfStatement(
-                clauses: \(conditionals),
-                body: \(body),
-                elseBody: nil
-            )
-            """
-        }
-    }
-
     static func convertGuard(_ stmt: GuardStmtSyntax) throws -> ExprSyntax {
         let conditionals = try convertConditionals(stmt.conditions)
         let body = try convertCompound(stmt.body)
@@ -742,7 +704,7 @@ extension SwiftASTConverter {
             """)
         }
 
-        if let throwsSpecifier = effectsSpecifier.throwsSpecifier {
+        if let throwsSpecifier = effectsSpecifier.throwsClause?.throwsSpecifier {
             guard throwsSpecifier.tokenKind != .keyword(.rethrows) else {
                 throw throwsSpecifier.ext_error(message: """
                 FunctionSignature does not support rethrows trait.

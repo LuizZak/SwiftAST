@@ -257,8 +257,8 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
 
     /// Visits an `if` statement with this visitor
     ///
-    /// - Parameter stmt: An IfStatement to visit
-    public func visitIf(_ stmt: IfStatement) {
+    /// - Parameter stmt: An IfExpression to visit
+    public func visitIf(_ stmt: IfExpression) {
         listener(stmt)
 
         visitConditionalClauses(stmt.conditionalClauses)
@@ -269,7 +269,7 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
     /// Visits an `if` statement's else block with this visitor
     ///
     /// - Parameter stmt: An `if` statement's else block to visit
-    public func visitElseBody(_ stmt: IfStatement.ElseBody) {
+    public func visitElseBody(_ stmt: IfExpression.ElseBody) {
         switch stmt {
         case .else(let stmt):
             visitCompound(stmt)

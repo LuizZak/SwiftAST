@@ -318,6 +318,134 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             macros: testMacros)
     }
 
+    func testMacro_expression_ifExpression() {
+        assertMacroExpansion("""
+            #ast_expandExpression(if true { 0 } else { 0 })
+            """,
+            expandedSource: #"""
+            IfExpression(
+                clauses: ConditionalClauses(
+                clauses: [ConditionalClauseElement(
+                expression: ConstantExpression(
+                constant: Constant.boolean(true )
+                        )
+                    )]
+                ),
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [ConstantExpression.constant(
+                Constant.int(0 , .decimal)
+                                )]
+                        )]),
+                elseBody: .else(CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [ConstantExpression.constant(
+                Constant.int(0 , .decimal)
+                                    )]
+                            )]))
+            )
+            """#,
+            macros: testMacros)
+    }
+
+    func testMacro_if() {
+        assertMacroExpansion("""
+            #ast_expandExpression({
+                if a {
+                    b
+                }
+            })
+            """,
+            expandedSource: #"""
+            BlockLiteralExpression(
+                parameters: [],
+                returnType: SwiftType.void,
+                body: CompoundStatement(statements: [IfExpression(
+                clauses: ConditionalClauses(
+                clauses: [ConditionalClauseElement(
+                expression: IdentifierExpression(identifier: "a")
+                                )]
+                            ),
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IdentifierExpression(identifier: "b")]
+                                    )]),
+                elseBody: nil
+                        )])
+            )
+            """#,
+            macros: testMacros)
+    }
+
+    func testMacro_ifElse() {
+        assertMacroExpansion("""
+            #ast_expandExpression({
+                if a {
+                    b
+                } else {
+                    c
+                }
+            })
+            """,
+            expandedSource: #"""
+            BlockLiteralExpression(
+                parameters: [],
+                returnType: SwiftType.void,
+                body: CompoundStatement(statements: [IfExpression(
+                clauses: ConditionalClauses(
+                clauses: [ConditionalClauseElement(
+                expression: IdentifierExpression(identifier: "a")
+                                )]
+                            ),
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IdentifierExpression(identifier: "b")]
+                                    )]),
+                elseBody: .else(CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IdentifierExpression(identifier: "c")]
+                                        )]))
+                        )])
+            )
+            """#,
+            macros: testMacros)
+    }
+
+    func testMacro_ifElseIf() {
+        assertMacroExpansion("""
+            #ast_expandExpression({
+                if a {
+                    b
+                } else if c {
+                    d
+                }
+            })
+            """,
+            expandedSource: #"""
+            BlockLiteralExpression(
+                parameters: [],
+                returnType: SwiftType.void,
+                body: CompoundStatement(statements: [IfExpression(
+                clauses: ConditionalClauses(
+                clauses: [ConditionalClauseElement(
+                expression: IdentifierExpression(identifier: "a")
+                                )]
+                            ),
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IdentifierExpression(identifier: "b")]
+                                    )]),
+                elseBody: .elseIf(IfExpression(
+                clauses: ConditionalClauses(
+                clauses: [ConditionalClauseElement(
+                expression: IdentifierExpression(identifier: "c")
+                                        )]
+                                    ),
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IdentifierExpression(identifier: "d")]
+                                            )]),
+                elseBody: nil
+                                ))
+                        )])
+            )
+            """#,
+            macros: testMacros)
+    }
+
     func testMacro_firstExpressionIn() {
         assertMacroExpansion(#"""
             #ast_expandExpression(firstExpressionIn: { (a: String, b: Int) in
@@ -518,21 +646,6 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
                     message: "Invalid SwiftOperator token conversion",
                     line: 1,
                     column: 25
-                )
-            ])
-    }
-
-    func testMacro_diagnostic_ifExpression() {
-        assertDiagnostics("""
-            #ast_expandExpression(if true { 0 } else { 0 })
-            """,
-            expandedSource: #"""
-            UnknownExpression(context: UnknownASTContext("if true { 0 } else { 0 }"))
-            """#, [
-                DiagnosticSpec(
-                    message: "If statements in place of expressions are not supported by SwiftAST's Expression type.",
-                    line: 1,
-                    column: 23
                 )
             ])
     }

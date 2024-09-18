@@ -45,18 +45,6 @@ public protocol StatementVisitor {
     /// - Returns: Result of visiting the `guard` statement node
     func visitGuard(_ stmt: GuardStatement) -> StmtResult
 
-    /// Visits an `if` statement with this visitor
-    ///
-    /// - Parameter stmt: An `if` statement to visit
-    /// - Returns: Result of visiting the `if` statement node
-    func visitIf(_ stmt: IfStatement) -> StmtResult
-
-    /// Visits an `if` statement's else block with this visitor
-    ///
-    /// - Parameter stmt: An `if` statement's else block to visit
-    /// - Returns: Result of visiting the `if` statement's else block node
-    func visitElseBody(_ stmt: IfStatement.ElseBody) -> ElseBodyResult
-
     /// Visits a `while` statement with this visitor
     ///
     /// - Parameter stmt: A while statement to visit

@@ -392,21 +392,22 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n4 [label="{compound}"]
                     n5 [label="{exp}"]
                     n6 [label="preError"]
-                    n7 [label="{if}"]
-                    n8 [label="a"]
-                    n9 [label="{if a}"]
-                    n10 [label="{compound}"]
-                    n11 [label="{exp}"]
-                    n12 [label="Error"]
-                    n13 [label="postError"]
-                    n14 [label="{throw Error}"]
-                    n15 [label="{exp}"]
-                    n16 [label="{catch}"]
-                    n17 [label="end"]
-                    n18 [label="{compound}"]
-                    n19 [label="{exp}"]
-                    n20 [label="errorHandler"]
-                    n21 [label="exit"]
+                    n7 [label="{exp}"]
+                    n8 [label="{if}"]
+                    n9 [label="a"]
+                    n10 [label="{if a}"]
+                    n11 [label="{compound}"]
+                    n12 [label="{exp}"]
+                    n13 [label="Error"]
+                    n14 [label="postError"]
+                    n15 [label="{throw Error}"]
+                    n16 [label="{exp}"]
+                    n17 [label="{catch}"]
+                    n18 [label="end"]
+                    n19 [label="{compound}"]
+                    n20 [label="{exp}"]
+                    n21 [label="errorHandler"]
+                    n22 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -416,19 +417,20 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
-                    n9 -> n10 [label="true"]
-                    n9 -> n11 [label="false"]
-                    n10 -> n12
+                    n9 -> n10
+                    n10 -> n11 [label="true"]
+                    n10 -> n12 [label="false"]
                     n11 -> n13
                     n12 -> n14
                     n13 -> n15
-                    n20 -> n15
                     n14 -> n16
+                    n21 -> n16
                     n15 -> n17
                     n16 -> n18
-                    n18 -> n19
+                    n17 -> n19
                     n19 -> n20
-                    n17 -> n21
+                    n20 -> n21
+                    n18 -> n22
                 }
                 """
         )
@@ -632,460 +634,6 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
         )
         XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
-    }
-
-    func testIf() {
-        let stmt: CompoundStatement = [
-            Statement.if(
-                .identifier("predicate"),
-                body: [
-                    .expression(.identifier("ifBody")),
-                ]
-            ),
-        ]
-
-        let graph = ControlFlowGraph.forCompoundStatement(stmt)
-
-        sanitize(graph)
-        assertGraphviz(
-            graph: graph,
-            matches: """
-                digraph flow {
-                    n1 [label="entry"]
-                    n2 [label="{compound}"]
-                    n3 [label="{if}"]
-                    n4 [label="predicate"]
-                    n5 [label="{if predicate}"]
-                    n6 [label="{compound}"]
-                    n7 [label="{exp}"]
-                    n8 [label="ifBody"]
-                    n9 [label="exit"]
-                
-                    n1 -> n2
-                    n2 -> n3
-                    n3 -> n4
-                    n4 -> n5
-                    n5 -> n6 [label="true"]
-                    n6 -> n7
-                    n7 -> n8
-                    n5 -> n9 [label="false"]
-                    n8 -> n9
-                }
-                """
-        )
-        XCTAssert(graph.entry.node === stmt)
-        XCTAssert(graph.exit.node === stmt)
-        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
-    }
-
-    func testIf_withElse() {
-        let stmt: CompoundStatement = [
-            Statement.if(
-                .identifier("predicate"),
-                body: [
-                    .expression(.identifier("ifBody")),
-                ],
-                else: [
-                    .expression(.identifier("elseBody")),
-                ]
-            ),
-        ]
-
-        let graph = ControlFlowGraph.forCompoundStatement(stmt)
-
-        sanitize(graph)
-        assertGraphviz(
-            graph: graph,
-            matches: """
-                digraph flow {
-                    n1 [label="entry"]
-                    n2 [label="{compound}"]
-                    n3 [label="{if}"]
-                    n4 [label="predicate"]
-                    n5 [label="{if predicate}"]
-                    n6 [label="{compound}"]
-                    n7 [label="{compound}"]
-                    n8 [label="{exp}"]
-                    n9 [label="{exp}"]
-                    n10 [label="elseBody"]
-                    n11 [label="ifBody"]
-                    n12 [label="exit"]
-                
-                    n1 -> n2
-                    n2 -> n3
-                    n3 -> n4
-                    n4 -> n5
-                    n5 -> n6 [label="true"]
-                    n5 -> n7 [label="false"]
-                    n6 -> n8
-                    n7 -> n9
-                    n9 -> n10
-                    n8 -> n11
-                    n10 -> n12
-                    n11 -> n12
-                }
-                """
-        )
-        XCTAssert(graph.entry.node === stmt)
-        XCTAssert(graph.exit.node === stmt)
-        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
-    }
-
-    func testIf_withElseIf() {
-        let stmt: CompoundStatement = [
-            .if(
-                .identifier("predicate"),
-                body: [
-                    .expression(.identifier("ifBody")),
-                ],
-                elseIf: .if(
-                    .identifier("predicate2"),
-                    body: [
-                        .expression(.identifier("ifElseIfBody")),
-                    ],
-                    else: [
-                        .expression(.identifier("ifElseIfElseBody")),
-                    ]
-                )
-            ),
-        ]
-
-        let graph = ControlFlowGraph.forCompoundStatement(stmt)
-
-        sanitize(graph)
-        assertGraphviz(
-            graph: graph,
-            matches: """
-                digraph flow {
-                    n1 [label="entry"]
-                    n2 [label="{compound}"]
-                    n3 [label="{if}"]
-                    n4 [label="predicate"]
-                    n5 [label="{if predicate}"]
-                    n6 [label="{if}"]
-                    n7 [label="{compound}"]
-                    n8 [label="predicate2"]
-                    n9 [label="{exp}"]
-                    n10 [label="{if predicate2}"]
-                    n11 [label="ifBody"]
-                    n12 [label="{compound}"]
-                    n13 [label="{compound}"]
-                    n14 [label="{exp}"]
-                    n15 [label="{exp}"]
-                    n16 [label="ifElseIfBody"]
-                    n17 [label="ifElseIfElseBody"]
-                    n18 [label="exit"]
-
-                    n1 -> n2
-                    n2 -> n3
-                    n3 -> n4
-                    n4 -> n5
-                    n5 -> n6 [label="false"]
-                    n5 -> n7 [label="true"]
-                    n6 -> n8
-                    n7 -> n9
-                    n8 -> n10
-                    n9 -> n11
-                    n10 -> n12 [label="true"]
-                    n10 -> n13 [label="false"]
-                    n12 -> n14
-                    n13 -> n15
-                    n14 -> n16
-                    n15 -> n17
-                    n11 -> n18
-                    n16 -> n18
-                    n17 -> n18
-                }
-                """
-        )
-        XCTAssert(graph.entry.node === stmt)
-        XCTAssert(graph.exit.node === stmt)
-        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
-    }
-
-    func testIf_labeledBreak() {
-        let stmt: CompoundStatement = [
-            .while(.identifier("whilePredicate"), body: [
-                .if(
-                    .identifier("predicate"),
-                    body: [
-                        .if(.identifier("predicateInner"), body: [
-                            .break(targetLabel: "outer"),
-                            .expression(.identifier("postBreak")),
-                        ]),
-                    ]
-                ).labeled("outer"),
-            ]),
-        ]
-
-        let graph = ControlFlowGraph.forCompoundStatement(stmt)
-
-        sanitize(graph, expectsUnreachable: true)
-        assertGraphviz(
-            graph: graph,
-            matches: """
-                digraph flow {
-                    n1 [label="entry"]
-                    n2 [label="{compound}"]
-                    n3 [label="{while}"]
-                    n4 [label="whilePredicate"]
-                    n5 [label="{if whilePredicate}"]
-                    n6 [label="{compound}"]
-                    n7 [label="{if}"]
-                    n8 [label="predicate"]
-                    n9 [label="{if predicate}"]
-                    n10 [label="{compound}"]
-                    n11 [label="{if}"]
-                    n12 [label="predicateInner"]
-                    n13 [label="{if predicateInner}"]
-                    n14 [label="{compound}"]
-                    n15 [label="{break outer}"]
-                    n16 [label="{exp}"]
-                    n17 [label="postBreak"]
-                    n18 [label="exit"]
-                
-                    n1 -> n2
-                    n2 -> n3
-                    n9 -> n3 [color="#aa3333", label="false", penwidth=0.5]
-                    n13 -> n3 [color="#aa3333", label="false", penwidth=0.5]
-                    n15 -> n3 [color="#aa3333", penwidth=0.5]
-                    n17 -> n3
-                    n3 -> n4
-                    n4 -> n5
-                    n5 -> n6 [label="true"]
-                    n6 -> n7
-                    n7 -> n8
-                    n8 -> n9
-                    n9 -> n10 [label="true"]
-                    n10 -> n11
-                    n11 -> n12
-                    n12 -> n13
-                    n13 -> n14 [label="true"]
-                    n14 -> n15
-                    n16 -> n17
-                    n5 -> n18 [label="false"]
-                }
-                """
-        )
-        XCTAssert(graph.entry.node === stmt)
-        XCTAssert(graph.exit.node === stmt)
-        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
-    }
-
-    func testIf_multiClause() {
-        let stmt: CompoundStatement = [
-            Statement.if(
-                clauses: [
-                    .init(expression: .identifier("predicate1")),
-                    .init(
-                        pattern: .expression(.identifier("pattern2")),
-                        expression: .identifier("predicate2")
-                    ),
-                ],
-                body: [
-                    .expression(.identifier("ifBody")),
-                ]
-            ),
-        ]
-
-        let graph = ControlFlowGraph.forCompoundStatement(stmt)
-
-        sanitize(graph)
-        assertGraphviz(
-            graph: graph,
-            matches: """
-                digraph flow {
-                    n1 [label="entry"]
-                    n2 [label="{compound}"]
-                    n3 [label="{if}"]
-                    n4 [label="predicate1"]
-                    n5 [label="{if predicate1}"]
-                    n6 [label="pattern2"]
-                    n7 [label="predicate2"]
-                    n8 [label="{if pattern2 = predicate2}"]
-                    n9 [label="{compound}"]
-                    n10 [label="{exp}"]
-                    n11 [label="ifBody"]
-                    n12 [label="exit"]
-                
-                    n1 -> n2
-                    n2 -> n3
-                    n3 -> n4
-                    n4 -> n5
-                    n5 -> n6 [label="true"]
-                    n6 -> n7
-                    n7 -> n8
-                    n8 -> n9 [label="true"]
-                    n9 -> n10
-                    n10 -> n11
-                    n5 -> n12 [label="false"]
-                    n8 -> n12 [label="false"]
-                    n11 -> n12
-                }
-                """
-        )
-        XCTAssert(graph.entry.node === stmt)
-        XCTAssert(graph.exit.node === stmt)
-        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 3)
-    }
-
-    func testIf_multiClause_throwingExpression() {
-        let stmt: CompoundStatement = [
-            Statement.do([
-                Statement.if(
-                    clauses: [
-                        .init(expression: .identifier("predicate1")),
-                        .init(
-                            pattern: .expression(.identifier("pattern2")),
-                            expression: .try(.identifier("predicate2"))
-                        ),
-                    ],
-                    body: [
-                        .expression(.identifier("ifBody")),
-                    ]
-                ),
-            ]).catch([
-                .expression(.identifier("catch_clause"))
-            ])
-        ]
-
-        let graph = ControlFlowGraph.forCompoundStatement(stmt)
-
-        sanitize(graph)
-        assertGraphviz(
-            graph: graph,
-            matches: """
-                digraph flow {
-                    n1 [label="entry"]
-                    n2 [label="{compound}"]
-                    n3 [label="{do}"]
-                    n4 [label="{compound}"]
-                    n5 [label="{if}"]
-                    n6 [label="predicate1"]
-                    n7 [label="{if predicate1}"]
-                    n8 [label="pattern2"]
-                    n9 [label="predicate2"]
-                    n10 [label="try predicate2"]
-                    n11 [label="{catch}"]
-                    n12 [label="{if pattern2 = try predicate2}"]
-                    n13 [label="{compound}"]
-                    n14 [label="{compound}"]
-                    n15 [label="{exp}"]
-                    n16 [label="{exp}"]
-                    n17 [label="catch_clause"]
-                    n18 [label="ifBody"]
-                    n19 [label="exit"]
-                
-                    n1 -> n2
-                    n2 -> n3
-                    n3 -> n4
-                    n4 -> n5
-                    n5 -> n6
-                    n6 -> n7
-                    n7 -> n8 [label="true"]
-                    n8 -> n9
-                    n9 -> n10
-                    n10 -> n11 [label="throws"]
-                    n10 -> n12
-                    n12 -> n13 [label="true"]
-                    n11 -> n14
-                    n13 -> n15
-                    n14 -> n16
-                    n16 -> n17
-                    n15 -> n18
-                    n7 -> n19 [label="false"]
-                    n12 -> n19 [label="false"]
-                    n17 -> n19
-                    n18 -> n19
-                }
-                """
-        )
-        XCTAssert(graph.entry.node === stmt)
-        XCTAssert(graph.exit.node === stmt)
-        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 4)
-    }
-
-    func testIf_multiClause_throwingPattern() {
-        let stmt: CompoundStatement = [
-            Statement.do([
-                Statement.if(
-                    clauses: [
-                        .init(expression: .identifier("predicate1")),
-                        .init(
-                            pattern: .expression(.try(.identifier("pattern2"))),
-                            expression: .identifier("predicate2")
-                        ),
-                    ],
-                    body: [
-                        .expression(.identifier("ifBody")),
-                    ]
-                ),
-            ]).catch([
-                .expression(.identifier("catch_clause"))
-            ])
-        ]
-
-        let graph = ControlFlowGraph.forCompoundStatement(stmt)
-
-        sanitize(graph)
-        assertGraphviz(
-            graph: graph,
-            matches: """
-                digraph flow {
-                    n1 [label="entry"]
-                    n2 [label="{compound}"]
-                    n3 [label="{do}"]
-                    n4 [label="{compound}"]
-                    n5 [label="{if}"]
-                    n6 [label="predicate1"]
-                    n7 [label="{if predicate1}"]
-                    n8 [label="pattern2"]
-                    n9 [label="try pattern2"]
-                    n10 [label="{catch}"]
-                    n11 [label="predicate2"]
-                    n12 [label="{compound}"]
-                    n13 [label="{if try pattern2 = predicate2}"]
-                    n14 [label="{compound}"]
-                    n15 [label="{exp}"]
-                    n16 [label="{exp}"]
-                    n17 [label="catch_clause"]
-                    n18 [label="ifBody"]
-                    n19 [label="exit"]
-                
-                    n1 -> n2
-                    n2 -> n3
-                    n3 -> n4
-                    n4 -> n5
-                    n5 -> n6
-                    n6 -> n7
-                    n7 -> n8 [label="true"]
-                    n8 -> n9
-                    n9 -> n10 [label="throws"]
-                    n9 -> n11
-                    n10 -> n12
-                    n11 -> n13
-                    n13 -> n14 [label="true"]
-                    n12 -> n15
-                    n14 -> n16
-                    n15 -> n17
-                    n16 -> n18
-                    n7 -> n19 [label="false"]
-                    n13 -> n19 [label="false"]
-                    n17 -> n19
-                    n18 -> n19
-                }
-                """
-        )
-        XCTAssert(graph.entry.node === stmt)
-        XCTAssert(graph.exit.node === stmt)
-        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 4)
     }
 
     func testGuard() {
@@ -2048,23 +1596,24 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n9 [label="{compound}"]
                     n10 [label="b"]
                     n11 [label="{exp}"]
-                    n12 [label="{if}"]
+                    n12 [label="{exp}"]
                     n13 [label="defaultExp"]
-                    n14 [label="predicate"]
-                    n15 [label="{if predicate}"]
-                    n16 [label="{compound}"]
-                    n17 [label="{exp}"]
-                    n18 [label="d"]
-                    n19 [label="{break}"]
-                    n20 [label="{defer}"]
+                    n14 [label="{if}"]
+                    n15 [label="predicate"]
+                    n16 [label="{if predicate}"]
+                    n17 [label="{compound}"]
+                    n18 [label="{exp}"]
+                    n19 [label="d"]
+                    n20 [label="{break}"]
                     n21 [label="{defer}"]
-                    n22 [label="{compound}"]
+                    n22 [label="{defer}"]
                     n23 [label="{compound}"]
-                    n24 [label="{exp}"]
+                    n24 [label="{compound}"]
                     n25 [label="{exp}"]
-                    n26 [label="c"]
+                    n26 [label="{exp}"]
                     n27 [label="c"]
-                    n28 [label="exit"]
+                    n28 [label="c"]
+                    n29 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -2080,11 +1629,11 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n11 -> n13
                     n12 -> n14
                     n14 -> n15
-                    n15 -> n16 [label="true"]
-                    n15 -> n17 [label="false"]
-                    n17 -> n18
-                    n16 -> n19
-                    n18 -> n20
+                    n15 -> n16
+                    n16 -> n17 [label="true"]
+                    n16 -> n18 [label="false"]
+                    n18 -> n19
+                    n17 -> n20
                     n19 -> n21
                     n20 -> n22
                     n21 -> n23
@@ -2092,9 +1641,10 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n23 -> n25
                     n24 -> n26
                     n25 -> n27
-                    n13 -> n28
                     n26 -> n28
-                    n27 -> n28
+                    n13 -> n29
+                    n27 -> n29
+                    n28 -> n29
                 }
                 """
         )
@@ -2184,33 +1734,34 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n11 [label="c"]
                     n12 [label="{compound}"]
                     n13 [label="{exp}"]
-                    n14 [label="{if}"]
+                    n14 [label="{exp}"]
                     n15 [label="{exp}"]
                     n16 [label="g"]
-                    n17 [label="predicateFallthrough"]
+                    n17 [label="{if}"]
                     n18 [label="defaultExp"]
-                    n19 [label="{if predicateFallthrough}"]
-                    n20 [label="{compound}"]
-                    n21 [label="{exp}"]
-                    n22 [label="{fallthrough}"]
-                    n23 [label="e"]
-                    n24 [label="{defer}"]
+                    n19 [label="predicateFallthrough"]
+                    n20 [label="{if predicateFallthrough}"]
+                    n21 [label="{compound}"]
+                    n22 [label="{exp}"]
+                    n23 [label="{fallthrough}"]
+                    n24 [label="e"]
                     n25 [label="{defer}"]
-                    n26 [label="{compound}"]
+                    n26 [label="{defer}"]
                     n27 [label="{compound}"]
-                    n28 [label="{exp}"]
+                    n28 [label="{compound}"]
                     n29 [label="{exp}"]
-                    n30 [label="deferredExp"]
+                    n30 [label="{exp}"]
                     n31 [label="deferredExp"]
-                    n32 [label="{defer}"]
+                    n32 [label="deferredExp"]
                     n33 [label="{defer}"]
-                    n34 [label="{compound}"]
+                    n34 [label="{defer}"]
                     n35 [label="{compound}"]
-                    n36 [label="{exp}"]
+                    n36 [label="{compound}"]
                     n37 [label="{exp}"]
-                    n38 [label="d"]
+                    n38 [label="{exp}"]
                     n39 [label="d"]
-                    n40 [label="exit"]
+                    n40 [label="d"]
+                    n41 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -2221,7 +1772,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n6 -> n8
                     n7 -> n9 [label="pattern fail"]
                     n7 -> n10 [label="pattern success"]
-                    n38 -> n10 [label="fallthrough"]
+                    n39 -> n10 [label="fallthrough"]
                     n8 -> n11
                     n9 -> n12
                     n10 -> n13
@@ -2231,9 +1782,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n14 -> n17
                     n15 -> n18
                     n17 -> n19
-                    n19 -> n20 [label="true"]
-                    n19 -> n21 [label="false"]
-                    n20 -> n22
+                    n19 -> n20
+                    n20 -> n21 [label="true"]
+                    n20 -> n22 [label="false"]
                     n21 -> n23
                     n22 -> n24
                     n23 -> n25
@@ -2251,9 +1802,10 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n35 -> n37
                     n36 -> n38
                     n37 -> n39
-                    n16 -> n40
-                    n18 -> n40
-                    n39 -> n40
+                    n38 -> n40
+                    n16 -> n41
+                    n18 -> n41
+                    n40 -> n41
                 }
                 """
         )
@@ -2328,48 +1880,50 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n11 [label="b"]
                     n12 [label="{compound}"]
                     n13 [label="{exp}"]
-                    n14 [label="{if}"]
+                    n14 [label="{exp}"]
                     n15 [label="{exp}"]
                     n16 [label="g"]
-                    n17 [label="predicateFallthrough"]
+                    n17 [label="{if}"]
                     n18 [label="defaultExp"]
-                    n19 [label="{if predicateFallthrough}"]
-                    n20 [label="{compound}"]
-                    n21 [label="{exp}"]
+                    n19 [label="predicateFallthrough"]
+                    n20 [label="{if predicateFallthrough}"]
+                    n21 [label="{compound}"]
                     n22 [label="{exp}"]
-                    n23 [label="e"]
-                    n24 [label="d"]
-                    n25 [label="{if}"]
-                    n26 [label="{fallthrough}"]
-                    n27 [label="predicateReturn"]
-                    n28 [label="{defer}"]
-                    n29 [label="{if predicateReturn}"]
-                    n30 [label="{compound}"]
+                    n23 [label="{exp}"]
+                    n24 [label="e"]
+                    n25 [label="d"]
+                    n26 [label="{exp}"]
+                    n27 [label="{fallthrough}"]
+                    n28 [label="{if}"]
+                    n29 [label="{defer}"]
+                    n30 [label="predicateReturn"]
                     n31 [label="{compound}"]
-                    n32 [label="{defer}"]
-                    n33 [label="{exp}"]
-                    n34 [label="{return}"]
-                    n35 [label="{compound}"]
-                    n36 [label="f"]
-                    n37 [label="{defer}"]
-                    n38 [label="{exp}"]
-                    n39 [label="{compound}"]
+                    n32 [label="{if predicateReturn}"]
+                    n33 [label="{compound}"]
+                    n34 [label="{exp}"]
+                    n35 [label="{defer}"]
+                    n36 [label="{return}"]
+                    n37 [label="f"]
+                    n38 [label="{compound}"]
+                    n39 [label="{defer}"]
                     n40 [label="{defer}"]
-                    n41 [label="f"]
+                    n41 [label="{exp}"]
                     n42 [label="{compound}"]
-                    n43 [label="{exp}"]
-                    n44 [label="{defer}"]
-                    n45 [label="f"]
+                    n43 [label="{compound}"]
+                    n44 [label="f"]
+                    n45 [label="{exp}"]
                     n46 [label="{exp}"]
-                    n47 [label="{compound}"]
-                    n48 [label="deferredExp"]
-                    n49 [label="{defer}"]
-                    n50 [label="{exp}"]
-                    n51 [label="{compound}"]
-                    n52 [label="deferredExp"]
-                    n53 [label="{exp}"]
+                    n47 [label="{defer}"]
+                    n48 [label="f"]
+                    n49 [label="deferredExp"]
+                    n50 [label="{compound}"]
+                    n51 [label="{defer}"]
+                    n52 [label="{exp}"]
+                    n53 [label="{compound}"]
                     n54 [label="deferredExp"]
-                    n55 [label="exit"]
+                    n55 [label="{exp}"]
+                    n56 [label="deferredExp"]
+                    n57 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -2380,7 +1934,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n6 -> n8
                     n7 -> n9 [label="pattern fail"]
                     n7 -> n10 [label="pattern success"]
-                    n48 -> n10 [label="fallthrough"]
+                    n49 -> n10 [label="fallthrough"]
                     n8 -> n11
                     n9 -> n12
                     n10 -> n13
@@ -2390,9 +1944,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n14 -> n17
                     n15 -> n18
                     n17 -> n19
-                    n19 -> n20 [label="true"]
-                    n19 -> n21 [label="false"]
-                    n20 -> n22
+                    n19 -> n20
+                    n20 -> n21 [label="true"]
+                    n20 -> n22 [label="false"]
                     n21 -> n23
                     n22 -> n24
                     n23 -> n25
@@ -2400,35 +1954,37 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n25 -> n27
                     n26 -> n28
                     n27 -> n29
-                    n29 -> n30 [label="true"]
-                    n28 -> n31
-                    n29 -> n32 [label="false"]
-                    n31 -> n33
-                    n30 -> n34
-                    n32 -> n35
+                    n28 -> n30
+                    n29 -> n31
+                    n30 -> n32
+                    n32 -> n33 [label="true"]
+                    n31 -> n34
+                    n32 -> n35 [label="false"]
                     n33 -> n36
                     n34 -> n37
                     n35 -> n38
-                    n37 -> n39
-                    n36 -> n40
+                    n36 -> n39
+                    n37 -> n40
                     n38 -> n41
-                    n40 -> n42
-                    n39 -> n43
+                    n39 -> n42
+                    n40 -> n43
                     n41 -> n44
-                    n43 -> n45
-                    n42 -> n46
+                    n42 -> n45
+                    n43 -> n46
                     n44 -> n47
-                    n46 -> n48
-                    n45 -> n49
+                    n45 -> n48
+                    n46 -> n49
                     n47 -> n50
-                    n49 -> n51
+                    n48 -> n51
                     n50 -> n52
                     n51 -> n53
-                    n53 -> n54
-                    n16 -> n55
-                    n18 -> n55
-                    n52 -> n55
-                    n54 -> n55
+                    n52 -> n54
+                    n53 -> n55
+                    n55 -> n56
+                    n16 -> n57
+                    n18 -> n57
+                    n54 -> n57
+                    n56 -> n57
                 }
                 """
         )
@@ -2650,38 +2206,40 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n4 [label="whilePredicate"]
                     n5 [label="{if whilePredicate}"]
                     n6 [label="{compound}"]
-                    n7 [label="{if}"]
-                    n8 [label="ifPredicate"]
-                    n9 [label="{if ifPredicate}"]
-                    n10 [label="{compound}"]
+                    n7 [label="{exp}"]
+                    n8 [label="{if}"]
+                    n9 [label="ifPredicate"]
+                    n10 [label="{if ifPredicate}"]
                     n11 [label="{compound}"]
-                    n12 [label="{exp}"]
-                    n13 [label="{break}"]
-                    n14 [label="preContinue"]
-                    n15 [label="{continue}"]
-                    n16 [label="{exp}"]
-                    n17 [label="postIf"]
-                    n18 [label="exit"]
+                    n12 [label="{compound}"]
+                    n13 [label="{exp}"]
+                    n14 [label="{break}"]
+                    n15 [label="preContinue"]
+                    n16 [label="{continue}"]
+                    n17 [label="{exp}"]
+                    n18 [label="postIf"]
+                    n19 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
-                    n15 -> n3 [color="#aa3333", penwidth=0.5]
-                    n17 -> n3
+                    n16 -> n3 [color="#aa3333", penwidth=0.5]
+                    n18 -> n3
                     n3 -> n4
                     n4 -> n5
                     n5 -> n6 [label="true"]
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
-                    n9 -> n10 [label="false"]
-                    n9 -> n11 [label="true"]
-                    n10 -> n12
+                    n9 -> n10
+                    n10 -> n11 [label="false"]
+                    n10 -> n12 [label="true"]
                     n11 -> n13
                     n12 -> n14
-                    n14 -> n15
-                    n16 -> n17
-                    n5 -> n18 [label="false"]
-                    n13 -> n18
+                    n13 -> n15
+                    n15 -> n16
+                    n17 -> n18
+                    n5 -> n19 [label="false"]
+                    n14 -> n19
                 }
                 """
         )
@@ -3418,15 +2976,16 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 [label="{compound}"]
                     n3 [label="{exp}"]
                     n4 [label="preError"]
-                    n5 [label="{if}"]
-                    n6 [label="a"]
-                    n7 [label="{if a}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{exp}"]
-                    n10 [label="Error"]
-                    n11 [label="postError"]
-                    n12 [label="{throw Error}"]
-                    n13 [label="exit"]
+                    n5 [label="{exp}"]
+                    n6 [label="{if}"]
+                    n7 [label="a"]
+                    n8 [label="{if a}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{exp}"]
+                    n11 [label="Error"]
+                    n12 [label="postError"]
+                    n13 [label="{throw Error}"]
+                    n14 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -3434,13 +2993,14 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n4 -> n5
                     n5 -> n6
                     n6 -> n7
-                    n7 -> n8 [label="true"]
-                    n7 -> n9 [label="false"]
-                    n8 -> n10
+                    n7 -> n8
+                    n8 -> n9 [label="true"]
+                    n8 -> n10 [label="false"]
                     n9 -> n11
                     n10 -> n12
                     n11 -> n13
-                    n12 -> n13
+                    n12 -> n14
+                    n13 -> n14
                 }
                 """
         )
@@ -3532,20 +3092,21 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n9 [label="b"]
                     n10 [label="{if b}"]
                     n11 [label="{compound}"]
-                    n12 [label="{if}"]
-                    n13 [label="predicate"]
-                    n14 [label="{if predicate}"]
-                    n15 [label="{defer}"]
-                    n16 [label="{compound}"]
+                    n12 [label="{exp}"]
+                    n13 [label="{if}"]
+                    n14 [label="predicate"]
+                    n15 [label="{if predicate}"]
+                    n16 [label="{defer}"]
                     n17 [label="{compound}"]
-                    n18 [label="{break outer}"]
-                    n19 [label="{exp}"]
-                    n20 [label="{defer}"]
-                    n21 [label="deferred"]
-                    n22 [label="{compound}"]
-                    n23 [label="{exp}"]
-                    n24 [label="deferred"]
-                    n25 [label="exit"]
+                    n18 [label="{compound}"]
+                    n19 [label="{break outer}"]
+                    n20 [label="{exp}"]
+                    n21 [label="{defer}"]
+                    n22 [label="deferred"]
+                    n23 [label="{compound}"]
+                    n24 [label="{exp}"]
+                    n25 [label="deferred"]
+                    n26 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -3553,9 +3114,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n10 -> n4 [color="#aa3333", label="false", penwidth=0.5]
                     n4 -> n5 [label="next"]
                     n4 -> n6 [label="end"]
-                    n24 -> n6
+                    n25 -> n6
                     n5 -> n7
-                    n21 -> n7 [color="#aa3333", penwidth=0.5]
+                    n22 -> n7 [color="#aa3333", penwidth=0.5]
                     n6 -> n8
                     n7 -> n9
                     n9 -> n10
@@ -3563,17 +3124,18 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n11 -> n12
                     n12 -> n13
                     n13 -> n14
-                    n14 -> n15 [label="false"]
-                    n14 -> n16 [label="true"]
-                    n15 -> n17
+                    n14 -> n15
+                    n15 -> n16 [label="false"]
+                    n15 -> n17 [label="true"]
                     n16 -> n18
                     n17 -> n19
                     n18 -> n20
                     n19 -> n21
                     n20 -> n22
-                    n22 -> n23
+                    n21 -> n23
                     n23 -> n24
-                    n8 -> n25
+                    n24 -> n25
+                    n8 -> n26
                 }
                 """
         )
@@ -3710,46 +3272,48 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n7 [label="b"]
                     n8 [label="{if b}"]
                     n9 [label="{compound}"]
-                    n10 [label="{if}"]
-                    n11 [label="predicate"]
-                    n12 [label="{if predicate}"]
-                    n13 [label="{defer}"]
-                    n14 [label="{compound}"]
+                    n10 [label="{exp}"]
+                    n11 [label="{if}"]
+                    n12 [label="predicate"]
+                    n13 [label="{if predicate}"]
+                    n14 [label="{defer}"]
                     n15 [label="{compound}"]
-                    n16 [label="{continue outer}"]
-                    n17 [label="{exp}"]
-                    n18 [label="{defer}"]
-                    n19 [label="deferred"]
-                    n20 [label="{compound}"]
-                    n21 [label="{exp}"]
-                    n22 [label="deferred"]
-                    n23 [label="exit"]
+                    n16 [label="{compound}"]
+                    n17 [label="{continue outer}"]
+                    n18 [label="{exp}"]
+                    n19 [label="{defer}"]
+                    n20 [label="deferred"]
+                    n21 [label="{compound}"]
+                    n22 [label="{exp}"]
+                    n23 [label="deferred"]
+                    n24 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n8 -> n4 [color="#aa3333", label="false", penwidth=0.5]
-                    n22 -> n4 [color="#aa3333", penwidth=0.5]
+                    n23 -> n4 [color="#aa3333", penwidth=0.5]
                     n4 -> n5 [label="next"]
                     n5 -> n6
-                    n19 -> n6 [color="#aa3333", penwidth=0.5]
+                    n20 -> n6 [color="#aa3333", penwidth=0.5]
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9 [label="true"]
                     n9 -> n10
                     n10 -> n11
                     n11 -> n12
-                    n12 -> n13 [label="false"]
-                    n12 -> n14 [label="true"]
-                    n13 -> n15
+                    n12 -> n13
+                    n13 -> n14 [label="false"]
+                    n13 -> n15 [label="true"]
                     n14 -> n16
                     n15 -> n17
                     n16 -> n18
                     n17 -> n19
                     n18 -> n20
-                    n20 -> n21
+                    n19 -> n21
                     n21 -> n22
-                    n4 -> n23 [label="end"]
+                    n22 -> n23
+                    n4 -> n24 [label="end"]
                 }
                 """
         )
@@ -3833,27 +3397,28 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n4 [label="a"]
                     n5 [label="{do}"]
                     n6 [label="{compound}"]
-                    n7 [label="{if}"]
-                    n8 [label="predicate"]
-                    n9 [label="{if predicate}"]
-                    n10 [label="{compound}"]
-                    n11 [label="{exp}"]
-                    n12 [label="error"]
-                    n13 [label="c"]
-                    n14 [label="{throw error}"]
-                    n15 [label="{defer}"]
+                    n7 [label="{exp}"]
+                    n8 [label="{if}"]
+                    n9 [label="predicate"]
+                    n10 [label="{if predicate}"]
+                    n11 [label="{compound}"]
+                    n12 [label="{exp}"]
+                    n13 [label="error"]
+                    n14 [label="c"]
+                    n15 [label="{throw error}"]
                     n16 [label="{defer}"]
-                    n17 [label="{compound}"]
+                    n17 [label="{defer}"]
                     n18 [label="{compound}"]
-                    n19 [label="{exp}"]
+                    n19 [label="{compound}"]
                     n20 [label="{exp}"]
-                    n21 [label="b"]
+                    n21 [label="{exp}"]
                     n22 [label="b"]
-                    n23 [label="{catch}"]
-                    n24 [label="{compound}"]
-                    n25 [label="{exp}"]
-                    n26 [label="d"]
-                    n27 [label="exit"]
+                    n23 [label="b"]
+                    n24 [label="{catch}"]
+                    n25 [label="{compound}"]
+                    n26 [label="{exp}"]
+                    n27 [label="d"]
+                    n28 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -3863,9 +3428,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n6 -> n7
                     n7 -> n8
                     n8 -> n9
-                    n9 -> n10 [label="true"]
-                    n9 -> n11 [label="false"]
-                    n10 -> n12
+                    n9 -> n10
+                    n10 -> n11 [label="true"]
+                    n10 -> n12 [label="false"]
                     n11 -> n13
                     n12 -> n14
                     n13 -> n15
@@ -3876,12 +3441,13 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n18 -> n20
                     n19 -> n21
                     n20 -> n22
-                    n22 -> n23
+                    n21 -> n23
                     n23 -> n24
                     n24 -> n25
                     n25 -> n26
-                    n21 -> n27
                     n26 -> n27
+                    n22 -> n28
+                    n27 -> n28
                 }
                 """
         )
@@ -3913,39 +3479,41 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="{if}"]
-                    n4 [label="a"]
-                    n5 [label="{if a}"]
-                    n6 [label="{compound}"]
-                    n7 [label="{exp}"]
+                    n3 [label="{exp}"]
+                    n4 [label="{if}"]
+                    n5 [label="a"]
+                    n6 [label="{if a}"]
+                    n7 [label="{compound}"]
                     n8 [label="{exp}"]
-                    n9 [label="e"]
-                    n10 [label="d"]
-                    n11 [label="{defer}"]
-                    n12 [label="{compound}"]
-                    n13 [label="{exp}"]
-                    n14 [label="b"]
-                    n15 [label="{exp}"]
-                    n16 [label="c"]
-                    n17 [label="exit"]
+                    n9 [label="{exp}"]
+                    n10 [label="e"]
+                    n11 [label="d"]
+                    n12 [label="{defer}"]
+                    n13 [label="{compound}"]
+                    n14 [label="{exp}"]
+                    n15 [label="b"]
+                    n16 [label="{exp}"]
+                    n17 [label="c"]
+                    n18 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6 [label="true"]
-                    n5 -> n7 [label="false"]
-                    n16 -> n7
-                    n6 -> n8
+                    n5 -> n6
+                    n6 -> n7 [label="true"]
+                    n6 -> n8 [label="false"]
+                    n17 -> n8
                     n7 -> n9
                     n8 -> n10
-                    n10 -> n11
+                    n9 -> n11
                     n11 -> n12
                     n12 -> n13
                     n13 -> n14
                     n14 -> n15
                     n15 -> n16
-                    n9 -> n17
+                    n16 -> n17
+                    n10 -> n18
                 }
                 """
         )
@@ -3982,34 +3550,35 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 digraph flow {
                     n1 [label="entry"]
                     n2 [label="{compound}"]
-                    n3 [label="{if}"]
-                    n4 [label="a"]
-                    n5 [label="{if a}"]
-                    n6 [label="{compound}"]
+                    n3 [label="{exp}"]
+                    n4 [label="{if}"]
+                    n5 [label="a"]
+                    n6 [label="{if a}"]
                     n7 [label="{compound}"]
-                    n8 [label="{exp}"]
+                    n8 [label="{compound}"]
                     n9 [label="{exp}"]
-                    n10 [label="c"]
-                    n11 [label="e"]
-                    n12 [label="{defer}"]
+                    n10 [label="{exp}"]
+                    n11 [label="c"]
+                    n12 [label="e"]
                     n13 [label="{defer}"]
-                    n14 [label="{compound}"]
+                    n14 [label="{defer}"]
                     n15 [label="{compound}"]
-                    n16 [label="{exp}"]
+                    n16 [label="{compound}"]
                     n17 [label="{exp}"]
-                    n18 [label="b"]
-                    n19 [label="d"]
-                    n20 [label="{exp}"]
-                    n21 [label="f"]
-                    n22 [label="exit"]
+                    n18 [label="{exp}"]
+                    n19 [label="b"]
+                    n20 [label="d"]
+                    n21 [label="{exp}"]
+                    n22 [label="f"]
+                    n23 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
                     n4 -> n5
-                    n5 -> n6 [label="true"]
-                    n5 -> n7 [label="false"]
-                    n6 -> n8
+                    n5 -> n6
+                    n6 -> n7 [label="true"]
+                    n6 -> n8 [label="false"]
                     n7 -> n9
                     n8 -> n10
                     n9 -> n11
@@ -4022,9 +3591,10 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n16 -> n18
                     n17 -> n19
                     n18 -> n20
-                    n19 -> n20
+                    n19 -> n21
                     n20 -> n21
                     n21 -> n22
+                    n22 -> n23
                 }
                 """
         )
@@ -4242,31 +3812,32 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n2 [label="{compound}"]
                     n3 [label="{exp}"]
                     n4 [label="b"]
-                    n5 [label="{if}"]
-                    n6 [label="predicate"]
-                    n7 [label="{if predicate}"]
-                    n8 [label="{compound}"]
-                    n9 [label="{exp}"]
-                    n10 [label="0"]
-                    n11 [label="d"]
-                    n12 [label="{return 0}"]
-                    n13 [label="{defer}"]
+                    n5 [label="{exp}"]
+                    n6 [label="{if}"]
+                    n7 [label="predicate"]
+                    n8 [label="{if predicate}"]
+                    n9 [label="{compound}"]
+                    n10 [label="{exp}"]
+                    n11 [label="0"]
+                    n12 [label="d"]
+                    n13 [label="{return 0}"]
                     n14 [label="{defer}"]
-                    n15 [label="{compound}"]
+                    n15 [label="{defer}"]
                     n16 [label="{compound}"]
-                    n17 [label="{exp}"]
+                    n17 [label="{compound}"]
                     n18 [label="{exp}"]
-                    n19 [label="c"]
+                    n19 [label="{exp}"]
                     n20 [label="c"]
-                    n21 [label="{defer}"]
+                    n21 [label="c"]
                     n22 [label="{defer}"]
-                    n23 [label="{compound}"]
+                    n23 [label="{defer}"]
                     n24 [label="{compound}"]
-                    n25 [label="{exp}"]
+                    n25 [label="{compound}"]
                     n26 [label="{exp}"]
-                    n27 [label="a"]
+                    n27 [label="{exp}"]
                     n28 [label="a"]
-                    n29 [label="exit"]
+                    n29 [label="a"]
+                    n30 [label="exit"]
                 
                     n1 -> n2
                     n2 -> n3
@@ -4274,9 +3845,9 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n4 -> n5
                     n5 -> n6
                     n6 -> n7
-                    n7 -> n8 [label="true"]
-                    n7 -> n9 [label="false"]
-                    n8 -> n10
+                    n7 -> n8
+                    n8 -> n9 [label="true"]
+                    n8 -> n10 [label="false"]
                     n9 -> n11
                     n10 -> n12
                     n11 -> n13
@@ -4296,7 +3867,8 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n25 -> n27
                     n26 -> n28
                     n27 -> n29
-                    n28 -> n29
+                    n28 -> n30
+                    n29 -> n30
                 }
                 """
         )

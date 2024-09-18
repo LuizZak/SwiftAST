@@ -124,37 +124,6 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             .finalized()
     }
 
-    func visitIf(_ stmt: IfStatement) -> CFGVisitResult {
-        let conditions = stmt.conditionalClauses.accept(self)
-        let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
-
-        let body = stmt.body.accept(self)
-        let elseBody = stmt.elseBody.map(visitElseBody)
-
-        if let elseBody = elseBody {
-            return node
-                .then(conditions)
-                .then(body)
-                .resolvingJumps(kind: .conditionalClauseFail, to: elseBody)
-                .finalized()
-        } else {
-            return node
-                .then(conditions)
-                .then(body)
-                .resolvingJumps(kind: .conditionalClauseFail, to: body.exit)
-                .finalized()
-        }
-    }
-
-    func visitElseBody(_ stmt: IfStatement.ElseBody) -> CFGVisitResult {
-        switch stmt {
-        case .else(let stmts):
-            return visitCompound(stmts)
-        case .elseIf(let elseIf):
-            return visitIf(elseIf)
-        }
-    }
-
     func visitWhile(_ stmt: WhileStatement) -> CFGVisitResult {
         let conditions = stmt.conditionalClauses.accept(self)
         let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
@@ -466,7 +435,7 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         var result = expression.accept(self)
 
         // Merge expressions
-        if options.mergeExpressions {
+        if options.mergeExpressions && !expression.isIf {
             // Extract the unresolved jumps
             let exitEdges = result.graph.edges(towards: result.exit)
             let hasExit = !exitEdges.isEmpty
@@ -746,6 +715,37 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         }
 
         return result.then(node)
+    }
+
+    func visitIf(_ expr: IfExpression) -> CFGVisitResult {
+        let conditions = expr.conditionalClauses.accept(self)
+        let node = CFGVisitResult(forSyntaxNode: expr, id: nextId())
+
+        let body = expr.body.accept(self)
+        let elseBody = expr.elseBody.map(visitElseBody)
+
+        if let elseBody = elseBody {
+            return node
+                .then(conditions)
+                .then(body)
+                .resolvingJumps(kind: .conditionalClauseFail, to: elseBody)
+                .finalized()
+        } else {
+            return node
+                .then(conditions)
+                .then(body)
+                .resolvingJumps(kind: .conditionalClauseFail, to: body.exit)
+                .finalized()
+        }
+    }
+
+    func visitElseBody(_ expr: IfExpression.ElseBody) -> CFGVisitResult {
+        switch expr {
+        case .else(let stmts):
+            return visitCompound(stmts)
+        case .elseIf(let elseIf):
+            return visitIf(elseIf)
+        }
     }
 
     func visitUnknown(_ exp: UnknownExpression) -> CFGVisitResult {

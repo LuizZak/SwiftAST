@@ -59,7 +59,7 @@ class SwiftASTStatementsMacroTests: XCTestCase {
             })
             """,
             expandedSource: #"""
-            CompoundStatement(statements: [IfStatement(
+            CompoundStatement(statements: [IfExpression(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -83,7 +83,7 @@ class SwiftASTStatementsMacroTests: XCTestCase {
             })
             """,
             expandedSource: #"""
-            IfStatement(
+            IfExpression(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")

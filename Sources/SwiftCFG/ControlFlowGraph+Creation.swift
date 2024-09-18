@@ -24,6 +24,9 @@ public extension ControlFlowGraph {
         /// If `true`, expressions trees appear in the CFG as single nodes rooted
         /// on the statements that spawned them.
         ///
+        /// Some configurations of expressions, such as branch expressions (if/switch),
+        /// will not be merged by this step.
+        ///
         /// If this flag is true when generating expression CFGs specifically, the
         /// CFGs produced will always have only one node.
         public var mergeExpressions: Bool
