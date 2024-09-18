@@ -447,7 +447,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
 
     func testSwitchNotInspectingBlocks() throws {
         let switchExp = makeBlock("a")
-        let stmt = Statement.switch(
+        let stmt = Expression.switch(
             switchExp,
             cases: [
                 .init(
@@ -501,7 +501,7 @@ class SyntaxNodeIteratorTests: XCTestCase {
 
     func testSwitchInspectingBlocks() throws {
         let switchExp = makeBlock("a")
-        let stmt = Statement.switch(
+        let stmt = Expression.switch(
             switchExp,
             cases: [
                 .init(

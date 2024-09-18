@@ -192,7 +192,7 @@ fileprivate func labelForSyntaxNode(_ node: SwiftAST.SyntaxNode) -> String {
     case is GuardStatement:
         label = "{guard}"
 
-    case is SwitchStatement:
+    case is SwitchExpression:
         label = "{switch}"
 
     case let clause as SwitchCase:

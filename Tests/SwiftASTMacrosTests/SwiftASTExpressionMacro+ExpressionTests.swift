@@ -346,6 +346,48 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             macros: testMacros)
     }
 
+    func testMacro_switch() {
+        assertMacroExpansion("""
+            #ast_expandExpression({
+                switch a {
+                case b where c: break
+                case d, e where f: break
+                default: break
+                }
+            })
+            """,
+            expandedSource: #"""
+            BlockLiteralExpression(
+                parameters: [],
+                returnType: SwiftType.void,
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [SwitchExpression(
+                exp: IdentifierExpression(identifier: "a"),
+                cases: [SwitchCase(
+                casePatterns: [SwitchCase.CasePattern(
+                pattern: Pattern.expression(IdentifierExpression(identifier: "b")),
+                whereClause: IdentifierExpression(identifier: "c")
+                                                )],
+                body: CompoundStatement(statements: [BreakStatement(targetLabel: nil)])
+                                        ), SwitchCase(
+                casePatterns: [SwitchCase.CasePattern(
+                pattern: Pattern.expression(IdentifierExpression(identifier: "d"))
+                                                ), SwitchCase.CasePattern(
+                pattern: Pattern.expression(IdentifierExpression(identifier: "e")),
+                whereClause: IdentifierExpression(identifier: "f")
+                                                )],
+                body: CompoundStatement(statements: [BreakStatement(targetLabel: nil)])
+                                        )],
+                defaultCase: SwitchDefaultCase(
+                    statements: [BreakStatement(targetLabel: nil)]
+                )
+                                )]
+                        )])
+            )
+            """#,
+            macros: testMacros)
+    }
+
     func testMacro_if() {
         assertMacroExpansion("""
             #ast_expandExpression({
@@ -358,16 +400,18 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [IfExpression(
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IfExpression(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
-                                )]
-                            ),
+                                        )]
+                                    ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                                    )]),
+                                            )]),
                 elseBody: nil
+                                )]
                         )])
             )
             """#,
@@ -388,18 +432,20 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [IfExpression(
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IfExpression(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
-                                )]
-                            ),
+                                        )]
+                                    ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                                    )]),
+                                            )]),
                 elseBody: .else(CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "c")]
-                                        )]))
+                                                )]))
+                                )]
                         )])
             )
             """#,
@@ -420,26 +466,28 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [IfExpression(
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [IfExpression(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
-                                )]
-                            ),
+                                        )]
+                                    ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                                    )]),
+                                            )]),
                 elseBody: .elseIf(IfExpression(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "c")
-                                        )]
-                                    ),
+                                                )]
+                                            ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "d")]
-                                            )]),
+                                                    )]),
                 elseBody: nil
-                                ))
+                                        ))
+                                )]
                         )])
             )
             """#,
@@ -646,21 +694,6 @@ class SwiftASTExpressionMacro_ExpressionTests: XCTestCase {
                     message: "Invalid SwiftOperator token conversion",
                     line: 1,
                     column: 25
-                )
-            ])
-    }
-
-    func testMacro_diagnostic_switchExpression() {
-        assertDiagnostics("""
-            #ast_expandExpression(switch a { default: 0 })
-            """,
-            expandedSource: #"""
-            UnknownExpression(context: UnknownASTContext("switch a { default: 0 }"))
-            """#, [
-                DiagnosticSpec(
-                    message: "Switch statements in place of expressions are not supported by SwiftAST's Expression type.",
-                    line: 1,
-                    column: 23
                 )
             ])
     }

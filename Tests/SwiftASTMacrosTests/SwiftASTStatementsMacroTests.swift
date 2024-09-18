@@ -53,13 +53,13 @@ class SwiftASTStatementsMacroTests: XCTestCase {
     func testMacro_singleStatement_false() {
         assertMacroExpansion("""
             #ast_expandStatements(singleStatement: false, {
-                if a {
+                while a {
                     b
                 }
             })
             """,
             expandedSource: #"""
-            CompoundStatement(statements: [IfExpression(
+            CompoundStatement(statements: [WhileStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -67,8 +67,7 @@ class SwiftASTStatementsMacroTests: XCTestCase {
                         ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                                )]),
-                elseBody: nil
+                                )])
                     )])
             """#,
             macros: testMacros)
@@ -77,13 +76,13 @@ class SwiftASTStatementsMacroTests: XCTestCase {
     func testMacro_singleStatement_true() {
         assertMacroExpansion("""
             #ast_expandStatements(singleStatement: true, {
-                if a {
+                while a {
                     b
                 }
             })
             """,
             expandedSource: #"""
-            IfExpression(
+            WhileStatement(
                 clauses: ConditionalClauses(
                 clauses: [ConditionalClauseElement(
                 expression: IdentifierExpression(identifier: "a")
@@ -91,8 +90,7 @@ class SwiftASTStatementsMacroTests: XCTestCase {
                 ),
                 body: CompoundStatement(statements: [ExpressionsStatement(
                 expressions: [IdentifierExpression(identifier: "b")]
-                        )]),
-                elseBody: nil
+                        )])
             )
             """#,
             macros: testMacros)

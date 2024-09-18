@@ -61,9 +61,7 @@ extension SwiftASTConverter {
         }
 
         if let expr = expr.as(SwitchExprSyntax.self) {
-            throw expr.ext_error(message: """
-            Switch statements in place of expressions are not supported by SwiftAST's Expression type.
-            """)
+            return try convertSwitch(expr)
         }
 
         // Try constant as a fallback
@@ -474,6 +472,33 @@ extension SwiftASTConverter {
         }
     }
 
+    static func convertSwitch(_ stmt: SwitchExprSyntax) throws -> ExprSyntax {
+        let expr = try convertExpression(stmt.subject)
+
+        let result = try convertSwitchCaseList(stmt.cases)
+        let cases = ArrayExprSyntax(expressions: result.cases)
+
+        if let defaultCase = result.defaultCase {
+            return """
+            SwitchExpression(
+                exp: \(expr),
+                cases: \(cases),
+                defaultCase: SwitchDefaultCase(
+                    statements: \(ArrayExprSyntax(expressions: defaultCase))
+                )
+            )
+            """
+        }
+
+        return """
+        SwitchExpression(
+            exp: \(expr),
+            cases: \(cases),
+            defaultCase: nil
+        )
+        """
+    }
+
     // MARK: - LabeledExprListSyntax
 
     static func labeledExpressions(_ expr: LabeledExprListSyntax) throws -> [(label: TokenSyntax?, ExprSyntax)] {
@@ -562,6 +587,90 @@ extension SwiftASTConverter {
                 "Postfix.OptionalAccessKind.\(raw: self.rawValue)"
             }
         }
+    }
+}
+
+// MARK: - Switch statement helpers
+
+extension SwiftASTConverter {
+    static func convertSwitchCaseList(_ stmt: SwitchCaseListSyntax) throws -> SwitchCaseListResult {
+        var cases: [ExprSyntax] = []
+        var defaultCase: [ExprSyntax]?
+
+        for element in stmt {
+            switch element {
+            case .ifConfigDecl(let ifConfigDecl):
+                throw ifConfigDecl.ext_error(message: """
+                SwitchExpression does not support interleaved '#if' statements within cases.
+                """)
+
+            case .switchCase(let switchCase):
+                let stmts = try convertStatements(switchCase.statements)
+
+                switch switchCase.label {
+                case .case(let label):
+                    cases.append(try convertSwitchCase(label, stmts))
+
+                case .default(let label):
+                    guard defaultCase == nil else {
+                        throw label.ext_error(message: """
+                        Unexpected two default cases in switch statement
+                        """)
+                    }
+
+                    defaultCase = stmts
+                }
+            }
+        }
+
+        return SwitchCaseListResult(
+            cases: cases,
+            defaultCase: defaultCase
+        )
+    }
+
+    static func convertSwitchCase(
+        _ label: SwitchCaseLabelSyntax,
+        _ stmts: [ExprSyntax]
+    ) throws -> ExprSyntax {
+
+        let casePatterns = try label.caseItems.map(convertSwitchCasePattern(_:))
+
+        return """
+        SwitchCase(
+            casePatterns: \(ArrayExprSyntax(expressions: casePatterns)),
+            body: CompoundStatement(statements: \(ArrayExprSyntax(expressions: stmts)))
+        )
+        """
+    }
+
+    static func convertSwitchCasePattern(_ casePattern: SwitchCaseItemSyntax) throws -> ExprSyntax {
+        let pattern = try convertPattern(casePattern.pattern)
+        let whereClause = try casePattern.whereClause.map(convertWhereClause)
+
+        if let whereClause {
+            return """
+            SwitchCase.CasePattern(
+                pattern: \(pattern),
+                whereClause: \(whereClause)
+            )
+            """
+        }
+
+        return """
+        SwitchCase.CasePattern(
+            pattern: \(pattern)
+        )
+        """
+    }
+
+    static func convertWhereClause(_ whereClause: WhereClauseSyntax) throws -> ExprSyntax {
+        return try convertExpression(whereClause.condition)
+    }
+
+    struct SwitchCaseListResult {
+        var cases: [ExprSyntax]
+        var defaultCase: [ExprSyntax]?
     }
 }
 

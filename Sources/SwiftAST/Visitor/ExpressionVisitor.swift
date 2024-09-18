@@ -4,7 +4,10 @@
 /// returning the resulting value after done traversing.
 public protocol ExpressionVisitor {
     associatedtype ExprResult
-    associatedtype ElseBodyResult = IfExpression.ElseBody
+    associatedtype ElseBodyResult = ExprResult
+    associatedtype SwitchCaseResult = ExprResult
+    associatedtype SwitchCasePatternResult = ExprResult
+    associatedtype SwitchDefaultCaseResult = ExprResult
     associatedtype PatternResult = ExprResult
 
     /// Visits an expression node
@@ -125,13 +128,37 @@ public protocol ExpressionVisitor {
     ///
     /// - Parameter stmt: An `if` expression to visit
     /// - Returns: Result of visiting the `if` expression node
-    func visitIf(_ stmt: IfExpression) -> ExprResult
+    func visitIf(_ exp: IfExpression) -> ExprResult
 
     /// Visits an `if` expression's else block with this visitor
     ///
     /// - Parameter stmt: An `if` expression's else block to visit
     /// - Returns: Result of visiting the `if` expression's else block node
-    func visitElseBody(_ stmt: IfExpression.ElseBody) -> ElseBodyResult
+    func visitElseBody(_ exp: IfExpression.ElseBody) -> ElseBodyResult
+
+    /// Visits a `switch` expression with this visitor
+    ///
+    /// - Parameter stmt: A switch expression to visit
+    /// - Returns: Result of visiting the `switch` expression node
+    func visitSwitch(_ exp: SwitchExpression) -> ExprResult
+
+    /// Visits a `case` block from a `SwitchExpression`.
+    ///
+    /// - Parameter switchCase: A switch case block to visit
+    /// - Returns: Result of visiting the switch case block
+    func visitSwitchCase(_ switchCase: SwitchCase) -> SwitchCaseResult
+
+    /// Visits the pattern for a `case` block from a `SwitchExpression`.
+    ///
+    /// - Parameter casePattern: A switch case pattern to visit
+    /// - Returns: Result of visiting the switch case pattern
+    func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) -> SwitchCasePatternResult
+
+    /// Visits a `default` block from a `SwitchExpression`.
+    ///
+    /// - Parameter defaultCase: A switch default case block to visit
+    /// - Returns: Result of visiting the switch default case block
+    func visitSwitchDefaultCase(_ defaultCase: SwitchDefaultCase) -> SwitchDefaultCaseResult
 
     /// Visits an unknown expression node
     ///

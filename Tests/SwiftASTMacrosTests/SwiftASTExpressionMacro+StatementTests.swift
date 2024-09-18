@@ -317,46 +317,6 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             macros: testMacros)
     }
 
-    func testMacro_switch() {
-        assertMacroExpansion("""
-            #ast_expandExpression({
-                switch a {
-                case b where c: break
-                case d, e where f: break
-                default: break
-                }
-            })
-            """,
-            expandedSource: #"""
-            BlockLiteralExpression(
-                parameters: [],
-                returnType: SwiftType.void,
-                body: CompoundStatement(statements: [SwitchStatement(
-                exp: IdentifierExpression(identifier: "a"),
-                cases: [SwitchCase(
-                casePatterns: [SwitchCase.CasePattern(
-                pattern: Pattern.expression(IdentifierExpression(identifier: "b")),
-                whereClause: IdentifierExpression(identifier: "c")
-                                        )],
-                body: CompoundStatement(statements: [BreakStatement(targetLabel: nil)])
-                                ), SwitchCase(
-                casePatterns: [SwitchCase.CasePattern(
-                pattern: Pattern.expression(IdentifierExpression(identifier: "d"))
-                                        ), SwitchCase.CasePattern(
-                pattern: Pattern.expression(IdentifierExpression(identifier: "e")),
-                whereClause: IdentifierExpression(identifier: "f")
-                                        )],
-                body: CompoundStatement(statements: [BreakStatement(targetLabel: nil)])
-                                )],
-                defaultCase: SwitchDefaultCase(
-                    statements: [BreakStatement(targetLabel: nil)]
-                )
-                        )])
-            )
-            """#,
-            macros: testMacros)
-    }
-
     func testMacro_throw() {
         assertMacroExpansion("""
             #ast_expandExpression({
@@ -486,17 +446,19 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             BlockLiteralExpression(
                 parameters: [],
                 returnType: SwiftType.void,
-                body: CompoundStatement(statements: [SwitchStatement(
+                body: CompoundStatement(statements: [ExpressionsStatement(
+                expressions: [SwitchExpression(
                 exp: IdentifierExpression(identifier: "a"),
                 cases: [SwitchCase(
                 casePatterns: [SwitchCase.CasePattern(
                 pattern: Pattern.valueBindingPattern(constant: true, Pattern.identifier("b"))
-                                        )],
+                                                )],
                 body: CompoundStatement(statements: [BreakStatement(targetLabel: nil)])
-                                )],
+                                        )],
                 defaultCase: SwitchDefaultCase(
                     statements: [BreakStatement(targetLabel: nil)]
                 )
+                                )]
                         )])
             )
             """#,
@@ -610,7 +572,7 @@ class SwiftASTExpressionMacro_StatementTests: XCTestCase {
             UnknownExpression(context: UnknownASTContext("{\n    switch a {\n    #if b\n    case c: break\n    #endif\n    }\n}"))
             """#, [
                 DiagnosticSpec(
-                    message: "SwitchStatement does not support interleaved '#if' statements within cases.",
+                    message: "SwitchExpression does not support interleaved '#if' statements within cases.",
                     line: 3,
                     column: 5
                 )

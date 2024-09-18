@@ -71,21 +71,21 @@ public protocol StatementStatefulVisitor {
     ///
     /// - Parameter stmt: A switch statement to visit
     /// - Returns: Result of visiting the `switch` statement node
-    func visitSwitch(_ stmt: SwitchStatement, state: State) -> StmtResult
+    func visitSwitch(_ stmt: SwitchExpression, state: State) -> StmtResult
 
-    /// Visits a `case` block from a `SwitchStatement`.
+    /// Visits a `case` block from a `SwitchExpression`.
     ///
     /// - Parameter switchCase: A switch case block to visit
     /// - Returns: Result of visiting the switch case block
     func visitSwitchCase(_ switchCase: SwitchCase, state: State) -> SwitchCaseResult
 
-    /// Visits the pattern for a `case` block from a `SwitchStatement`.
+    /// Visits the pattern for a `case` block from a `SwitchExpression`.
     ///
     /// - Parameter casePattern: A switch case pattern to visit
     /// - Returns: Result of visiting the switch case pattern
     func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern, state: State) -> SwitchCasePatternResult
 
-    /// Visits a `default` block from a `SwitchStatement`.
+    /// Visits a `default` block from a `SwitchExpression`.
     ///
     /// - Parameter defaultCase: A switch default case block to visit
     /// - Returns: Result of visiting the switch default case block

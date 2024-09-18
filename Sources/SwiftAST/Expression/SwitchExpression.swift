@@ -1,8 +1,8 @@
-public class SwitchStatement: Statement, StatementKindType {
+public class SwitchExpression: Expression, ExpressionKindType {
     /// Cache of children expression and statements stored into each case pattern
     private var _childrenNodes: [SyntaxNode] = []
 
-    public var statementKind: StatementKind {
+    public var expressionKind: ExpressionKind {
         .switch(self)
     }
 
@@ -25,6 +25,19 @@ public class SwitchStatement: Statement, StatementKindType {
         }
     }
 
+    /// If this switch expression is contained within a labeled `ExpressionsStatement`,
+    /// returns the label associated with that statement.
+    public var label: String? {
+        guard let parent = parent as? ExpressionsStatement else {
+            return nil
+        }
+        guard parent.expressions.count == 1 else {
+            return nil
+        }
+
+        return parent.label
+    }
+
     public override var children: [SyntaxNode] {
         var result = [exp] + cases
         if let defaultCase = defaultCase {
@@ -34,7 +47,7 @@ public class SwitchStatement: Statement, StatementKindType {
         return result
     }
 
-    public override var isLabelableStatementType: Bool {
+    public override var isLabelableExpressionType: Bool {
         return true
     }
 
@@ -67,27 +80,22 @@ public class SwitchStatement: Statement, StatementKindType {
     }
 
     @inlinable
-    public override func copy() -> SwitchStatement {
-        SwitchStatement(
+    public override func copy() -> SwitchExpression {
+        SwitchExpression(
             exp: exp.copy(),
             cases: cases.map { $0.copy() },
             defaultCase: defaultCase?.copy()
-        ).copyMetadata(from: self)
+        )
     }
 
     @inlinable
-    public override func accept<V: StatementVisitor>(_ visitor: V) -> V.StmtResult {
+    public override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.ExprResult {
         visitor.visitSwitch(self)
     }
 
-    @inlinable
-    public override func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.StmtResult {
-        visitor.visitSwitch(self, state: state)
-    }
-
-    public override func isEqual(to other: Statement) -> Bool {
+    public override func isEqual(to other: Expression) -> Bool {
         switch other {
-        case let rhs as SwitchStatement:
+        case let rhs as SwitchExpression:
             return exp == rhs.exp && cases == rhs.cases && defaultCase == rhs.defaultCase
         default:
             return false
@@ -110,48 +118,104 @@ public class SwitchStatement: Statement, StatementKindType {
         case defaultCase
     }
 }
-public extension Statement {
-    /// Returns `self as? SwitchStatement`.
+public extension Expression {
+    /// Returns an inner expression of `SwitchExpression` if this statement is an
+    /// `ExpressionsStatement` containing exactly one instance of `SwitchExpression`.
     @inlinable
-    var asSwitch: SwitchStatement? {
+    var asSwitch: SwitchExpression? {
         cast()
     }
 
-    /// Returns `true` if this `Statement` is an instance of `SwitchStatement`
+    /// Returns `true` if this `Statement` is an instance of `SwitchExpression`
     /// class.
     @inlinable
     var isSwitch: Bool {
         asSwitch != nil
     }
 
-    /// Creates a `SwitchStatement` instance using the given expression and list
+    /// Creates a `SwitchExpression` instance using the given expression and list
     /// of cases, optionally specifying a default case as a list of statements.
     static func `switch`(
         _ exp: Expression,
         cases: [SwitchCase],
         defaultStatements defaultCase: [Statement]?
-    ) -> SwitchStatement {
+    ) -> SwitchExpression {
 
-        SwitchStatement(
+        SwitchExpression(
             exp: exp,
             cases: cases,
             defaultCase: defaultCase.map(SwitchDefaultCase.init)
         )
     }
 
-    /// Creates a `SwitchStatement` instance using the given expression and list
+    /// Creates a `SwitchExpression` instance using the given expression and list
     /// of cases, optionally specifying a default case as a list of statements.
     static func `switch`(
         _ exp: Expression,
         cases: [SwitchCase],
         default defaultCase: SwitchDefaultCase?
-    ) -> SwitchStatement {
+    ) -> SwitchExpression {
 
-        SwitchStatement(
+        SwitchExpression(
             exp: exp,
             cases: cases,
             defaultCase: defaultCase
         )
+    }
+}
+public extension Statement {
+    /// Returns an inner expression of `SwitchExpression` if this statement is an
+    /// `ExpressionsStatement` containing exactly one instance of `SwitchExpression`.
+    @inlinable
+    var asSwitch: SwitchExpression? {
+        guard let expressions: ExpressionsStatement = self.asExpressions else {
+            return nil
+        }
+        guard expressions.expressions.count == 1 else {
+            return nil
+        }
+        return expressions.expressions[0].asSwitch
+    }
+
+    /// Returns `true` if this `Statement` is an instance of `SwitchExpression`
+    /// class.
+    @inlinable
+    var isSwitch: Bool {
+        asSwitch != nil
+    }
+
+    /// Creates a `SwitchExpression` instance using the given expression and list
+    /// of cases, optionally specifying a default case as a list of statements.
+    static func `switch`(
+        _ exp: Expression,
+        cases: [SwitchCase],
+        defaultStatements defaultCase: [Statement]?
+    ) -> ExpressionsStatement {
+
+        let exp = SwitchExpression(
+            exp: exp,
+            cases: cases,
+            defaultCase: defaultCase.map(SwitchDefaultCase.init)
+        )
+
+        return .expression(exp)
+    }
+
+    /// Creates a `SwitchExpression` instance using the given expression and list
+    /// of cases, optionally specifying a default case as a list of statements.
+    static func `switch`(
+        _ exp: Expression,
+        cases: [SwitchCase],
+        default defaultCase: SwitchDefaultCase?
+    ) -> ExpressionsStatement {
+
+        let exp = SwitchExpression(
+            exp: exp,
+            cases: cases,
+            defaultCase: defaultCase
+        )
+
+        return .expression(exp)
     }
 }
 

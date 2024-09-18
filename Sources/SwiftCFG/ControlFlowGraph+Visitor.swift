@@ -145,114 +145,6 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             .finalized()
     }
 
-    func visitSwitch(_ stmt: SwitchStatement) -> CFGVisitResult {
-        let exp = stmt.exp.accept(self)
-
-        let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
-
-        let caseClauses = stmt.cases.map(visitSwitchCase)
-        let defaultClause = stmt.defaultCase.map(visitSwitchDefaultCase)
-
-        let breakMarker = CFGVisitResult()
-
-        var result = exp
-            .then(node)
-            .then(breakMarker)
-
-        var totalClauses = caseClauses
-        if let defaultClause = defaultClause {
-            totalClauses.append(defaultClause)
-        }
-        for (i, clause) in totalClauses.enumerated() {
-            let clauseResult = clause.result
-
-            result = result
-                .inserting(clauseResult)
-                .branching(from: clauseResult.exit, to: breakMarker.entry)
-                .resolvingJumps(kind: .break(label: nil), to: breakMarker.entry)
-                .resolvingJumps(kind: .break(label: stmt.label), to: breakMarker.entry)
-
-            if i == 0 {
-                result = result.redirectingEntries(
-                    for: node.exit,
-                    to: clauseResult.entry
-                )
-            } else {
-                result.resolveJumps(
-                    caseClauses[i - 1].result.unresolvedJumps(ofKind: .fallthrough),
-                    to: clause.fallthroughTarget,
-                    debugLabel: "fallthrough"
-                )
-                result.resolveJumps(
-                    caseClauses[i - 1].result.unresolvedJumps(ofKind: .switchCasePatternFail),
-                    to: clauseResult.entry,
-                    debugLabel: "pattern fail"
-                )
-            }
-        }
-
-        result.removeJumps(kind: .switchCasePatternFail)
-
-        return result.finalized()
-    }
-
-    func visitSwitchCase(_ switchCase: SwitchCase) -> SwitchCaseVisitResult {
-        print()
-        var result =
-            CFGVisitResult(forSyntaxNode: switchCase, id: nextId())
-            .then(
-                switchCase.casePatterns.map(visitSwitchCasePattern)
-                .reduce(CFGVisitResult()) {
-                    $0.then($1)
-                }
-            )
-            .then(CFGVisitResult(debugLabel: "pattern success"))
-            .resolvingJumps(
-                kind: .conditionalClauseFail,
-                to: CFGVisitResult(
-                    forUnresolvedJump: .switchCasePatternFail,
-                    id: nextId(),
-                    debugLabel: "pattern fail"
-                )
-            )
-
-        let body = visitStatement(switchCase.body)
-
-        result = result.then(body)
-
-        return .init(
-            result: result,
-            fallthroughTarget: body.entry
-        )
-    }
-
-    func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) -> CFGVisitResult {
-        let result = visitPattern(casePattern.pattern)
-            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId()))
-
-        guard let whereClause = casePattern.whereClause else {
-            return result
-        }
-
-        let whereClauseResult = visitExpression(whereClause)
-            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId()))
-
-        return result
-            .then(whereClauseResult)
-    }
-
-    func visitSwitchDefaultCase(_ defaultCase: SwitchDefaultCase) -> SwitchCaseVisitResult {
-        let body = visitStatement(defaultCase.body)
-        let result =
-            CFGVisitResult(forSyntaxNode: defaultCase, id: nextId())
-            .then(body)
-
-        return .init(
-            result: result,
-            fallthroughTarget: body.entry
-        )
-    }
-
     func visitRepeatWhile(_ stmt: RepeatWhileStatement) -> CFGVisitResult {
         let body = stmt.body.accept(self)
         let exp = stmt.exp.accept(self)
@@ -435,7 +327,7 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         var result = expression.accept(self)
 
         // Merge expressions
-        if options.mergeExpressions && !expression.isIf {
+        if options.mergeExpressions && !expression.isIf && !expression.isSwitch {
             // Extract the unresolved jumps
             let exitEdges = result.graph.edges(towards: result.exit)
             let hasExit = !exitEdges.isEmpty
@@ -746,6 +638,114 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         case .elseIf(let elseIf):
             return visitIf(elseIf)
         }
+    }
+
+    func visitSwitch(_ stmt: SwitchExpression) -> CFGVisitResult {
+        let exp = stmt.exp.accept(self)
+
+        let node = CFGVisitResult(forSyntaxNode: stmt, id: nextId())
+
+        let caseClauses = stmt.cases.map(visitSwitchCase)
+        let defaultClause = stmt.defaultCase.map(visitSwitchDefaultCase)
+
+        let breakMarker = CFGVisitResult()
+
+        var result = exp
+            .then(node)
+            .then(breakMarker)
+
+        var totalClauses = caseClauses
+        if let defaultClause = defaultClause {
+            totalClauses.append(defaultClause)
+        }
+        for (i, clause) in totalClauses.enumerated() {
+            let clauseResult = clause.result
+
+            result = result
+                .inserting(clauseResult)
+                .branching(from: clauseResult.exit, to: breakMarker.entry)
+                .resolvingJumps(kind: .break(label: nil), to: breakMarker.entry)
+                .resolvingJumps(kind: .break(label: stmt.label), to: breakMarker.entry)
+
+            if i == 0 {
+                result = result.redirectingEntries(
+                    for: node.exit,
+                    to: clauseResult.entry
+                )
+            } else {
+                result.resolveJumps(
+                    caseClauses[i - 1].result.unresolvedJumps(ofKind: .fallthrough),
+                    to: clause.fallthroughTarget,
+                    debugLabel: "fallthrough"
+                )
+                result.resolveJumps(
+                    caseClauses[i - 1].result.unresolvedJumps(ofKind: .switchCasePatternFail),
+                    to: clauseResult.entry,
+                    debugLabel: "pattern fail"
+                )
+            }
+        }
+
+        result.removeJumps(kind: .switchCasePatternFail)
+
+        return result.finalized()
+    }
+
+    func visitSwitchCase(_ switchCase: SwitchCase) -> SwitchCaseVisitResult {
+        print()
+        var result =
+            CFGVisitResult(forSyntaxNode: switchCase, id: nextId())
+            .then(
+                switchCase.casePatterns.map(visitSwitchCasePattern)
+                .reduce(CFGVisitResult()) {
+                    $0.then($1)
+                }
+            )
+            .then(CFGVisitResult(debugLabel: "pattern success"))
+            .resolvingJumps(
+                kind: .conditionalClauseFail,
+                to: CFGVisitResult(
+                    forUnresolvedJump: .switchCasePatternFail,
+                    id: nextId(),
+                    debugLabel: "pattern fail"
+                )
+            )
+
+        let body = visitStatement(switchCase.body)
+
+        result = result.then(body)
+
+        return .init(
+            result: result,
+            fallthroughTarget: body.entry
+        )
+    }
+
+    func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) -> CFGVisitResult {
+        let result = visitPattern(casePattern.pattern)
+            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId()))
+
+        guard let whereClause = casePattern.whereClause else {
+            return result
+        }
+
+        let whereClauseResult = visitExpression(whereClause)
+            .then(CFGVisitResult(branchingToUnresolvedJump: .conditionalClauseFail, id: nextId()))
+
+        return result
+            .then(whereClauseResult)
+    }
+
+    func visitSwitchDefaultCase(_ defaultCase: SwitchDefaultCase) -> SwitchCaseVisitResult {
+        let body = visitStatement(defaultCase.body)
+        let result =
+            CFGVisitResult(forSyntaxNode: defaultCase, id: nextId())
+            .then(body)
+
+        return .init(
+            result: result,
+            fallthroughTarget: body.entry
+        )
     }
 
     func visitUnknown(_ exp: UnknownExpression) -> CFGVisitResult {

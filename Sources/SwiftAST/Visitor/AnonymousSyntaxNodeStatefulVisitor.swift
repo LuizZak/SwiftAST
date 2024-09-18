@@ -86,8 +86,8 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
 
     /// Visits a `switch` statement with this visitor
     ///
-    /// - Parameter stmt: A SwitchStatement to visit
-    public func visitSwitch(_ stmt: SwitchStatement, state: State) {
+    /// - Parameter stmt: A SwitchExpression to visit
+    public func visitSwitch(_ stmt: SwitchExpression, state: State) {
         let state = listener(stmt, state)
 
         stmt.cases.forEach { visitSwitchCase($0, state: state) }
@@ -97,7 +97,7 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
         }
     }
 
-    /// Visits a `case` block from a `SwitchStatement`.
+    /// Visits a `case` block from a `SwitchExpression`.
     ///
     /// - Parameter switchCase: A switch case block to visit
     public func visitSwitchCase(_ switchCase: SwitchCase, state: State) {
@@ -106,14 +106,14 @@ public final class AnonymousSyntaxNodeStatefulVisitor<State>: StatementStatefulV
         visitStatement(switchCase.body, state: state)
     }
 
-    /// Visits the pattern for a `case` block from a `SwitchStatement`.
+    /// Visits the pattern for a `case` block from a `SwitchExpression`.
     ///
     /// - Parameter casePattern: A switch case pattern to visit
     public func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern, state: State) {
 
     }
 
-    /// Visits a `default` block from a `SwitchStatement`.
+    /// Visits a `default` block from a `SwitchExpression`.
     ///
     /// - Parameter defaultCase: A switch default case block to visit
     /// - Returns: Result of visiting the switch default case block

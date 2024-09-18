@@ -280,8 +280,8 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
 
     /// Visits a `switch` statement with this visitor
     ///
-    /// - Parameter stmt: A SwitchStatement to visit
-    public func visitSwitch(_ stmt: SwitchStatement) {
+    /// - Parameter stmt: A SwitchExpression to visit
+    public func visitSwitch(_ stmt: SwitchExpression) {
         listener(stmt)
 
         visitExpression(stmt.exp)
@@ -293,7 +293,7 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         }
     }
 
-    /// Visits a `case` block from a `SwitchStatement`.
+    /// Visits a `case` block from a `SwitchExpression`.
     ///
     /// - Parameter switchCase: A switch case block to visit
     public func visitSwitchCase(_ switchCase: SwitchCase) {
@@ -301,7 +301,7 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         switchCase.statements.forEach(visitStatement)
     }
 
-    /// Visits the pattern for a `case` block from a `SwitchStatement`.
+    /// Visits the pattern for a `case` block from a `SwitchExpression`.
     ///
     /// - Parameter casePattern: A switch case pattern to visit
     public func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) {
@@ -309,7 +309,7 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         casePattern.whereClause.map(visitExpression)
     }
 
-    /// Visits a `default` block from a `SwitchStatement`.
+    /// Visits a `default` block from a `SwitchExpression`.
     ///
     /// - Parameter defaultCase: A switch default case block to visit
     public func visitSwitchDefaultCase(_ defaultCase: SwitchDefaultCase) {

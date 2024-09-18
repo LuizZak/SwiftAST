@@ -15,7 +15,6 @@ public enum StatementKind: Codable {
     case `for`(ForStatement)
     case localFunction(LocalFunctionStatement)
     case `return`(ReturnStatement)
-    case `switch`(SwitchStatement)
     case `throw`(ThrowStatement)
     case unknown(UnknownStatement)
     case variableDeclarations(VariableDeclarationsStatement)
@@ -59,8 +58,6 @@ public enum StatementKind: Codable {
         case .localFunction(let s):
             return s
         case .return(let s):
-            return s
-        case .switch(let s):
             return s
         case .throw(let s):
             return s

@@ -20,15 +20,6 @@ extension SwiftASTConverter {
             return try convertRepeatWhile(stmt)
         }
         if let stmt = stmt.as(ExpressionStmtSyntax.self) {
-            // If expression
-            if let stmt = stmt.expression.as(IfExprSyntax.self) {
-                return try convertIf(stmt)
-            }
-            // Switch expression
-            if let stmt = stmt.expression.as(SwitchExprSyntax.self) {
-                return try convertSwitch(stmt)
-            }
-
             return try convertExpressions(stmt)
         }
         if let stmt = stmt.as(FallThroughStmtSyntax.self) {
@@ -145,7 +136,7 @@ extension SwiftASTConverter {
 
     static func convertExpressions(_ stmt: ExpressionStmtSyntax) throws -> ExprSyntax {
         return """
-        ExpressionStatement(
+        ExpressionsStatement(
             expressions: [\(try convertExpression(stmt.expression))]
         )
         """
@@ -224,33 +215,6 @@ extension SwiftASTConverter {
         }
 
         return "ReturnStatement()"
-    }
-
-    static func convertSwitch(_ stmt: SwitchExprSyntax) throws -> ExprSyntax {
-        let expr = try convertExpression(stmt.subject)
-
-        let result = try convertSwitchCaseList(stmt.cases)
-        let cases = ArrayExprSyntax(expressions: result.cases)
-
-        if let defaultCase = result.defaultCase {
-            return """
-            SwitchStatement(
-                exp: \(expr),
-                cases: \(cases),
-                defaultCase: SwitchDefaultCase(
-                    statements: \(ArrayExprSyntax(expressions: defaultCase))
-                )
-            )
-            """
-        }
-
-        return """
-        SwitchStatement(
-            exp: \(expr),
-            cases: \(cases),
-            defaultCase: nil
-        )
-        """
     }
 
     static func convertThrow(_ stmt: ThrowStmtSyntax) throws -> ExprSyntax {
@@ -473,90 +437,6 @@ extension SwiftASTConverter {
         }
 
         return try convertPattern(catchPattern)
-    }
-}
-
-// MARK: - Switch statement helpers
-
-extension SwiftASTConverter {
-    static func convertSwitchCaseList(_ stmt: SwitchCaseListSyntax) throws -> SwitchCaseListResult {
-        var cases: [ExprSyntax] = []
-        var defaultCase: [ExprSyntax]?
-
-        for element in stmt {
-            switch element {
-            case .ifConfigDecl(let ifConfigDecl):
-                throw ifConfigDecl.ext_error(message: """
-                SwitchStatement does not support interleaved '#if' statements within cases.
-                """)
-
-            case .switchCase(let switchCase):
-                let stmts = try convertStatements(switchCase.statements)
-
-                switch switchCase.label {
-                case .case(let label):
-                    cases.append(try convertSwitchCase(label, stmts))
-
-                case .default(let label):
-                    guard defaultCase == nil else {
-                        throw label.ext_error(message: """
-                        Unexpected two default cases in switch statement
-                        """)
-                    }
-
-                    defaultCase = stmts
-                }
-            }
-        }
-
-        return SwitchCaseListResult(
-            cases: cases,
-            defaultCase: defaultCase
-        )
-    }
-
-    static func convertSwitchCase(
-        _ label: SwitchCaseLabelSyntax,
-        _ stmts: [ExprSyntax]
-    ) throws -> ExprSyntax {
-
-        let casePatterns = try label.caseItems.map(convertSwitchCasePattern(_:))
-
-        return """
-        SwitchCase(
-            casePatterns: \(ArrayExprSyntax(expressions: casePatterns)),
-            body: CompoundStatement(statements: \(ArrayExprSyntax(expressions: stmts)))
-        )
-        """
-    }
-
-    static func convertSwitchCasePattern(_ casePattern: SwitchCaseItemSyntax) throws -> ExprSyntax {
-        let pattern = try convertPattern(casePattern.pattern)
-        let whereClause = try casePattern.whereClause.map(convertWhereClause)
-
-        if let whereClause {
-            return """
-            SwitchCase.CasePattern(
-                pattern: \(pattern),
-                whereClause: \(whereClause)
-            )
-            """
-        }
-
-        return """
-        SwitchCase.CasePattern(
-            pattern: \(pattern)
-        )
-        """
-    }
-
-    static func convertWhereClause(_ whereClause: WhereClauseSyntax) throws -> ExprSyntax {
-        return try convertExpression(whereClause.condition)
-    }
-
-    struct SwitchCaseListResult {
-        var cases: [ExprSyntax]
-        var defaultCase: [ExprSyntax]?
     }
 }
 
