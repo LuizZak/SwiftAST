@@ -2,9 +2,9 @@ import XCTest
 
 @testable import SwiftAST
 
-class IfStatementTests: XCTestCase {
+class IfExpressionTests: XCTestCase {
     func testIfLet() {
-        let sut = IfStatement.ifLet(.identifier("a"), .identifier("b"), body: [
+        let sut = IfExpression.ifLet(.identifier("a"), .identifier("b"), body: [
             .expression(.identifier("c")),
         ])
 

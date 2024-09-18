@@ -6,10 +6,6 @@ public protocol StatementVisitor {
     associatedtype StmtResult
     associatedtype ConditionalClausesResult = StmtResult
     associatedtype ConditionalClauseElementResult = StmtResult
-    associatedtype ElseBodyResult = StmtResult
-    associatedtype SwitchCaseResult = StmtResult
-    associatedtype SwitchCasePatternResult = StmtResult
-    associatedtype SwitchDefaultCaseResult = StmtResult
     associatedtype CatchBlockResult = StmtResult
     associatedtype StatementVariableDeclarationResult = StmtResult
 
@@ -45,47 +41,11 @@ public protocol StatementVisitor {
     /// - Returns: Result of visiting the `guard` statement node
     func visitGuard(_ stmt: GuardStatement) -> StmtResult
 
-    /// Visits an `if` statement with this visitor
-    ///
-    /// - Parameter stmt: An `if` statement to visit
-    /// - Returns: Result of visiting the `if` statement node
-    func visitIf(_ stmt: IfStatement) -> StmtResult
-
-    /// Visits an `if` statement's else block with this visitor
-    ///
-    /// - Parameter stmt: An `if` statement's else block to visit
-    /// - Returns: Result of visiting the `if` statement's else block node
-    func visitElseBody(_ stmt: IfStatement.ElseBody) -> ElseBodyResult
-
     /// Visits a `while` statement with this visitor
     ///
     /// - Parameter stmt: A while statement to visit
     /// - Returns: Result of visiting the `while` statement node
     func visitWhile(_ stmt: WhileStatement) -> StmtResult
-
-    /// Visits a `switch` statement with this visitor
-    ///
-    /// - Parameter stmt: A switch statement to visit
-    /// - Returns: Result of visiting the `switch` statement node
-    func visitSwitch(_ stmt: SwitchStatement) -> StmtResult
-
-    /// Visits a `case` block from a `SwitchStatement`.
-    ///
-    /// - Parameter switchCase: A switch case block to visit
-    /// - Returns: Result of visiting the switch case block
-    func visitSwitchCase(_ switchCase: SwitchCase) -> SwitchCaseResult
-
-    /// Visits the pattern for a `case` block from a `SwitchStatement`.
-    ///
-    /// - Parameter casePattern: A switch case pattern to visit
-    /// - Returns: Result of visiting the switch case pattern
-    func visitSwitchCasePattern(_ casePattern: SwitchCase.CasePattern) -> SwitchCasePatternResult
-
-    /// Visits a `default` block from a `SwitchStatement`.
-    ///
-    /// - Parameter defaultCase: A switch default case block to visit
-    /// - Returns: Result of visiting the switch default case block
-    func visitSwitchDefaultCase(_ defaultCase: SwitchDefaultCase) -> SwitchDefaultCaseResult
 
     /// Visits a `do/while` statement with this visitor
     ///

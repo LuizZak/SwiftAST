@@ -174,6 +174,9 @@ extension ControlFlowGraph {
 fileprivate func labelForSyntaxNode(_ node: SwiftAST.SyntaxNode) -> String {
     var label: String
     switch node {
+    case is IfExpression:
+        label = "{if}"
+
     case let exp as SwiftAST.Expression:
         label = exp.description
 
@@ -189,10 +192,7 @@ fileprivate func labelForSyntaxNode(_ node: SwiftAST.SyntaxNode) -> String {
     case is GuardStatement:
         label = "{guard}"
 
-    case is IfStatement:
-        label = "{if}"
-
-    case is SwitchStatement:
+    case is SwitchExpression:
         label = "{switch}"
 
     case let clause as SwitchCase:

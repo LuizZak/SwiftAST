@@ -2,6 +2,19 @@ import SwiftAST
 import XCTest
 
 class Expression_MatcherTests: XCTestCase {
+    func testMatchIfHasElse() {
+        let sut = hasElse()
+
+        XCTAssertFalse(sut.matches(Expression.if(.identifier("a"), body: [])))
+        XCTAssertTrue(sut.matches(Expression.if(.identifier("a"), body: [], else: [])))
+        XCTAssertTrue(sut.matches(
+            Expression.if(
+                .identifier("a"),
+                body: [],
+                elseIf: .if(.identifier("b"), body: [])
+            )
+        ))
+    }
 
     func testMatchCall() {
         let matchTypeNew = Expression.matcher(ident("Type").call("new"))
