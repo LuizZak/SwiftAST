@@ -90,7 +90,7 @@ class PatternTests: XCTestCase {
 // MARK: - Test internals
 
 private func assertSerializeRoundabout(
-    _ sut: Pattern,
+    _ sut: SwiftAST.Pattern,
     file: StaticString = #file,
     line: UInt = #line
 ) {

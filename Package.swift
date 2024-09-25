@@ -4,6 +4,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "SwiftAST",
+    platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
     products: [
         .library(
             name: "SwiftAST",
@@ -24,11 +25,7 @@ let package = Package(
         .macro(
             name: "SwiftASTMacros",
             dependencies: [
-                .product(name: "SwiftSyntax", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
-                .product(name: "SwiftParser", package: "swift-syntax"),
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
             ]
         ),
@@ -62,6 +59,7 @@ let package = Package(
             name: "SwiftASTMacrosTests",
             dependencies: [
                 "SwiftASTMacros",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ]
         )
     ]
