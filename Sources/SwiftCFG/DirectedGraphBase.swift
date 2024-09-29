@@ -38,7 +38,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
         return graph
     }
 
-    /// Returns `true` iff two node references represent the same underlying node
+    /// Returns `true` if two node references represent the same underlying node
     /// in this graph.
     public func areNodesEqual(_ node1: Node, _ node2: Node) -> Bool {
         node1 === node2

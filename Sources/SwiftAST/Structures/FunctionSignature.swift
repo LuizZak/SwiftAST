@@ -300,7 +300,7 @@ public struct FunctionSignature: Hashable {
         return set
     }
 
-    /// Returns `true` iff `self` and `other` match using Swift signature matching
+    /// Returns `true` if `self` and `other` match using Swift signature matching
     /// rules.
     ///
     /// Along with label names, argument and return types are also checked for
@@ -331,13 +331,13 @@ public struct FunctionSignature: Hashable {
         return true
     }
 
-    /// Returns `true` iff `self` and `other` match using Objective-C signature
+    /// Returns `true` if `self` and `other` match using Objective-C signature
     /// matching rules.
     public func matchesAsSelector(_ other: FunctionSignature) -> Bool {
         asSelector == other.asSelector
     }
 
-    /// Returns `true` iff `self` and `other` match using C signature matching
+    /// Returns `true` if `self` and `other` match using C signature matching
     /// rules.
     ///
     /// In C, function signatures match if they have the same name, and the same

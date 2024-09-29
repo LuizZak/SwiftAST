@@ -120,7 +120,7 @@ public struct SubscriptSignature: Hashable {
         return set
     }
     
-    /// Returns `true` iff `self` and `other` match using Swift signature matching
+    /// Returns `true` if `self` and `other` match using Swift signature matching
     /// rules.
     ///
     /// Along with label names, argument and return types are also checked for

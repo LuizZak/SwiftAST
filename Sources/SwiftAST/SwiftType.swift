@@ -322,7 +322,7 @@ public extension SwiftType {
         }
     }
 
-    /// Returns `true` iff this SwiftType is a `.protocolComposition` case.
+    /// Returns `true` if this SwiftType is a `.protocolComposition` case.
     var isProtocolComposition: Bool {
         switch self {
         case .protocolComposition:
