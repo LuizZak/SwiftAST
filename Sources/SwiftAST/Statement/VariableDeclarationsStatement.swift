@@ -13,7 +13,7 @@ public class VariableDeclarationsStatement: Statement, StatementKindType, Custom
             }
         }
     }
-    
+
     public override var children: [SyntaxNode] {
         decl
     }
@@ -21,46 +21,46 @@ public class VariableDeclarationsStatement: Statement, StatementKindType, Custom
     public var description: String {
         decl.map(\.description).joined(separator: ", ")
     }
-    
+
     public init(decl: [StatementVariableDeclaration]) {
         self.decl = decl
-        
+
         super.init()
-        
+
         decl.forEach {
             $0.parent = self
         }
     }
-    
+
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         decl = try container.decode([StatementVariableDeclaration].self, forKey: .decl)
-        
+
         try super.init(from: container.superDecoder())
-        
+
         decl.forEach {
             $0.parent = self
         }
     }
-    
+
     @inlinable
     public override func copy() -> VariableDeclarationsStatement {
         VariableDeclarationsStatement(
             decl: decl.map { $0.copy() }
         ).copyMetadata(from: self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementVisitor>(_ visitor: V) -> V.StmtResult {
         visitor.visitVariableDeclarations(self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.StmtResult {
         visitor.visitVariableDeclarations(self, state: state)
     }
-    
+
     public override func isEqual(to other: Statement) -> Bool {
         switch other {
         case let rhs as VariableDeclarationsStatement:
@@ -69,15 +69,21 @@ public class VariableDeclarationsStatement: Statement, StatementKindType, Custom
             return false
         }
     }
-    
+
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(decl)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         try container.encode(decl, forKey: .decl)
-        
+
         try super.encode(to: container.superEncoder())
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case decl
     }
@@ -111,7 +117,7 @@ public extension Statement {
         isConstant: Bool = false,
         initialization: Expression?
     ) -> VariableDeclarationsStatement {
-        
+
         .variableDeclarations([
             .init(
                 identifier: identifier,
@@ -125,7 +131,7 @@ public extension Statement {
 }
 
 /// A variable declaration statement
-public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, CustomStringConvertible {
+public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Hashable, CustomStringConvertible {
     public var identifier: String
     public var storage: ValueStorage
     public var initialization: Expression? {
@@ -134,7 +140,7 @@ public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Custo
             initialization?.parent = self
         }
     }
-    
+
     public var type: SwiftType {
         get {
             storage.type
@@ -175,7 +181,7 @@ public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Custo
 
         return "\(identifier): \(type)"
     }
-    
+
     public init(
         identifier: String,
         storage: ValueStorage,
@@ -189,7 +195,7 @@ public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Custo
 
         initialization?.parent = self
     }
-    
+
     public convenience init(
         identifier: String,
         type: SwiftType,
@@ -207,10 +213,10 @@ public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Custo
             initialization: initialization
         )
     }
-    
+
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         try self.identifier = container.decode(String.self, forKey: .identifier)
         try self.storage = container.decode(ValueStorage.self, forKey: .storage)
         try self.initialization = container.decodeExpressionIfPresent(forKey: .initialization)
@@ -219,7 +225,7 @@ public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Custo
 
         initialization?.parent = self
     }
-    
+
     public override func copy() -> StatementVariableDeclaration {
         return .init(
             identifier: identifier,
@@ -227,10 +233,10 @@ public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Custo
             initialization: initialization?.copy()
         )
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         try container.encode(identifier, forKey: .identifier)
         try container.encode(storage, forKey: .storage)
         try container.encodeExpressionIfPresent(initialization, forKey: .initialization)
@@ -239,7 +245,13 @@ public class StatementVariableDeclaration: SyntaxNode, Codable, Equatable, Custo
     public static func == (lhs: StatementVariableDeclaration, rhs: StatementVariableDeclaration) -> Bool {
         lhs === rhs || (lhs.identifier == rhs.identifier && lhs.storage == rhs.storage && lhs.initialization == rhs.initialization)
     }
-    
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(identifier)
+        hasher.combine(storage)
+        hasher.combine(initialization)
+    }
+
     private enum CodingKeys: String, CodingKey {
         case identifier
         case storage

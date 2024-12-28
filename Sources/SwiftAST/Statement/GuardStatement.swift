@@ -110,10 +110,17 @@ public class GuardStatement: Statement, StatementKindType {
     public override func isEqual(to other: Statement) -> Bool {
         switch other {
         case let rhs as GuardStatement:
-            return conditionalClauses.isEqual(to: rhs.conditionalClauses) && elseBody == rhs.elseBody && elseBody == rhs.elseBody
+            return conditionalClauses.isEqual(to: rhs.conditionalClauses) && elseBody == rhs.elseBody
         default:
             return false
         }
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(conditionalClauses)
+        hasher.combine(elseBody)
     }
 
     public override func encode(to encoder: Encoder) throws {

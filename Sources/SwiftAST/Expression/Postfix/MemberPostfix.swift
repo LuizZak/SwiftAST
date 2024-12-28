@@ -40,6 +40,13 @@ public final class MemberPostfix: Postfix {
         }
     }
 
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(name)
+        hasher.combine(argumentNames)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -59,7 +66,7 @@ public final class MemberPostfix: Postfix {
             && lhs.argumentNames == rhs.argumentNames
     }
 
-    public struct ArgumentName: Equatable, Codable, CustomStringConvertible {
+    public struct ArgumentName: Equatable, Hashable, Codable, CustomStringConvertible {
         public var identifier: String
 
         public var description: String {

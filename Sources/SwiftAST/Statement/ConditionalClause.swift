@@ -1,5 +1,5 @@
 /// Conditional clause of of a conditional statement.
-public final class ConditionalClauses: SyntaxNode, Equatable, Codable {
+public final class ConditionalClauses: SyntaxNode, Equatable, Hashable, Codable {
     /// The set of clauses for this conditional clause.
     ///
     /// A valid conditional clause always has at least one clause element, and
@@ -72,6 +72,10 @@ public final class ConditionalClauses: SyntaxNode, Equatable, Codable {
         }
     }
 
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(clauses)
+    }
+
     @inlinable
     public func accept<V: StatementVisitor>(_ visitor: V) -> V.ConditionalClausesResult {
         visitor.visitConditionalClauses(self)
@@ -110,7 +114,7 @@ extension ConditionalClauses: ExpressibleByArrayLiteral {
 }
 
 /// Conditional clause element for a conditional clause of a conditional statement.
-public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
+public class ConditionalClauseElement: SyntaxNode, Equatable, Hashable, Codable {
     /// Whether this conditional clause element requires a 'case' keyword leading
     /// its pattern.
     public var isCaseClause: Bool
@@ -198,6 +202,12 @@ public class ConditionalClauseElement: SyntaxNode, Equatable, Codable {
 
     public func isEqual(to other: ConditionalClauseElement) -> Bool {
         self.isCaseClause == other.isCaseClause && self.pattern == other.pattern && self.expression.isEqual(to: other.expression)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(isCaseClause)
+        hasher.combine(pattern)
+        hasher.combine(expression)
     }
 
     public static func == (lhs: ConditionalClauseElement, rhs: ConditionalClauseElement) -> Bool {

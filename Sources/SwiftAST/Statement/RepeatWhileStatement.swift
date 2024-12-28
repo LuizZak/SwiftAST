@@ -15,52 +15,52 @@ public class RepeatWhileStatement: Statement, StatementKindType {
             body.parent = self
         }
     }
-    
+
     public override var children: [SyntaxNode] {
         [exp, body]
     }
-    
+
     public override var isLabelableStatementType: Bool {
         return true
     }
-    
+
     public init(exp: Expression, body: CompoundStatement) {
         self.exp = exp
         self.body = body
-        
+
         super.init()
-        
+
         exp.parent = self
         body.parent = self
     }
-    
+
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         exp = try container.decodeExpression(forKey: .exp)
         body = try container.decodeStatement(CompoundStatement.self, forKey: .body)
-        
+
         try super.init(from: container.superDecoder())
-        
+
         exp.parent = self
         body.parent = self
     }
-    
+
     @inlinable
     public override func copy() -> RepeatWhileStatement {
         RepeatWhileStatement(exp: exp.copy(), body: body.copy()).copyMetadata(from: self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementVisitor>(_ visitor: V) -> V.StmtResult {
         visitor.visitRepeatWhile(self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.StmtResult {
         visitor.visitRepeatWhile(self, state: state)
     }
-    
+
     public override func isEqual(to other: Statement) -> Bool {
         switch other {
         case let rhs as RepeatWhileStatement:
@@ -69,16 +69,23 @@ public class RepeatWhileStatement: Statement, StatementKindType {
             return false
         }
     }
-    
+
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(exp)
+        hasher.combine(body)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         try container.encodeExpression(exp, forKey: .exp)
         try container.encodeStatement(body, forKey: .body)
-        
+
         try super.encode(to: container.superEncoder())
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case exp
         case body
@@ -97,7 +104,7 @@ public extension Statement {
     var isRepeatWhile: Bool {
         asRepeatWhile != nil
     }
-    
+
     /// Creates a `RepeatWhileStatement` instance using the given condition expression
     /// and compound statement as its body.
     static func repeatWhile(_ exp: Expression, body: CompoundStatement) -> RepeatWhileStatement {

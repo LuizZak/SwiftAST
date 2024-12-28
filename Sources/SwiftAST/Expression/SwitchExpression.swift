@@ -102,6 +102,14 @@ public class SwitchExpression: Expression, ExpressionKindType {
         }
     }
 
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(exp)
+        hasher.combine(cases)
+        hasher.combine(defaultCase)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -219,7 +227,7 @@ public extension Statement {
     }
 }
 
-public class SwitchCase: SyntaxNode, Codable, Equatable {
+public class SwitchCase: SyntaxNode, Codable, Equatable, Hashable {
     /// Case patterns for this switch case.
     public var casePatterns: [CasePattern] {
         didSet {
@@ -294,12 +302,17 @@ public class SwitchCase: SyntaxNode, Codable, Equatable {
         try container.encodeStatement(body, forKey: .body)
     }
 
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(casePatterns)
+        hasher.combine(body)
+    }
+
     public static func == (lhs: SwitchCase, rhs: SwitchCase) -> Bool {
         lhs === lhs || (lhs.casePatterns == rhs.casePatterns && lhs.body == rhs.body)
     }
 
     /// A switch-case's pattern entry.
-    public struct CasePattern: Codable, Equatable {
+    public struct CasePattern: Codable, Equatable, Hashable {
         /// The pattern for the case.
         public let pattern: Pattern
 
@@ -363,7 +376,7 @@ public class SwitchCase: SyntaxNode, Codable, Equatable {
     }
 }
 
-public class SwitchDefaultCase: SyntaxNode, Codable, Equatable {
+public class SwitchDefaultCase: SyntaxNode, Codable, Equatable, Hashable {
     /// Statements for the switch case
     public var statements: [Statement] {
         body.statements
@@ -405,6 +418,10 @@ public class SwitchDefaultCase: SyntaxNode, Codable, Equatable {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         try container.encodeStatement(body, forKey: .body)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(body)
     }
 
     public static func == (lhs: SwitchDefaultCase, rhs: SwitchDefaultCase) -> Bool {

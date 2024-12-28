@@ -74,6 +74,12 @@ public final class FunctionCallPostfix: Postfix {
         }
     }
 
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(arguments)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -125,7 +131,7 @@ public extension PostfixExpression {
 
 // TODO: Rename to `FunctionCallArgument`
 /// A function argument kind from a function call expression
-public struct FunctionArgument: Codable, Equatable {
+public struct FunctionArgument: Codable, Equatable, Hashable {
     public var label: String?
     public var expression: Expression
 

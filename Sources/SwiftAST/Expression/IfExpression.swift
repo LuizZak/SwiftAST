@@ -161,6 +161,14 @@ public class IfExpression: Expression, ExpressionKindType {
         }
     }
 
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(conditionalClauses)
+        hasher.combine(body)
+        hasher.combine(elseBody)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -377,7 +385,7 @@ public extension Statement {
 public extension IfExpression {
 
     /// Describes the else statement of an `if` statement.
-    enum ElseBody: Codable, Equatable {
+    enum ElseBody: Codable, Equatable, Hashable {
         /// An else statement.
         case `else`(CompoundStatement)
 

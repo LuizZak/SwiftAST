@@ -11,7 +11,7 @@ public protocol ExpressionComponent {
     var subExpressions: [Expression] { get }
 }
 
-public class Expression: SyntaxNode, Codable, ExpressionComponent, Equatable,
+public class Expression: SyntaxNode, Codable, ExpressionComponent, Equatable, Hashable,
                          CustomStringConvertible {
 
     /// `true` if this expression sub-tree contains only literal-based sub-expressions.
@@ -140,6 +140,9 @@ public class Expression: SyntaxNode, Codable, ExpressionComponent, Equatable,
         if encoder.userInfo[SerializationOptions._encodeExpressionTypes] as? Bool == true {
             try container.encodeIfPresent(resolvedType, forKey: .resolvedType)
         }
+    }
+
+    open func hash(into hasher: inout Hasher) {
     }
 
     public static func == (lhs: Expression, rhs: Expression) -> Bool {

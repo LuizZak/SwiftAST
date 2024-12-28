@@ -6,16 +6,16 @@ public class FallthroughStatement: Statement, StatementKindType {
     public override var isUnconditionalJump: Bool {
         true
     }
-    
+
     public override func copy() -> FallthroughStatement {
         FallthroughStatement().copyMetadata(from: self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementVisitor>(_ visitor: V) -> V.StmtResult {
         visitor.visitFallthrough(self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.StmtResult {
         visitor.visitFallthrough(self, state: state)
@@ -23,6 +23,10 @@ public class FallthroughStatement: Statement, StatementKindType {
 
     public override func isEqual(to other: Statement) -> Bool {
         other is FallthroughStatement
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
     }
 }
 public extension Statement {
@@ -37,7 +41,7 @@ public extension Statement {
     var isFallthrough: Bool {
         asFallthrough != nil
     }
-    
+
     /// Creates a `FallthroughStatement` instance.
     static var `fallthrough`: FallthroughStatement {
         FallthroughStatement()

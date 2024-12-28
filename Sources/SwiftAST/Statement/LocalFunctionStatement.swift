@@ -10,44 +10,44 @@ public class LocalFunctionStatement: Statement, StatementKindType {
             function.body.parent = self
         }
     }
-    
+
     public override var children: [SyntaxNode] {
         [function.body]
     }
-    
+
     public init(function: LocalFunction) {
         self.function = function
-        
+
         super.init()
-        
+
         function.body.parent = self
     }
-    
+
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         function = try container.decode(LocalFunction.self, forKey: .function)
-        
+
         try super.init(from: container.superDecoder())
-        
+
         function.body.parent = self
     }
-    
+
     @inlinable
     public override func copy() -> LocalFunctionStatement {
         LocalFunctionStatement(function: function).copyMetadata(from: self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementVisitor>(_ visitor: V) -> V.StmtResult {
         visitor.visitLocalFunction(self)
     }
-    
+
     @inlinable
     public override func accept<V: StatementStatefulVisitor>(_ visitor: V, state: V.State) -> V.StmtResult {
         visitor.visitLocalFunction(self, state: state)
     }
-    
+
     public override func isEqual(to other: Statement) -> Bool {
         switch other {
         case let rhs as LocalFunctionStatement:
@@ -56,15 +56,21 @@ public class LocalFunctionStatement: Statement, StatementKindType {
             return false
         }
     }
-    
+
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(function)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         try container.encode(function, forKey: .function)
-        
+
         try super.encode(to: container.superEncoder())
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case function
     }
@@ -100,7 +106,7 @@ public extension Statement {
         body: CompoundStatement
     ) -> LocalFunctionStatement {
 
-        LocalFunctionStatement(function: 
+        LocalFunctionStatement(function:
             .init(
                 identifier: identifier,
                 parameters: parameters,
@@ -116,7 +122,7 @@ public extension Statement {
         signature: FunctionSignature,
         body: CompoundStatement
     ) -> LocalFunctionStatement {
-        
+
         LocalFunctionStatement(function: LocalFunction(signature: signature, body: body))
     }
 }

@@ -1,5 +1,5 @@
 /// Provides context for a local function in a function's body.
-public struct LocalFunction: Codable {
+public struct LocalFunction: Codable, Equatable, Hashable {
     /// The signature of this local function.
     public var signature: FunctionSignature {
         get {
@@ -23,7 +23,7 @@ public struct LocalFunction: Codable {
 
     /// Information for the parameters of this local function.
     public var parameters: [ParameterSignature]
-    
+
     /// Return type for this local function.
     public var returnType: SwiftType
 
@@ -36,7 +36,7 @@ public struct LocalFunction: Codable {
         returnType: SwiftType,
         body: CompoundStatement
     ) {
-        
+
         self.identifier = identifier
         self.parameters = parameters
         self.returnType = returnType
@@ -52,7 +52,7 @@ public struct LocalFunction: Codable {
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         identifier = try container.decode(String.self, forKey: .identifier)
         parameters = try container.decode([ParameterSignature].self, forKey: .parameters)
         returnType = try container.decode(SwiftType.self, forKey: .returnType)
@@ -61,13 +61,13 @@ public struct LocalFunction: Codable {
 
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         try container.encode(identifier, forKey: .identifier)
         try container.encode(parameters, forKey: .parameters)
         try container.encode(returnType, forKey: .returnType)
         try container.encodeStatement(body, forKey: .body)
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case identifier
         case parameters

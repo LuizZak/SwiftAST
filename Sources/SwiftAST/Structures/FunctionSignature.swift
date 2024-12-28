@@ -10,6 +10,9 @@ public struct FunctionSignature: Hashable {
         }
     }
 
+    /// Attribute declarations associated with this function signature.
+    public var attributes: [DeclarationAttribute]
+
     /// Whether the function is mutating, i.e. `mutating func` in Swift.
     public var isMutating: Bool {
         get {
@@ -113,6 +116,7 @@ public struct FunctionSignature: Hashable {
     }
 
     public init(
+        attributes: [DeclarationAttribute] = [],
         name: String,
         parameters: [ParameterSignature] = [],
         returnType: SwiftType = .void,
@@ -122,6 +126,7 @@ public struct FunctionSignature: Hashable {
     ) {
 
         self.traits = []
+        self.attributes = attributes
         self.name = name
         self.returnType = returnType
         self.parameters = parameters
@@ -137,12 +142,14 @@ public struct FunctionSignature: Hashable {
     }
 
     public init(
+        attributes: [DeclarationAttribute] = [],
         name: String,
         parameters: [ParameterSignature] = [],
         returnType: SwiftType = .void,
         traits: Traits
     ) {
 
+        self.attributes = attributes
         self.traits = traits
         self.name = name
         self.returnType = returnType
@@ -392,6 +399,7 @@ extension FunctionSignature: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        try attributes = container.decode([DeclarationAttribute].self, forKey: .attributes)
         try traits = container.decode(Traits.self, forKey: .traits)
         try name = container.decode(String.self, forKey: .name)
         try returnType = container.decode(SwiftType.self, forKey: .returnType)
@@ -401,6 +409,7 @@ extension FunctionSignature: Codable {
     }
 
     public enum CodingKeys: String, CodingKey {
+        case attributes
         case name
         case returnType
         case parameters
@@ -411,6 +420,10 @@ extension FunctionSignature: Codable {
 extension FunctionSignature: CustomStringConvertible {
     public var description: String {
         var result = ""
+
+        for attribute in attributes {
+
+        }
 
         let traitDesc = traits.description
         if !traitDesc.isEmpty {

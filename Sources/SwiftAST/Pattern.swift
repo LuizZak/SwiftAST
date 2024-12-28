@@ -1,5 +1,5 @@
 /// A pattern for pattern-matching
-public enum Pattern: Codable, Equatable, ExpressionComponent {
+public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
     /// An identifier pattern
     case identifier(String)
 

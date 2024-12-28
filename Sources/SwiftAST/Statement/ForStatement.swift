@@ -130,6 +130,15 @@ public class ForStatement: Statement, StatementKindType {
         }
     }
 
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(pattern)
+        hasher.combine(exp)
+        hasher.combine(whereClause)
+        hasher.combine(body)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 

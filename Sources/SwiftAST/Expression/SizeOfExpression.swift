@@ -10,7 +10,7 @@ public class SizeOfExpression: Expression, ExpressionKindType {
                 exp.parent = nil
             case .type: break
             }
-            
+
             switch value {
             case .expression(let exp):
                 exp.parent = self
@@ -18,7 +18,7 @@ public class SizeOfExpression: Expression, ExpressionKindType {
             }
         }
     }
-    
+
     /// If this `SizeOfExpression`'s value is an expression input value, returns
     /// that expression, otherwise returns `nil`
     public var exp: Expression? {
@@ -29,7 +29,7 @@ public class SizeOfExpression: Expression, ExpressionKindType {
             return nil
         }
     }
-    
+
     public override var subExpressions: [Expression] {
         switch value {
         case .expression(let exp):
@@ -38,7 +38,7 @@ public class SizeOfExpression: Expression, ExpressionKindType {
             return []
         }
     }
-    
+
     public override var description: String {
         switch value {
         case .expression(let exp):
@@ -47,43 +47,43 @@ public class SizeOfExpression: Expression, ExpressionKindType {
             return "MemoryLayout<\(type)>.size"
         }
     }
-    
+
     public init(value: Value) {
         self.value = value
-        
+
         super.init()
-        
+
         switch value {
         case .expression(let exp):
             exp.parent = self
         case .type: break
         }
     }
-    
+
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         value = try container.decode(Value.self, forKey: .value)
-        
+
         try super.init(from: container.superDecoder())
-        
+
         switch value {
         case .expression(let exp):
             exp.parent = self
         case .type: break
         }
     }
-    
+
     @inlinable
     public override func copy() -> SizeOfExpression {
         SizeOfExpression(value: value.copy()).copyTypeAndMetadata(from: self)
     }
-    
+
     @inlinable
     public override func accept<V>(_ visitor: V) -> V.ExprResult where V : ExpressionVisitor {
         visitor.visitSizeOf(self)
     }
-    
+
     public override func isEqual(to other: Expression) -> Bool {
         switch other {
         case let rhs as SizeOfExpression:
@@ -92,33 +92,39 @@ public class SizeOfExpression: Expression, ExpressionKindType {
             return false
         }
     }
-    
+
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(value)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        
+
         try container.encode(value, forKey: .value)
-        
+
         try super.encode(to: container.superEncoder())
     }
-    
+
     public static func == (lhs: SizeOfExpression, rhs: SizeOfExpression) -> Bool {
         if lhs === rhs {
             return true
         }
-        
+
         return lhs.value == rhs.value
     }
-    
+
     /// Inner expression value for this SizeOfExpression
-    public enum Value: Codable, Equatable {
+    public enum Value: Codable, Equatable, Hashable {
         case type(SwiftType)
         case expression(Expression)
-        
+
         public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            
+
             let discriminator = try container.decode(String.self, forKey: .discriminator)
-            
+
             switch discriminator {
             case "type":
                 try self = .type(container.decode(SwiftType.self, forKey: .payload))
@@ -131,21 +137,21 @@ public class SizeOfExpression: Expression, ExpressionKindType {
                     debugDescription: "Invalid discriminator tag \(discriminator)")
             }
         }
-        
+
         public func encode(to encoder: Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
-            
+
             switch self {
             case .type(let value):
                 try container.encode("type", forKey: .discriminator)
                 try container.encode(value, forKey: .payload)
-                
+
             case .expression(let value):
                 try container.encode("expression", forKey: .discriminator)
                 try container.encodeExpression(value, forKey: .payload)
             }
         }
-        
+
         public func copy() -> Value {
             switch self {
             case .type:
@@ -154,13 +160,13 @@ public class SizeOfExpression: Expression, ExpressionKindType {
                 return .expression(exp.copy())
             }
         }
-        
+
         private enum CodingKeys: String, CodingKey {
             case discriminator = "kind"
             case payload
         }
     }
-    
+
     private enum CodingKeys: String, CodingKey {
         case value
     }
@@ -175,11 +181,11 @@ public extension Expression {
     var isSizeOf: Bool {
         asSizeOf != nil
     }
-    
+
     static func sizeof(_ exp: Expression) -> SizeOfExpression {
         SizeOfExpression(value: .expression(exp))
     }
-    
+
     static func sizeof(type: SwiftType) -> SizeOfExpression {
         SizeOfExpression(value: .type(type))
     }

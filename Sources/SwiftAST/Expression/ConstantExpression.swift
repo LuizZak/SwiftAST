@@ -88,6 +88,12 @@ public class ConstantExpression: Expression, ExpressibleByStringLiteral, Express
         }
     }
 
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(constant)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -125,7 +131,7 @@ public extension Expression {
 }
 
 /// Represents one of the recognized compile-time constant value types.
-public enum Constant: Codable, Equatable {
+public enum Constant: Codable, Equatable, Hashable {
     case float(Float)
     case double(Double)
     case boolean(Bool)

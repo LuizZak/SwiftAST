@@ -89,6 +89,12 @@ public class CompoundStatement: Statement, ExpressibleByArrayLiteral, StatementK
         }
     }
 
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(statements)
+    }
+
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
