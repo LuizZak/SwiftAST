@@ -18,7 +18,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/LuizZak/MiniLexer.git", exact: "0.10.0"),
         .package(url: "https://github.com/LuizZak/MiniGraphviz.git", exact: "0.1.0"),
-        .package(url: "https://github.com/LuizZak/MiniDigraph.git", exact: "0.6.0"),
+        .package(url: "https://github.com/LuizZak/MiniDigraph.git", exact: "0.8.0"),
         .package(url: "https://github.com/apple/swift-syntax.git", from: "600.0.0"),
     ],
     targets: [

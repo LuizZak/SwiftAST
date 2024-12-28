@@ -64,14 +64,14 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
     /// Returns all outgoing edges for a given graph node.
     ///
     /// A reference equality test (===) is used to determine graph node equality.
-    public func edges(from node: Node) -> Set<Edge> {
+    public func edges(from node: Node) -> [Edge] {
         edges.filter { $0.start === node }
     }
 
     /// Returns all ingoing edges for a given graph node.
     ///
     /// A reference equality test (===) is used to determine graph node equality.
-    public func edges(towards node: Node) -> Set<Edge> {
+    public func edges(towards node: Node) -> [Edge] {
         edges.filter { $0.end === node }
     }
 
@@ -81,7 +81,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
     /// A reference equality test (===) is used to determine graph node equality.
     ///
     /// - precondition: `start` and `end` are valid nodes within this graph.
-    public func edges(from start: Node, to end: Node) -> Set<Edge> {
+    public func edges(from start: Node, to end: Node) -> [Edge] {
         edges.filter { $0.start === start && $0.end === end }
     }
 
@@ -174,7 +174,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
 
     /// Removes the entry edges from a given node.
     @discardableResult
-    func removeEntryEdges(towards node: Node) -> Set<Edge> {
+    func removeEntryEdges(towards node: Node) -> [Edge] {
         let connections = edges(towards: node)
         removeEdges(connections)
         return connections
@@ -182,7 +182,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
 
     /// Removes the exit edges from a given node.
     @discardableResult
-    func removeExitEdges(from node: Node) -> Set<Edge> {
+    func removeExitEdges(from node: Node) -> [Edge] {
         let connections = edges(from: node)
         removeEdges(connections)
         return connections
