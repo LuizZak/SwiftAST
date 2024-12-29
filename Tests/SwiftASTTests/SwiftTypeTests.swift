@@ -42,16 +42,16 @@ class SwiftTypeTests: XCTestCase {
 
     func testDescriptionNestedType() {
         XCTAssertEqual(
-            SwiftType.nested([.typeName("A"), .typeName("B")]).description,
+            SwiftType.typeName("A").nested(.typeName("B")).description,
             "A.B"
         )
         XCTAssertEqual(
-            SwiftType.nested([.generic("A", parameters: [.typeName("B")]), .typeName("C")])
+            SwiftType.generic("A", parameters: [.typeName("B")]).nested(.typeName("C"))
                 .description,
             "A<B>.C"
         )
         XCTAssertEqual(
-            SwiftType.nested([.typeName("A"), .typeName("B"), .typeName("C")]).description,
+            SwiftType.typeName("A").nested(.typeName("B")).nested(.typeName("C")).description,
             "A.B.C"
         )
     }
@@ -167,7 +167,7 @@ class SwiftTypeTests: XCTestCase {
 
     func testDescriptionOptionalWithNestedType() {
         XCTAssertEqual(
-            SwiftType.optional(.nested([.typeName("A"), .typeName("B")])).description,
+            SwiftType.optional(.typeName("A").nested(.typeName("B"))).description,
             "A.B?"
         )
     }
@@ -308,9 +308,10 @@ class SwiftTypeTests: XCTestCase {
                             "C",
                             parameters: [
                                 .optional(
-                                    .nested([
-                                        .typeName("D"), .generic("E", parameters: [.typeName("D")]),
-                                    ])
+                                    .typeName("D")
+                                    .nested(
+                                        .generic("E", parameters: [.typeName("D")])
+                                    )
                                 )
                             ]
                         )

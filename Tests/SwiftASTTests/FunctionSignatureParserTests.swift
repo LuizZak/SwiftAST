@@ -292,7 +292,7 @@ class FunctionSignatureParserTests: XCTestCase {
                     ParameterSignature(
                         label: nil,
                         name: "component",
-                        type: .nested(["Calendar", "Component"])
+                        type: .typeName("Calendar").nested("Component")
                     ),
                     ParameterSignature(name: "value", type: "Int"),
                     ParameterSignature(label: "toDate", name: "date", type: "Date"),

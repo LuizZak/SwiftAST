@@ -213,8 +213,22 @@ public enum BlockTypeAttribute: Hashable, CustomStringConvertible {
     }
 }
 
+/// A nested Swift type, containing a base type and a nested nominal type accessor.
+public struct NestedSwiftType: Hashable, CustomStringConvertible {
+    public var base: SwiftType
+    public var nested: NominalSwiftType
+
+    public var description: String {
+        "\(base).\(nested)"
+    }
+
+    public init(base: SwiftType, nested: NominalSwiftType) {
+        self.base = base
+        self.nested = nested
+    }
+}
+
 public typealias ProtocolCompositionSwiftType = TwoOrMore<ProtocolCompositionComponent>
-public typealias NestedSwiftType = TwoOrMore<NominalSwiftType>
 public typealias GenericArgumentSwiftType = OneOrMore<SwiftType>
 
 public extension SwiftType {
@@ -235,8 +249,8 @@ public extension SwiftType {
         switch self {
         case .nominal(.typeName(let name)):
             return name
-        case .nested(let names):
-            return names.last.typeNameValue
+        case .nested(let nested):
+            return nested.nested.typeNameValue
         default:
             return nil
         }
@@ -404,6 +418,11 @@ public extension SwiftType {
         type.wrappingOther(self.deepUnwrapped)
     }
 
+    /// Nests this base type with a given nominal type suffix.
+    func nested(_ nominal: NominalSwiftType) -> SwiftType {
+        return .nested(.init(base: self, nested: nominal))
+    }
+
     /// In case this type represents an optional value, returns a new optional
     /// type with the same optionality as this type, but wrapping over a given
     /// type.
@@ -516,8 +535,8 @@ extension NominalSwiftType: CustomStringConvertible {
 extension ProtocolCompositionComponent: CustomStringConvertible {
     public var description: String {
         switch self {
-        case .nested(let items):
-            return items.map(\.description).joined(separator: ".")
+        case .nested(let nested):
+            return nested.description
         case .nominal(let nominal):
             return nominal.description
         }
@@ -564,8 +583,8 @@ extension SwiftType: CustomStringConvertible {
         case let .tuple(.types(inner)):
             return "(" + inner.map(\.description).joined(separator: ", ") + ")"
 
-        case .nested(let items):
-            return items.map(\.description).joined(separator: ".")
+        case .nested(let nested):
+            return nested.description
 
         case .array(let type):
             return "[\(type)]"

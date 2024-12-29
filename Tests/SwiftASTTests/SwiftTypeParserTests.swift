@@ -26,7 +26,15 @@ class SwiftTypeParserTests: XCTestCase {
     func testNestedType() throws {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "Type1.Type2"),
-            SwiftType.nested([.typeName("Type1"), .typeName("Type2")])
+            SwiftType.typeName("Type1").nested("Type2")
+        )
+        try XCTAssertEqual(
+            SwiftTypeParser.parse(from: "[Type1].Type2"),
+            SwiftType.array(.typeName("Type1")).nested("Type2")
+        )
+        try XCTAssertEqual(
+            SwiftTypeParser.parse(from: "[Type1].Type2.Type3"),
+            SwiftType.array(.typeName("Type1")).nested("Type2").nested("Type3")
         )
     }
 
@@ -395,7 +403,7 @@ class SwiftTypeParserTests: XCTestCase {
     func testMetatypeOfNestedIdentifier() throws {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "TypeA.TypeB.Type"),
-            SwiftType.metatype(for: SwiftType.nested([.typeName("TypeA"), .typeName("TypeB")]))
+            SwiftType.metatype(for: SwiftType.typeName("TypeA").nested(.typeName("TypeB")))
         )
     }
 
@@ -456,7 +464,7 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "(TypeA.TypeB) & TypeC"),
             SwiftType.protocolComposition([
-                .nested([.typeName("TypeA"), .typeName("TypeB")]),
+                .nested(.init(base: .typeName("TypeA"), nested: .typeName("TypeB"))),
                 .typeName("TypeC"),
             ])
         )
@@ -466,8 +474,8 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "(TypeA.TypeB) & TypeC.TypeD"),
             SwiftType.protocolComposition([
-                .nested([.typeName("TypeA"), .typeName("TypeB")]),
-                .nested([.typeName("TypeC"), .typeName("TypeD")]),
+                .nested(.init(base: .typeName("TypeA"), nested: .typeName("TypeB"))),
+                .nested(.init(base: .typeName("TypeC"), nested: .typeName("TypeD"))),
             ])
         )
     }
@@ -476,7 +484,7 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "(TypeA.TypeB) & (TypeC)"),
             SwiftType.protocolComposition([
-                .nested([.typeName("TypeA"), .typeName("TypeB")]),
+                .nested(.init(base: .typeName("TypeA"), nested: .typeName("TypeB"))),
                 .typeName("TypeC"),
             ])
         )
@@ -486,8 +494,8 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "(TypeA.TypeB) & (TypeC.TypeD)"),
             SwiftType.protocolComposition([
-                .nested([.typeName("TypeA"), .typeName("TypeB")]),
-                .nested([.typeName("TypeC"), .typeName("TypeD")]),
+                .nested(.init(base: .typeName("TypeA"), nested: .typeName("TypeB"))),
+                .nested(.init(base: .typeName("TypeC"), nested: .typeName("TypeD"))),
             ])
         )
     }
@@ -726,7 +734,7 @@ class SwiftTypePermutator {
         }
 
         if chanceFromProbability() {
-            return SwiftType.nested([nestable(), nestable()])
+            return SwiftType.nested(.init(base: .nominal(nestable()), nested: nestable()))
         }
 
         return .nominal(nestable())
