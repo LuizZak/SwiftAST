@@ -112,6 +112,13 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         listener(exp)
     }
 
+    /// Visits an implicit member node
+    ///
+    /// - Parameter exp: An ImplicitMemberExpression to visit
+    public func visitImplicitMember(_ exp: ImplicitMemberExpression) {
+        listener(exp)
+    }
+
     /// Visits a type-casting expression node
     ///
     /// - Parameter exp: A CastExpression to visit

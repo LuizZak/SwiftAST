@@ -1,3 +1,4 @@
+/// Catch all for an unknown expression.
 public class UnknownExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .unknown(self)

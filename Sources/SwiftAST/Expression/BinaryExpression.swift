@@ -1,3 +1,4 @@
+/// `<lhs> <op> <rhs>`
 public class BinaryExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .binary(self)

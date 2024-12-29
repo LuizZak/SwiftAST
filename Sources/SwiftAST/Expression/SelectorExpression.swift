@@ -1,3 +1,4 @@
+/// `#selector(<selector>) / #selector(getter: <selector>) / #selector(setter: <selector>)`
 public class SelectorExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .selector(self)

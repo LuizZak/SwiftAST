@@ -1,3 +1,4 @@
+/// `<op><exp>`
 public class PrefixExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .prefix(self)

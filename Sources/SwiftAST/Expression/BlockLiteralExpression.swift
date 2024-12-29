@@ -1,3 +1,4 @@
+/// `{ (<parameters>) -> <return> in <body> }`
 public class BlockLiteralExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .blockLiteral(self)

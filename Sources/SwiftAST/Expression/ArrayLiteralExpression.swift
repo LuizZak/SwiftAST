@@ -1,3 +1,4 @@
+/// `[<items>]`
 public class ArrayLiteralExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .arrayLiteral(self)

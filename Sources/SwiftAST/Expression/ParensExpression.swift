@@ -1,3 +1,4 @@
+/// `(<exp>)`
 public class ParensExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .parens(self)

@@ -1,3 +1,4 @@
+import MiniDigraph
 import SwiftAST
 
 /// Class that represents control flow graphs (CFGs) of Swift functions.

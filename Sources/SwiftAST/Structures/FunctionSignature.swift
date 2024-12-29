@@ -422,7 +422,7 @@ extension FunctionSignature: CustomStringConvertible {
         var result = ""
 
         for attribute in attributes {
-
+            result += attribute.description + " "
         }
 
         let traitDesc = traits.description

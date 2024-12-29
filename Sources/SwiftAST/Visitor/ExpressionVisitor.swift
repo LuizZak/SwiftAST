@@ -70,6 +70,12 @@ public protocol ExpressionVisitor {
     /// - Returns: Result of visiting the identifier node
     func visitIdentifier(_ exp: IdentifierExpression) -> ExprResult
 
+    /// Visits an implicit member node
+    ///
+    /// - Parameter exp: An implicit member expression to visit
+    /// - Returns: Result of visiting the implicit member node
+    func visitImplicitMember(_ exp: ImplicitMemberExpression) -> ExprResult
+
     /// Visits a type-casting expression node
     ///
     /// - Parameter exp: A cast expression to visit

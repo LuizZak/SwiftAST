@@ -1,3 +1,4 @@
+/// Constant expression, e.g. a string literal, float, or boolean value.
 public class ConstantExpression: Expression, ExpressibleByStringLiteral, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .constant(self)

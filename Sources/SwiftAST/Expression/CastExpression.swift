@@ -1,3 +1,4 @@
+/// `<exp> as[?/!] <type>`
 public class CastExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .cast(self)

@@ -485,6 +485,10 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         CFGVisitResult(forSyntaxNode: exp, id: nextId())
     }
 
+    func visitImplicitMember(_ exp: ImplicitMemberExpression) -> CFGVisitResult {
+        CFGVisitResult(forSyntaxNode: exp, id: nextId())
+    }
+
     func visitCast(_ exp: CastExpression) -> CFGVisitResult {
         visitExpression(exp.exp)
             .resolvingJumpsToExit(kind: .expressionShortCircuit)

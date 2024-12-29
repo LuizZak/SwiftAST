@@ -1,3 +1,4 @@
+/// `<exp> is <type>`
 public class TypeCheckExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .typeCheck(self)

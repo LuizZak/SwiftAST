@@ -1,13 +1,13 @@
-/// `<identifier>`
-public class IdentifierExpression: Expression, ExpressibleByStringLiteral, ExpressionKindType {
+/// `.<identifier>`
+public class ImplicitMemberExpression: Expression, ExpressibleByStringLiteral, ExpressionKindType {
     public var expressionKind: ExpressionKind {
-        .identifier(self)
+        .implicitMember(self)
     }
 
     public var identifier: String
 
     public override var description: String {
-        identifier
+        ".\(identifier)"
     }
 
     public required init(stringLiteral value: String) {
@@ -31,19 +31,19 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
     }
 
     @inlinable
-    public override func copy() -> IdentifierExpression {
-        IdentifierExpression(identifier: identifier).copyTypeAndMetadata(from: self)
+    public override func copy() -> ImplicitMemberExpression {
+        ImplicitMemberExpression(identifier: identifier).copyTypeAndMetadata(from: self)
     }
 
     @inlinable
     public override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.ExprResult {
-        visitor.visitIdentifier(self)
+        visitor.visitImplicitMember(self)
     }
 
     @inlinable
     public override func isEqual(to other: Expression) -> Bool {
         switch other {
-        case let rhs as IdentifierExpression:
+        case let rhs as ImplicitMemberExpression:
             return self == rhs
         default:
             return false
@@ -64,7 +64,7 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
         try super.encode(to: container.superEncoder())
     }
 
-    public static func == (lhs: IdentifierExpression, rhs: IdentifierExpression) -> Bool {
+    public static func == (lhs: ImplicitMemberExpression, rhs: ImplicitMemberExpression) -> Bool {
         if lhs === rhs {
             return true
         }
@@ -78,16 +78,16 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
 }
 public extension Expression {
     @inlinable
-    var asIdentifier: IdentifierExpression? {
+    var asImplicitMemberExpression: ImplicitMemberExpression? {
         cast()
     }
 
     @inlinable
-    var isIdentifier: Bool {
-        asIdentifier != nil
+    var isImplicitMemberExpression: Bool {
+        asImplicitMemberExpression != nil
     }
 
-    static func identifier(_ ident: String) -> IdentifierExpression {
-        IdentifierExpression(identifier: ident)
+    static func implicitMember(_ ident: String) -> ImplicitMemberExpression {
+        ImplicitMemberExpression(identifier: ident)
     }
 }

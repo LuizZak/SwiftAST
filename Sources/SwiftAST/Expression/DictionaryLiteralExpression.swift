@@ -1,3 +1,4 @@
+/// `[<key>: <value>, <key>: <value>, ...]`
 public class DictionaryLiteralExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .dictionaryLiteral(self)

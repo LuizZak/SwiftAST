@@ -1,3 +1,4 @@
+/// `<exp> ? <ifTrue> : <ifFalse>`
 public class TernaryExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .ternary(self)

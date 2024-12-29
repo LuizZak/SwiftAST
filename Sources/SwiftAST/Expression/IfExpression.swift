@@ -1,3 +1,4 @@
+/// `if <clauses> { <body> } [else [if <clauses>] { <body> }]`
 public class IfExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .ifExpression(self)

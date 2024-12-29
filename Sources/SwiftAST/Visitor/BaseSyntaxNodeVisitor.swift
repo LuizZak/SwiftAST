@@ -100,6 +100,13 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
 
     }
 
+    /// Visits an implicit member node
+    ///
+    /// - Parameter exp: An ImplicitMemberExpression to visit
+    public func visitImplicitMember(_ exp: ImplicitMemberExpression) {
+
+    }
+
     /// Visits a type-casting expression node
     ///
     /// - Parameter exp: A CastExpression to visit

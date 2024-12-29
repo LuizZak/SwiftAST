@@ -1,3 +1,4 @@
+/// `MemoryLayout<Type>.size / MemoryLayout.size(ofValue: <exp>)`
 public class SizeOfExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .sizeOf(self)

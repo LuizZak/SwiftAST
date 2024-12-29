@@ -11,6 +11,7 @@ public enum ExpressionKind: Codable {
     case constant(ConstantExpression)
     case dictionaryLiteral(DictionaryLiteralExpression)
     case identifier(IdentifierExpression)
+    case implicitMember(ImplicitMemberExpression)
     case parens(ParensExpression)
     case `postfix`(PostfixExpression)
     case `prefix`(PrefixExpression)
@@ -55,6 +56,8 @@ public enum ExpressionKind: Codable {
         case .dictionaryLiteral(let e):
             return e
         case .identifier(let e):
+            return e
+        case .implicitMember(let e):
             return e
         case .parens(let e):
             return e

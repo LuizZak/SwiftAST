@@ -1,3 +1,6 @@
+/// `<lhs> <op> <rhs>`
+///
+/// Used strictly for assignment expressions, which always resolve to type `Void`.
 public class AssignmentExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .assignment(self)

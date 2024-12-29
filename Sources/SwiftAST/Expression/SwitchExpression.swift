@@ -1,3 +1,4 @@
+/// `switch <exp> { <cases> [<default>] }`
 public class SwitchExpression: Expression, ExpressionKindType {
     /// Cache of children expression and statements stored into each case pattern
     private var _childrenNodes: [SyntaxNode] = []

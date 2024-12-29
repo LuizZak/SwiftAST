@@ -1,4 +1,6 @@
 /// A swift `try` expression.
+///
+/// `try[?/!] <exp>`
 public class TryExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .tryExpression(self)

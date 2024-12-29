@@ -121,6 +121,14 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         exp
     }
 
+    /// Visits an implicit member node
+    ///
+    /// - Parameter exp: An `ImplicitMemberExpression` to visit
+    /// - Returns: Result of visiting the implicit member node
+    open func visitImplicitMember(_ exp: ImplicitMemberExpression) -> Expression {
+        exp
+    }
+
     /// Visits a type-casting expression node
     ///
     /// - Parameter exp: A `CastExpression` to visit

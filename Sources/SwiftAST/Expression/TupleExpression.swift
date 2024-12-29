@@ -1,3 +1,4 @@
+/// `([<label>:] <exp>, [<label>:] <exp>, ...)`
 public class TupleExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .tuple(self)
