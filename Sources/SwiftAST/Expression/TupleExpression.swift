@@ -99,6 +99,10 @@ public extension Expression {
         asTuple != nil
     }
 
+    static func voidTuple() -> TupleExpression {
+        TupleExpression(elements: [] as [TupleElement])
+    }
+
     static func tuple(_ elements: [Expression]) -> TupleExpression {
         TupleExpression(elements: elements)
     }
