@@ -1,13 +1,13 @@
 /// A pattern for pattern-matching
 public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
     /// An identifier pattern
-    case identifier(String)
+    case identifier(String, TypeAnnotation? = nil)
 
     /// An expression pattern
     case expression(Expression)
 
     /// A tuple pattern
-    indirect case tuple([Pattern])
+    indirect case tuple([Pattern], TypeAnnotation? = nil)
 
     /// A value-binding pattern.
     ///
@@ -22,13 +22,15 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
     indirect case optional(Pattern)
 
     /// A wildcard pattern (or `_`).
-    case wildcard
+    case wildcard(TypeAnnotation? = nil)
 
     /// Simplifies patterns that feature 1-item tuples (i.e. `(<item>)`) by
     /// unwrapping the inner patterns.
+    ///
+    /// Does not simplify tuple patterns with type annotations
     public var simplified: Pattern {
         switch self {
-        case .tuple(let pt) where pt.count == 1:
+        case .tuple(let pt, nil) where pt.count == 1:
             return pt[0].simplified
 
         default:
@@ -42,7 +44,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         case .valueBindingPattern:
             return true
 
-        case .tuple(let patterns):
+        case .tuple(let patterns, _):
             return patterns.contains(where: \.hasBindings)
 
         case .asType(let pattern, _), .optional(let pattern):
@@ -59,7 +61,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         case .expression(let exp):
             return [exp]
 
-        case .tuple(let tuple):
+        case .tuple(let tuple, _):
             return tuple.flatMap { $0.subExpressions }
 
         case .asType(let inner, _),
@@ -75,7 +77,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
     /// Returns a shallow list of sub-patterns contained within this pattern.
     internal var subPatterns: [Self] {
         switch self {
-        case .tuple(let patterns):
+        case .tuple(let patterns, _):
             return patterns
 
         case .asType(let pattern, _),
@@ -95,13 +97,19 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
 
         switch discriminator {
         case "identifier":
-            try self = .identifier(container.decode(String.self, forKey: .payload0))
+            try self = .identifier(
+                container.decode(String.self, forKey: .payload0),
+                container.decodeIfPresent(TypeAnnotation.self, forKey: .payload1)
+            )
 
         case "expression":
             try self = .expression(container.decodeExpression(forKey: .payload0))
 
         case "tuple":
-            try self = .tuple(container.decode([Pattern].self, forKey: .payload0))
+            try self = .tuple(
+                container.decode([Pattern].self, forKey: .payload0),
+                container.decodeIfPresent(TypeAnnotation.self, forKey: .payload1)
+            )
 
         case "asType":
             try self = .asType(
@@ -121,7 +129,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
             )
 
         case "wildcard":
-            self = .wildcard
+            try self = .wildcard(container.decodeIfPresent(TypeAnnotation.self, forKey: .payload0))
 
         default:
             throw DecodingError.dataCorruptedError(
@@ -136,17 +144,19 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         switch self {
-        case .identifier(let ident):
+        case .identifier(let ident, let type):
             try container.encode("identifier", forKey: .discriminator)
             try container.encode(ident, forKey: .payload0)
+            try container.encodeIfPresent(type, forKey: .payload1)
 
         case .expression(let exp):
             try container.encode("expression", forKey: .discriminator)
             try container.encodeExpression(exp, forKey: .payload0)
 
-        case .tuple(let pattern):
+        case .tuple(let pattern, let type):
             try container.encode("tuple", forKey: .discriminator)
             try container.encode(pattern, forKey: .payload0)
+            try container.encodeIfPresent(type, forKey: .payload1)
 
         case .asType(let pattern, let type):
             try container.encode("asType", forKey: .discriminator)
@@ -162,8 +172,9 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
             try container.encode("optional", forKey: .discriminator)
             try container.encode(pattern, forKey: .payload0)
 
-        case .wildcard:
+        case .wildcard(let type):
             try container.encode("wildcard", forKey: .discriminator)
+            try container.encodeIfPresent(type, forKey: .payload0)
         }
     }
 
@@ -178,14 +189,14 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
     @inlinable
     public func copy() -> Pattern {
         switch self {
-        case .identifier:
+        case .identifier, .wildcard:
             return self
 
         case .expression(let exp):
             return .expression(exp.copy())
 
-        case .tuple(let patterns):
-            return .tuple(patterns.map { $0.copy() })
+        case .tuple(let patterns, let type):
+            return .tuple(patterns.map { $0.copy() }, type)
 
         case .asType(let pattern, let type):
             return .asType(pattern.copy(), type)
@@ -195,9 +206,6 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
 
         case .optional(let pattern):
             return .optional(pattern.copy())
-
-        case .wildcard:
-            return .wildcard
         }
     }
 
@@ -206,7 +214,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         case .expression(let exp):
             exp.parent = node
 
-        case .tuple(let tuple):
+        case .tuple(let tuple, _):
             tuple.forEach { $0.setParent(node) }
 
         case .asType(let pattern, _):
@@ -225,7 +233,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         case .expression(let exp):
             expressions.append(exp)
 
-        case .tuple(let tuple):
+        case .tuple(let tuple, _):
             tuple.forEach { $0.collect(expressions: &expressions) }
 
         case .asType(let pattern, _):
@@ -249,7 +257,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         case (.self, _):
             return self
 
-        case let (.tuple(index, subLocation), .tuple(subPatterns)):
+        case let (.tuple(index, subLocation), .tuple(subPatterns, _)):
             if index >= subPatterns.count {
                 return nil
             }
@@ -275,19 +283,42 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         case payload0
         case payload1
     }
+
+    /// A type annotation that might appear in a pattern.
+    public struct TypeAnnotation: Equatable, Hashable, Codable, CustomStringConvertible {
+        public var type: SwiftType
+
+        public var description: String {
+            ": \(type)"
+        }
+
+        public init(type: SwiftType) {
+            self.type = type
+        }
+    }
 }
 
 extension Pattern: CustomStringConvertible {
     public var description: String {
         switch self.simplified {
-        case .tuple(let tups):
-            return "(" + tups.map(\.description).joined(separator: ", ") + ")"
+        case .tuple(let tups, let type):
+            var base = "(" + tups.map(\.description).joined(separator: ", ") + ")"
+            if let type {
+                base += type.description
+            }
+
+            return base
 
         case .expression(let exp):
             return exp.description
 
-        case .identifier(let ident):
-            return ident
+        case .identifier(let ident, let type):
+            var base = ident
+            if let type {
+                base += type.description
+            }
+
+            return base
 
         case .asType(let pattern, let type):
             return "\(pattern) as \(type)"
@@ -301,8 +332,13 @@ extension Pattern: CustomStringConvertible {
         case .optional(let pattern):
             return "\(pattern)?"
 
-        case .wildcard:
-            return "_"
+        case .wildcard(let type):
+            var base = "_"
+            if let type {
+                base += type.description
+            }
+
+            return base
         }
     }
 }

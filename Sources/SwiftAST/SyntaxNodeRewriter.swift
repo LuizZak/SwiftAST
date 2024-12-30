@@ -241,8 +241,8 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         case .expression(let exp):
             return .expression(visitExpression(exp))
 
-        case .tuple(let patterns):
-            return .tuple(patterns.map(visitPattern))
+        case .tuple(let patterns, let type):
+            return .tuple(patterns.map(visitPattern), type)
 
         case .asType(let pattern, let type):
             return .asType(visitPattern(pattern), type)

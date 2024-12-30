@@ -11,7 +11,7 @@ class PatternTests: XCTestCase {
 
     func testSubExpressions() {
         XCTAssertEqual(Pattern.identifier("a").subExpressions, [])
-        XCTAssertEqual(Pattern.wildcard.subExpressions, [])
+        XCTAssertEqual(Pattern.wildcard().subExpressions, [])
         XCTAssertEqual(
             Pattern.expression(.identifier("a")).subExpressions,
             [

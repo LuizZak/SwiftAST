@@ -36,6 +36,7 @@
                 "args": [
                     "build",
                     "--build-tests",
+                    "-Xswiftc", "-diagnostic-style=llvm",
                 ]
             },
             {
@@ -44,6 +45,7 @@
                 "command": "swift",
                 "args": [
                     "test",
+                    "-Xswiftc", "-diagnostic-style=llvm",
                 ]
             },
         ]
