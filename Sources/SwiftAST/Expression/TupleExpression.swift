@@ -4,37 +4,43 @@ public class TupleExpression: Expression, ExpressionKindType {
         .tuple(self)
     }
 
-    public var elements: [Expression] {
+    public var elements: [TupleElement] {
         didSet {
-            oldValue.forEach { $0.parent = nil }
-            elements.forEach { $0.parent = self }
+            oldValue.forEach { $0.setParent(nil) }
+            elements.forEach { $0.setParent(self) }
         }
     }
 
     public override var subExpressions: [Expression] {
-        elements
+        elements.map(\.exp)
     }
 
     public override var description: String {
         "(\(elements.map(\.description).joined(separator: ", ")))"
     }
 
-    public init(elements: [Expression]) {
+    public convenience init(elements: [Expression]) {
+        self.init(elements: elements.map {
+            TupleElement(label: nil, exp: $0)
+        })
+    }
+
+    public init(elements: [TupleElement]) {
         self.elements = elements
 
         super.init()
 
-        elements.forEach { $0.parent = self }
+        elements.forEach { $0.setParent(self) }
     }
 
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        elements = try container.decodeExpressions(forKey: .elements)
+        elements = try container.decode([TupleElement].self, forKey: .elements)
 
         try super.init(from: container.superDecoder())
 
-        elements.forEach { $0.parent = self }
+        elements.forEach { $0.setParent(self) }
     }
 
     @inlinable
@@ -65,7 +71,7 @@ public class TupleExpression: Expression, ExpressionKindType {
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
-        try container.encodeExpressions(elements, forKey: .elements)
+        try container.encode(elements, forKey: .elements)
 
         try super.encode(to: container.superEncoder())
     }
@@ -95,5 +101,60 @@ public extension Expression {
 
     static func tuple(_ elements: [Expression]) -> TupleExpression {
         TupleExpression(elements: elements)
+    }
+
+    static func tuple(_ elements: [TupleElement]) -> TupleExpression {
+        TupleExpression(elements: elements)
+    }
+}
+
+/// A labeled element of a tuple expression.
+public struct TupleElement: Codable, Equatable, Hashable, CustomStringConvertible {
+    public var label: String?
+    public var exp: Expression
+
+    public var description: String {
+        if let label {
+            return "\(label): \(exp)"
+        }
+
+        return exp.description
+    }
+
+    public var parent: SyntaxNode? {
+        get { exp.parent }
+        set { exp.parent = newValue }
+    }
+
+    public init(label: String?, exp: Expression) {
+        self.label = label
+        self.exp = exp
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.label = try container.decodeIfPresent(String.self, forKey: .label)
+        self.exp = try container.decodeExpression(forKey: .exp)
+    }
+
+    public func copy() -> Self {
+        return Self(label: label, exp: exp.copy())
+    }
+
+    public func setParent(_ parent: SyntaxNode?) {
+        exp.parent = parent
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encodeIfPresent(self.label, forKey: .label)
+        try container.encodeExpression(self.exp, forKey: .exp)
+    }
+
+    private enum CodingKeys: CodingKey {
+        case label
+        case exp
     }
 }

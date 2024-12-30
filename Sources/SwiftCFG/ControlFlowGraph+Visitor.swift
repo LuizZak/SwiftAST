@@ -575,7 +575,7 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         var result = CFGVisitResult()
 
         for item in exp.elements {
-            let item = visitExpression(item)
+            let item = visitExpression(item.exp)
 
             result = result.then(
                 item.resolvingJumpsToExit(kind: .expressionShortCircuit)

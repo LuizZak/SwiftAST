@@ -201,7 +201,7 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
     /// - Parameter exp: A `TupleExpression` to visit
     /// - Returns: Result of visiting the tuple node
     open func visitTuple(_ exp: TupleExpression) -> Expression {
-        exp.elements = exp.elements.map(visitExpression)
+        exp.elements = exp.elements.map({ .init(label: $0.label, exp: visitExpression($0.exp)) })
 
         return exp
     }

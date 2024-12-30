@@ -184,7 +184,7 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
     public func visitTuple(_ exp: TupleExpression) {
         listener(exp)
 
-        exp.elements.forEach(visitExpression)
+        exp.subExpressions.forEach(visitExpression)
     }
 
     /// Visits a selector reference node

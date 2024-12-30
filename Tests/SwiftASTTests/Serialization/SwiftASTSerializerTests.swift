@@ -81,7 +81,7 @@ class SwiftASTSerializerTests: XCTestCase {
                 ]
             ),
             .expression(
-                .tuple([.constant(0), .constant(1)])
+                .tuple([.init(label: nil, exp: .constant(0)), .init(label: "label", exp: .constant(1))])
             ),
             .expressions([
                 .selector(FunctionIdentifier(name: "f", argumentLabels: [nil, "b"])),

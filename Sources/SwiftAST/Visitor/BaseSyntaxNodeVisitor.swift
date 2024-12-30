@@ -159,7 +159,7 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     /// - Parameter exp: A tuple expression to visit
     /// - Returns: Result of visiting this tuple node
     open func visitTuple(_ exp: TupleExpression) {
-        exp.elements.forEach(visitExpression)
+        exp.subExpressions.forEach(visitExpression)
     }
 
     /// Visits a selector reference node

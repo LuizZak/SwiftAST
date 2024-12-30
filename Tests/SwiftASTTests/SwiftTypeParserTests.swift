@@ -48,36 +48,27 @@ class SwiftTypeParserTests: XCTestCase {
     func testParseTupleType() throws {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "(Type1, Type2)"),
-            SwiftType.tuple(
-                .types([
+            SwiftType.tuple([
                     .typeName("Type1"),
                     .typeName("Type2"),
                 ])
             )
-        )
     }
 
     func testParseTupleInTupleType() throws {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "((Type1, Type2), (Type3, Type4))"),
-            SwiftType.tuple(
-                .types([
-                    .tuple(.types([.typeName("Type1"), .typeName("Type2")])),
-                    .tuple(.types([.typeName("Type3"), .typeName("Type4")])),
-                ])
-            )
+            SwiftType.tuple([
+                .tuple([.typeName("Type1"), .typeName("Type2")]),
+                .tuple([.typeName("Type3"), .typeName("Type4")]),
+            ])
         )
     }
 
     func testParseTupleTypeWithLabels() throws {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "(label1: Type1, label2: Type2)"),
-            SwiftType.tuple(
-                .types([
-                    .typeName("Type1"),
-                    .typeName("Type2"),
-                ])
-            )
+            SwiftType.tuple(.types([.labeled("label1", "Type1"), .labeled("label2", "Type2")]))
         )
     }
 
@@ -381,7 +372,7 @@ class SwiftTypeParserTests: XCTestCase {
             SwiftTypeParser.parse(from: "Type<(A, B)>"),
             SwiftType.generic(
                 "Type",
-                parameters: [.tuple(.types([.typeName("A"), .typeName("B")]))]
+                parameters: [.tuple([.typeName("A"), .typeName("B")])]
             )
         )
     }
@@ -751,7 +742,7 @@ class SwiftTypePermutator {
     }
 
     private func tuple() -> SwiftType {
-        return .tuple(.types(.fromCollection(randomTypes(min: 2))))
+        return .tuple(.types(.fromCollection(randomTypes(min: 2).map { .unlabeled($0) })))
     }
 
     private func block() -> SwiftType {

@@ -37,6 +37,29 @@ public indirect enum ProtocolCompositionComponent: Hashable {
     case nested(NestedSwiftType)
 }
 
+/// An entry for a tuple Swift type.
+public enum TupleTypeEntry: Hashable, CustomStringConvertible {
+    case labeled(String, SwiftType)
+    case unlabeled(SwiftType)
+
+    public var swiftType: SwiftType {
+        switch self {
+        case .labeled(_, let type), .unlabeled(let type):
+            return type
+        }
+    }
+
+    public var description: String {
+        switch self {
+        case .labeled(let label, let type):
+            return "\(label): \(type)"
+
+        case .unlabeled(let type):
+            return type.description
+        }
+    }
+}
+
 /// A tuple swift type, which either represents an empty tuple or two or more
 /// Swift types.
 public enum TupleSwiftType: Hashable {
@@ -44,15 +67,16 @@ public enum TupleSwiftType: Hashable {
     case empty
 
     /// A tuple type containing two or more types.
-    indirect case types(TwoOrMore<SwiftType>)
+    indirect case types(TwoOrMore<TupleTypeEntry>)
 
     /// Returns the array of types that compose this tuple type.
     public var elementTypes: [SwiftType] {
         switch self {
         case .empty:
             return []
+
         case .types(let types):
-            return Array(types)
+            return types.map(\.swiftType)
         }
     }
 }
@@ -64,7 +88,7 @@ extension TupleSwiftType: ExpressibleByArrayLiteral {
             self = .empty
         }
 
-        self = .types(.fromCollection(elements))
+        self = .types(.fromCollection(elements.map(TupleTypeEntry.unlabeled)))
     }
 }
 
@@ -88,7 +112,7 @@ extension TupleSwiftType: Collection {
             fatalError("Index is out of bounds for TupleSwiftType.empty: \(index)")
 
         case .types(let types):
-            return types[index]
+            return types[index].swiftType
         }
     }
 

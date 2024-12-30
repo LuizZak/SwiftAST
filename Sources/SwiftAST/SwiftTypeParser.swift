@@ -437,7 +437,7 @@ public class SwiftTypeParser {
         }
 
         var returnType: SwiftType
-        var parameters: [SwiftType] = []
+        var parameters: [(String?, SwiftType)] = []
         var expectsBlock = false
 
         try verifyAndSkipAnnotations()
@@ -458,6 +458,8 @@ public class SwiftTypeParser {
                 expectsType = true
             }
 
+            var label: String?
+
             // If we see an 'inout', skip identifiers and force a parameter type
             // to be read
             if !expectsType {
@@ -473,7 +475,7 @@ public class SwiftTypeParser {
                 }
 
                 if hasSingleLabel {
-                    lexer.consumeToken(ifTypeIs: .identifier)
+                    label = (lexer.consumeToken(ifTypeIs: .identifier)?.value).map(String.init)
                     lexer.consumeToken(ifTypeIs: .colon)
                 } else if hasDoubleLabel {
                     lexer.consumeToken(ifTypeIs: .identifier)
@@ -493,13 +495,13 @@ public class SwiftTypeParser {
 
             // Verify ellipsis for variadic parameter
             if lexer.consumeToken(ifTypeIs: .ellipsis) != nil {
-                parameters.append(.array(type))
+                parameters.append((label, .array(type)))
 
                 expectsBlock = true
                 break
             }
 
-            parameters.append(type)
+            parameters.append((label, type))
 
             // Expect either a new type or a closing parens to finish off this
             // parameter list
@@ -514,7 +516,7 @@ public class SwiftTypeParser {
         if lexer.consumeToken(ifTypeIs: .functionArrow) != nil {
             returnType = try parseType(lexer)
 
-            return .block(returnType: returnType, parameters: parameters, attributes: Set(funcAttributes))
+            return .block(returnType: returnType, parameters: parameters.map { $0.1 }, attributes: Set(funcAttributes))
         } else if expectsBlock {
             throw expectedBlockType(lexer: lexer)
         }
@@ -527,7 +529,7 @@ public class SwiftTypeParser {
                 throw unexpectedTokenError(lexer: lexer)
             }
 
-            switch parameters[0] {
+            switch parameters[0].1 {
             case .nominal(let nominal):
                 let prot =
                     try verifyProtocolCompositionTrailing(after: [.nominal(nominal)],
@@ -550,7 +552,7 @@ public class SwiftTypeParser {
                 return .protocolComposition(prot)
 
             default:
-                throw notProtocolComposableError(type: parameters[0], lexer: lexer)
+                throw notProtocolComposableError(type: parameters[0].1, lexer: lexer)
             }
         }
 
@@ -559,10 +561,16 @@ public class SwiftTypeParser {
         }
 
         if parameters.count == 1 {
-            return parameters[0]
+            return parameters[0].1
         }
 
-        return .tuple(TupleSwiftType.types(.fromCollection(parameters)))
+        return .tuple(TupleSwiftType.types(.fromCollection(parameters.map {
+            if let label = $0.0 {
+                return .labeled(label, $0.1)
+            }
+
+            return .unlabeled($0.1)
+        })))
     }
 
     /// Attempts to parse a block type attribute from the given lexer.

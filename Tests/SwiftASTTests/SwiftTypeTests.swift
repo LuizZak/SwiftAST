@@ -80,11 +80,11 @@ class SwiftTypeTests: XCTestCase {
         //                "(A)")
 
         XCTAssertEqual(
-            SwiftType.tuple(.types([.typeName("A"), .typeName("B")])).description,
+            SwiftType.tuple([.typeName("A"), .typeName("B")]).description,
             "(A, B)"
         )
         XCTAssertEqual(
-            SwiftType.tuple(.types([.typeName("A"), .typeName("B"), .typeName("C")])).description,
+            SwiftType.tuple([.typeName("A"), .typeName("B"), .typeName("C")]).description,
             "(A, B, C)"
         )
     }
@@ -142,7 +142,7 @@ class SwiftTypeTests: XCTestCase {
 
     func testDescriptionOptionalWithTupleType() {
         XCTAssertEqual(
-            SwiftType.optional(.tuple(.types([.typeName("A"), .typeName("B")]))).description,
+            SwiftType.optional(.tuple([.typeName("A"), .typeName("B")])).description,
             "(A, B)?"
         )
     }
@@ -266,7 +266,7 @@ class SwiftTypeTests: XCTestCase {
     }
 
     func testEncodeSingleTypeTuple() throws {
-        let type = SwiftType.tuple(.types([.int, .string]))
+        let type = SwiftType.tuple([.int, .string])
 
         let encoded = try JSONEncoder().encode(type)
         let decoded = try JSONDecoder().decode(SwiftType.self, from: encoded)
@@ -275,7 +275,7 @@ class SwiftTypeTests: XCTestCase {
     }
 
     func testEncodeTwoTypedTuple() throws {
-        let type = SwiftType.tuple(.types([.int, .string]))
+        let type = SwiftType.tuple([.int, .string])
 
         let encoded = try JSONEncoder().encode(type)
         let decoded = try JSONDecoder().decode(SwiftType.self, from: encoded)
@@ -284,7 +284,7 @@ class SwiftTypeTests: XCTestCase {
     }
 
     func testEncodeNAryTypedTuple() throws {
-        let type = SwiftType.tuple(.types([.int, .string, .float, .double, .any]))
+        let type = SwiftType.tuple([.int, .string, .float, .double, .any])
 
         let encoded = try JSONEncoder().encode(type)
         let decoded = try JSONDecoder().decode(SwiftType.self, from: encoded)
