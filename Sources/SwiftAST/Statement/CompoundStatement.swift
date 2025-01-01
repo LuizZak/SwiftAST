@@ -65,6 +65,14 @@ public class CompoundStatement: Statement, ExpressibleByArrayLiteral, StatementK
         statement.parent = self
     }
 
+    /// Appends a sequence of statements at the end of this compound statement's
+    /// statement list.
+    public func appendStatements(_ statements: some Sequence<Statement>) {
+        for stmt in statements {
+            appendStatement(stmt)
+        }
+    }
+
     @inlinable
     public override func copy() -> CompoundStatement {
         CompoundStatement(statements: statements.map { $0.copy() }).copyMetadata(from: self)

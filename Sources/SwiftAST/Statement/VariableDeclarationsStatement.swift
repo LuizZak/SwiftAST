@@ -1,3 +1,5 @@
+// TODO: Refactor to more closely resemble the structure of variable declarations in SwiftSyntax
+
 public class VariableDeclarationsStatement: Statement, StatementKindType, CustomStringConvertible {
     public var statementKind: StatementKind {
         .variableDeclarations(self)

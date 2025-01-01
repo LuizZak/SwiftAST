@@ -1,13 +1,17 @@
-/// `<identifier>`
+/// `<identifier>` / `<identifier>(<args>)`
 public class IdentifierExpression: Expression, ExpressibleByStringLiteral, ExpressionKindType {
     public var expressionKind: ExpressionKind {
         .identifier(self)
     }
 
     public var identifier: String
+    public var argumentNames: [ArgumentName]?
 
     public override var description: String {
-        identifier
+        if let argumentNames {
+            return "\(identifier)(\(argumentNames.map(\.description).joined()))"
+        }
+        return identifier
     }
 
     public required init(stringLiteral value: String) {
@@ -16,8 +20,13 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
         super.init()
     }
 
-    public init(identifier: String) {
+    public convenience init(identifier: String) {
+        self.init(identifier: identifier, argumentNames: nil)
+    }
+
+    public init(identifier: String, argumentNames: [ArgumentName]?) {
         self.identifier = identifier
+        self.argumentNames = argumentNames
 
         super.init()
     }
@@ -26,6 +35,7 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         identifier = try container.decode(String.self, forKey: .identifier)
+        argumentNames = try container.decodeIfPresent([ArgumentName].self, forKey: .argumentNames)
 
         try super.init(from: container.superDecoder())
     }
@@ -60,6 +70,7 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
         var container = encoder.container(keyedBy: CodingKeys.self)
 
         try container.encode(identifier, forKey: .identifier)
+        try container.encodeIfPresent(argumentNames, forKey: .argumentNames)
 
         try super.encode(to: container.superEncoder())
     }
@@ -72,8 +83,25 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
         return lhs.identifier == rhs.identifier
     }
 
+    public struct ArgumentName: Equatable, Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral {
+        public var identifier: String
+
+        public var description: String {
+            "\(identifier):"
+        }
+
+        public init(identifier: String) {
+            self.identifier = identifier
+        }
+
+        public init(stringLiteral value: StringLiteralType) {
+            self.identifier = value
+        }
+    }
+
     private enum CodingKeys: String, CodingKey {
         case identifier
+        case argumentNames
     }
 }
 public extension Expression {
@@ -89,5 +117,9 @@ public extension Expression {
 
     static func identifier(_ ident: String) -> IdentifierExpression {
         IdentifierExpression(identifier: ident)
+    }
+
+    static func identifier(_ ident: String, argumentNames: [IdentifierExpression.ArgumentName]) -> IdentifierExpression {
+        IdentifierExpression(identifier: ident, argumentNames: argumentNames)
     }
 }

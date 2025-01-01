@@ -1,8 +1,10 @@
 /// Specifies a swift comment block with different delimiters.
+///
+/// Does not include the comment delimiters.
 public enum SwiftComment: Hashable, Codable {
     /// A line comment that terminates in a newline.
     case line(String)
-    
+
     /// A block comment with multi-line delimiters.
     case block(String)
 
