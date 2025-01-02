@@ -658,6 +658,10 @@ extension SwiftType: Codable {
     }
 }
 
+extension NominalSwiftType: Codable { }
+extension NestedSwiftType: Codable { }
+extension ProtocolCompositionComponent: Codable { }
+
 // MARK: - Building structures
 public struct OneOrMore<T> {
     public var first: T
@@ -838,6 +842,14 @@ extension OneOrMore: Hashable where T: Hashable { }
 
 extension TwoOrMore: Equatable where T: Equatable { }
 extension TwoOrMore: Hashable where T: Hashable { }
+
+// MARK: Codable conditional conformance
+
+extension OneOrMore: Encodable where T: Encodable { }
+extension OneOrMore: Decodable where T: Decodable { }
+
+extension TwoOrMore: Encodable where T: Encodable { }
+extension TwoOrMore: Decodable where T: Decodable { }
 
 // MARK: Array initialization
 extension OneOrMore: ExpressibleByArrayLiteral {

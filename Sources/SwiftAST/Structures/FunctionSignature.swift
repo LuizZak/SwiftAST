@@ -70,6 +70,12 @@ public struct FunctionSignature: Hashable {
         }
     }
 
+    /// An optional generic parameter clause.
+    public var genericParameters: GenericParameterClause?
+
+    /// An optional generic `where` clause.
+    public var genericWhereClause: GenericWhereClause?
+
     /// The return type of the function signature
     public var returnType: SwiftType
 
@@ -108,8 +114,10 @@ public struct FunctionSignature: Hashable {
 
         return FunctionSignature(
             name: name,
+            genericParameters: genericParameters,
             parameters: parameters,
             returnType: returnType.deepUnwrapped,
+            genericWhereClause: genericWhereClause,
             isStatic: isStatic,
             isMutating: isMutating
         )
@@ -118,17 +126,21 @@ public struct FunctionSignature: Hashable {
     public init(
         attributes: [DeclarationAttribute] = [],
         name: String,
+        genericParameters: GenericParameterClause? = nil,
         parameters: [ParameterSignature] = [],
         returnType: SwiftType = .void,
+        genericWhereClause: GenericWhereClause? = nil,
         isStatic: Bool = false,
         isMutating: Bool = false,
         isThrowing: Bool = false
     ) {
 
         self.traits = []
+        self.genericParameters = genericParameters
         self.attributes = attributes
         self.name = name
         self.returnType = returnType
+        self.genericWhereClause = genericWhereClause
         self.parameters = parameters
 
         _asIdentifier = FunctionIdentifier(name: name, parameters: parameters)
@@ -143,17 +155,21 @@ public struct FunctionSignature: Hashable {
 
     public init(
         attributes: [DeclarationAttribute] = [],
+        genericParameters: GenericParameterClause? = nil,
         name: String,
         parameters: [ParameterSignature] = [],
         returnType: SwiftType = .void,
+        genericWhereClause: GenericWhereClause? = nil,
         traits: Traits
     ) {
 
         self.attributes = attributes
         self.traits = traits
         self.name = name
+        self.genericParameters = genericParameters
         self.returnType = returnType
         self.parameters = parameters
+        self.genericWhereClause = genericWhereClause
 
         _asIdentifier = FunctionIdentifier(name: name, parameters: parameters)
         _asSelector = SelectorSignature(isStatic: traits.contains(.static), keywords: [name] + parameters.map(\.label))
@@ -402,8 +418,10 @@ extension FunctionSignature: Codable {
         try attributes = container.decode([DeclarationAttribute].self, forKey: .attributes)
         try traits = container.decode(Traits.self, forKey: .traits)
         try name = container.decode(String.self, forKey: .name)
+        try genericParameters = container.decodeIfPresent(GenericParameterClause.self, forKey: .genericParameters)
         try returnType = container.decode(SwiftType.self, forKey: .returnType)
         try parameters = container.decode([ParameterSignature].self, forKey: .parameters)
+        try genericWhereClause = container.decodeIfPresent(GenericWhereClause.self, forKey: .genericWhereClause)
 
         _recreateAliases()
     }
@@ -411,8 +429,10 @@ extension FunctionSignature: Codable {
     public enum CodingKeys: String, CodingKey {
         case attributes
         case name
+        case genericParameters
         case returnType
         case parameters
+        case genericWhereClause
         case traits
     }
 }
@@ -433,6 +453,10 @@ extension FunctionSignature: CustomStringConvertible {
         result += "func "
         result += name
 
+        if let genericParameters {
+            result += genericParameters.description
+        }
+
         result += TypeFormatter.asString(parameters: parameters)
 
         if isThrowing {
@@ -441,6 +465,10 @@ extension FunctionSignature: CustomStringConvertible {
 
         if returnType != .void {
             result += " -> \(TypeFormatter.stringify(returnType))"
+        }
+
+        if let genericWhereClause {
+            result += " \(genericWhereClause)"
         }
 
         return result
