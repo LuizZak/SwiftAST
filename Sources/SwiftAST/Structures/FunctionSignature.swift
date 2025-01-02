@@ -73,11 +73,11 @@ public struct FunctionSignature: Hashable {
     /// An optional generic parameter clause.
     public var genericParameters: GenericParameterClause?
 
-    /// An optional generic `where` clause.
-    public var genericWhereClause: GenericWhereClause?
-
     /// The return type of the function signature
     public var returnType: SwiftType
+
+    /// An optional generic `where` clause.
+    public var genericWhereClause: GenericWhereClause?
 
     /// The list of parameters for the function
     public var parameters: [ParameterSignature] {
