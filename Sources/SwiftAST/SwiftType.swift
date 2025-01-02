@@ -127,7 +127,7 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
     public var returnType: SwiftType
 
     /// The type for each parameter for this block type.
-    public var parameters: [SwiftType]
+    public var parameters: [BlockParameter]
 
     /// A set of attributes that decorate this block type.
     public var attributes: Set<BlockTypeAttribute> = []
@@ -159,6 +159,17 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
     ) {
 
         self.returnType = returnType
+        self.parameters = parameters.map { .init(type: $0) }
+        self.attributes = attributes
+    }
+
+    public init(
+        returnType: SwiftType,
+        parameters: [BlockParameter],
+        attributes: Set<BlockTypeAttribute> = []
+    ) {
+
+        self.returnType = returnType
         self.parameters = parameters
         self.attributes = attributes
     }
@@ -173,6 +184,14 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
     public static func swiftBlock(
         returnType: SwiftType,
         parameters: [SwiftType] = []
+    ) -> BlockSwiftType {
+
+        .init(returnType: returnType, parameters: parameters, attributes: [])
+    }
+
+    public static func swiftBlock(
+        returnType: SwiftType,
+        parameters: [BlockParameter] = []
     ) -> BlockSwiftType {
 
         .init(returnType: returnType, parameters: parameters, attributes: [])
@@ -197,10 +216,13 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
             removeUnspecifiedNullabilityOnly: removeUnspecifiedNullabilityOnly
         )
 
-        let parameters = type.parameters.map {
-            SwiftType.asNonnullDeep(
-                $0,
-                removeUnspecifiedNullabilityOnly: removeUnspecifiedNullabilityOnly
+        let parameters: [BlockParameter] = type.parameters.map {
+            .init(
+                type: SwiftType.asNonnullDeep(
+                    $0.type,
+                    removeUnspecifiedNullabilityOnly: removeUnspecifiedNullabilityOnly
+                ),
+                modifier: $0.modifier
             )
         }
 
@@ -209,6 +231,31 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
             parameters: parameters,
             attributes: type.attributes
         )
+    }
+
+    public struct BlockParameter: Equatable, Hashable, Codable, CustomStringConvertible {
+        public var type: SwiftType
+        public var modifier: Modifier
+
+        public var description: String {
+            if modifier != .none {
+                return "\(modifier) \(type)"
+            }
+
+            return type.description
+        }
+
+        public init(type: SwiftType, modifier: Modifier = .none) {
+            self.type = type
+            self.modifier = modifier
+        }
+
+        public enum Modifier: String, Equatable, Hashable, Codable {
+            case none
+            case `inout`
+            case borrowing
+            case consuming
+        }
     }
 }
 
@@ -471,7 +518,17 @@ public extension SwiftType {
         .nominal(.typeName(name))
     }
 
-    static func block(returnType: SwiftType, parameters: [SwiftType], attributes: Set<BlockTypeAttribute> = []) -> Self {
+    static func block(returnType: SwiftType, parameters: [SwiftType] = [], attributes: Set<BlockTypeAttribute> = []) -> Self {
+        .block(
+            BlockSwiftType(
+                returnType: returnType,
+                parameters: parameters,
+                attributes: attributes
+            )
+        )
+    }
+
+    static func block(returnType: SwiftType, parameters: [BlockSwiftType.BlockParameter], attributes: Set<BlockTypeAttribute> = []) -> Self {
         .block(
             BlockSwiftType(
                 returnType: returnType,
@@ -484,6 +541,14 @@ public extension SwiftType {
     static func swiftBlock(
         returnType: SwiftType,
         parameters: [SwiftType] = []
+    ) -> SwiftType {
+
+        .block(.swiftBlock(returnType: returnType, parameters: parameters))
+    }
+
+    static func swiftBlock(
+        returnType: SwiftType,
+        parameters: [BlockSwiftType.BlockParameter]
     ) -> SwiftType {
 
         .block(.swiftBlock(returnType: returnType, parameters: parameters))

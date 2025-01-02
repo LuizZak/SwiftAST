@@ -91,14 +91,14 @@ class SwiftTypeTests: XCTestCase {
 
     func testDescriptionBlockType() {
         XCTAssertEqual(
-            SwiftType.swiftBlock(returnType: .void, parameters: []).description,
+            SwiftType.swiftBlock(returnType: .void).description,
             "() -> Void"
         )
     }
 
     func testDescriptionBlockTypeWithReturnType() {
         XCTAssertEqual(
-            SwiftType.swiftBlock(returnType: .typeName("A"), parameters: []).description,
+            SwiftType.swiftBlock(returnType: .typeName("A")).description,
             "() -> A"
         )
     }

@@ -52,7 +52,6 @@ class FunctionSignatureParserTests: XCTestCase {
                     name: "arg0",
                     type: .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.escaping]
                     )
                 )
@@ -67,7 +66,6 @@ class FunctionSignatureParserTests: XCTestCase {
                     name: "arg0",
                     type: .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.autoclosure]
                     )
                 )
@@ -82,7 +80,6 @@ class FunctionSignatureParserTests: XCTestCase {
                     name: "arg0",
                     type: .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.autoclosure, .escaping]
                     )
                 )
@@ -99,7 +96,6 @@ class FunctionSignatureParserTests: XCTestCase {
                     name: "arg0",
                     type: .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.convention(.c)]
                     )
                 )
@@ -114,7 +110,6 @@ class FunctionSignatureParserTests: XCTestCase {
                     name: "arg0",
                     type: .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.convention(.block)]
                     )
                 )
@@ -127,7 +122,7 @@ class FunctionSignatureParserTests: XCTestCase {
                 ParameterSignature(
                     label: nil,
                     name: "arg0",
-                    type: .swiftBlock(returnType: .void, parameters: [])
+                    type: .swiftBlock(returnType: .void)
                 )
             ]
         )
@@ -142,7 +137,6 @@ class FunctionSignatureParserTests: XCTestCase {
                     name: "arg0",
                     type: .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.escaping]
                     )
                 )

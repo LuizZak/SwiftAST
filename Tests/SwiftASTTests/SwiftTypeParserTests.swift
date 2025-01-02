@@ -137,7 +137,6 @@ class SwiftTypeParserTests: XCTestCase {
             SwiftTypeParser.parse(from: "@convention(c) () -> ()"),
             SwiftType.block(
                 returnType: .void,
-                parameters: [],
                 attributes: [.convention(.c)]
             )
         )
@@ -146,7 +145,6 @@ class SwiftTypeParserTests: XCTestCase {
             SwiftTypeParser.parse(from: "@convention(block) () -> ()"),
             SwiftType.block(
                 returnType: .void,
-                parameters: [],
                 attributes: [.convention(.block)]
             )
         )
@@ -154,8 +152,7 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "@convention(swift) () -> ()"),
             SwiftType.swiftBlock(
-                returnType: .void,
-                parameters: []
+                returnType: .void
             )
         )
 
@@ -163,7 +160,6 @@ class SwiftTypeParserTests: XCTestCase {
             SwiftTypeParser.parse(from: "@autoclosure () -> ()"),
             SwiftType.block(
                 returnType: .void,
-                parameters: [],
                 attributes: [.autoclosure]
             )
         )
@@ -172,7 +168,6 @@ class SwiftTypeParserTests: XCTestCase {
             SwiftTypeParser.parse(from: "@escaping () -> ()"),
             SwiftType.block(
                 returnType: .void,
-                parameters: [],
                 attributes: [.escaping]
             )
         )
@@ -186,7 +181,6 @@ class SwiftTypeParserTests: XCTestCase {
                 parameters: [
                     .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.escaping]
                     )
                 ]
@@ -200,7 +194,6 @@ class SwiftTypeParserTests: XCTestCase {
                 parameters: [
                     .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.convention(.c)]
                     )
                 ]
@@ -214,7 +207,6 @@ class SwiftTypeParserTests: XCTestCase {
                 parameters: [
                     .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.autoclosure]
                     )
                 ]
@@ -228,12 +220,10 @@ class SwiftTypeParserTests: XCTestCase {
                 parameters: [
                     .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.escaping]
                     ),
                     .block(
                         returnType: .void,
-                        parameters: [],
                         attributes: [.autoclosure]
                     ),
                 ]
@@ -331,7 +321,7 @@ class SwiftTypeParserTests: XCTestCase {
             SwiftTypeParser.parse(from: "(() -> ()) -> ()"),
             SwiftType.swiftBlock(
                 returnType: .void,
-                parameters: [.swiftBlock(returnType: .void, parameters: [])]
+                parameters: [.swiftBlock(returnType: .void)]
             )
         )
     }
