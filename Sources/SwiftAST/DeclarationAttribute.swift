@@ -23,6 +23,14 @@ extension DeclarationAttribute: CustomStringConvertible {
     }
 }
 
+extension DeclarationAttribute: ExpressibleByStringLiteral {
+    /// Initializes an argument-less declaration attribute with a given string literal
+    /// name.
+    public init(stringLiteral value: StringLiteralType) {
+        self.init(name: value)
+    }
+}
+
 extension DeclarationAttribute: Equatable { }
 extension DeclarationAttribute: Hashable { }
 extension DeclarationAttribute: Encodable { }
