@@ -7,8 +7,13 @@ public struct GenericWhereClause: Equatable, Hashable, Codable {
     }
 
     public enum Requirement: Equatable, Hashable, Codable {
-        case conformanceRequirement(NominalSwiftType, ConformanceBase)
-        case sameTypeRequirement(NominalSwiftType, SwiftType)
+        case conformanceRequirement(TypeConstraint, ConformanceBase)
+        case sameTypeRequirement(TypeConstraint, SwiftType)
+
+        public enum TypeConstraint: Equatable, Hashable, Codable {
+            case nominal(NominalSwiftType)
+            case nested(NestedSwiftType)
+        }
 
         public enum ConformanceBase: Equatable, Hashable, Codable {
             case nominal(NominalSwiftType)
@@ -37,6 +42,26 @@ extension GenericWhereClause.Requirement: CustomStringConvertible {
         case .sameTypeRequirement(let base, let derived):
             return "\(base) == \(derived)"
         }
+    }
+}
+
+extension GenericWhereClause.Requirement.TypeConstraint: CustomStringConvertible {
+    public var description: String {
+        switch self {
+        case .nominal(let nominal):
+            return nominal.description
+
+        case .nested(let nested):
+            return nested.description
+        }
+    }
+}
+
+extension GenericWhereClause.Requirement.TypeConstraint: ExpressibleByStringLiteral {
+    /// Initializes a type constraint requirement that is a nominal type with a
+    /// given string literal.
+    public init(stringLiteral value: StringLiteralType) {
+        self = .nominal(.init(stringLiteral: value))
     }
 }
 
