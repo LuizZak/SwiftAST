@@ -4,8 +4,14 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
         .blockLiteral(self)
     }
 
-    public var parameters: [BlockParameter]
-    public var returnType: SwiftType
+    public var signature: Signature?
+    public var returnType: SwiftType? {
+        signature?.returnType
+    }
+    public var parameters: [BlockParameter]? {
+        signature?.parameters
+    }
+
     public var body: CompoundStatement {
         didSet { oldValue.parent = nil; body.parent = self }
     }
@@ -17,11 +23,9 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
     public override var description: String {
         var buff = "{ "
 
-        buff += "("
-        buff += parameters.map(\.description).joined(separator: ", ")
-        buff += ") -> "
-        buff += returnType.description
-        buff += " in "
+        if let signature {
+            buff += "\(signature) "
+        }
 
         buff += "< body >"
 
@@ -34,9 +38,12 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
         true
     }
 
-    public init(parameters: [BlockParameter], returnType: SwiftType, body: CompoundStatement) {
-        self.parameters = parameters
-        self.returnType = returnType
+    public convenience init(parameters: [BlockParameter], returnType: SwiftType, body: CompoundStatement) {
+        self.init(signature: .init(parameters: parameters, returnType: returnType), body: body)
+    }
+
+    public init(signature: Signature?, body: CompoundStatement) {
+        self.signature = signature
         self.body = body
 
         super.init()
@@ -47,8 +54,7 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        parameters = try container.decode([BlockParameter].self, forKey: .parameters)
-        returnType = try container.decode(SwiftType.self, forKey: .returnType)
+        signature = try container.decodeIfPresent(Signature.self, forKey: .signature)
         body = try container.decodeStatement(CompoundStatement.self, forKey: .body)
 
         try super.init(from: container.superDecoder())
@@ -59,8 +65,7 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
     @inlinable
     public override func copy() -> BlockLiteralExpression {
         BlockLiteralExpression(
-            parameters: parameters,
-            returnType: returnType,
+            signature: signature,
             body: body.copy()
         ).copyTypeAndMetadata(from: self)
     }
@@ -82,16 +87,14 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
     public override func hash(into hasher: inout Hasher) {
         super.hash(into: &hasher)
 
-        hasher.combine(parameters)
-        hasher.combine(returnType)
+        hasher.combine(signature)
         hasher.combine(body)
     }
 
     public override func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
-        try container.encode(parameters, forKey: .parameters)
-        try container.encode(returnType, forKey: .returnType)
+        try container.encode(signature, forKey: .signature)
         try container.encodeStatement(body, forKey: .body)
 
         try super.encode(to: container.superEncoder())
@@ -102,15 +105,33 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
             return true
         }
 
-        return lhs.parameters == rhs.parameters &&
-            lhs.returnType == rhs.returnType &&
-            lhs.body == rhs.body
+        return lhs.signature == rhs.signature && lhs.body == rhs.body
     }
 
     private enum CodingKeys: String, CodingKey {
-        case parameters
+        case signature
         case returnType
         case body
+    }
+
+    public struct Signature: Equatable, Hashable, Codable, CustomStringConvertible {
+        public var parameters: [BlockParameter]
+        public var returnType: SwiftType
+
+        public var description: String {
+            var buff = ""
+            buff += "("
+            buff += parameters.map(\.description).joined(separator: ", ")
+            buff += ") -> "
+            buff += returnType.description
+            buff += " in"
+            return buff
+        }
+
+        internal init(parameters: [BlockParameter], returnType: SwiftType) {
+            self.parameters = parameters
+            self.returnType = returnType
+        }
     }
 }
 public extension Expression {
@@ -131,6 +152,14 @@ public extension Expression {
     ) -> BlockLiteralExpression {
 
         BlockLiteralExpression(parameters: parameters, returnType: returnType, body: body)
+    }
+
+    static func block(
+        signature: BlockLiteralExpression.Signature?,
+        body: CompoundStatement
+    ) -> BlockLiteralExpression {
+
+        BlockLiteralExpression(signature: signature, body: body)
     }
 }
 
