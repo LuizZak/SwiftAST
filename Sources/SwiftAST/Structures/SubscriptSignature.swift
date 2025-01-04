@@ -5,6 +5,9 @@ public struct SubscriptSignature: Hashable {
     /// Whether the subscript is static, i.e. `static subscript` in Swift.
     public var isStatic: Bool
 
+    /// Attribute declarations associated with this function signature.
+    public var attributes: [DeclarationAttribute]
+
     /// An optional generic parameter clause.
     public var genericParameters: GenericParameterClause?
 
@@ -51,12 +54,14 @@ public struct SubscriptSignature: Hashable {
     }
 
     public init(
+        attributes: [DeclarationAttribute] = [],
         genericParameters: GenericParameterClause? = nil,
         parameters: [ParameterSignature] = [],
         returnType: SwiftType = .void,
         genericWhereClause: GenericWhereClause? = nil,
         isStatic: Bool = false
     ) {
+        self.attributes = attributes
         self.genericParameters = genericParameters
         self.parameters = parameters
         self.returnType = returnType
@@ -165,6 +170,7 @@ extension SubscriptSignature: Codable {
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        try attributes = container.decode([DeclarationAttribute].self, forKey: .attributes)
         try genericParameters = container.decodeIfPresent(GenericParameterClause.self, forKey: .genericParameters)
         try parameters = container.decode([ParameterSignature].self, forKey: .parameters)
         try returnType = container.decode(SwiftType.self, forKey: .returnType)
@@ -175,6 +181,7 @@ extension SubscriptSignature: Codable {
     }
 
     public enum CodingKeys: String, CodingKey {
+        case attributes
         case genericParameters
         case parameters
         case returnType
@@ -186,6 +193,11 @@ extension SubscriptSignature: Codable {
 extension SubscriptSignature: CustomStringConvertible {
     public var description: String {
         var result = ""
+
+        for attribute in attributes {
+            result += attribute.description + " "
+        }
+
         if isStatic {
             result += "static "
         }

@@ -10,7 +10,7 @@ public struct FunctionSignature: Hashable {
         }
     }
 
-    /// Attribute declarations associated with this function signature.
+    /// Attribute declarations associated with this subscript signature.
     public var attributes: [DeclarationAttribute]
 
     /// Whether the function is mutating, i.e. `mutating func` in Swift.
