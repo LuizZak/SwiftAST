@@ -497,10 +497,12 @@ public final class FunctionSignatureParser {
             hasDefaultValue = true
         }
 
-        return ParameterSignature(label: label,
-                                  name: String(name),
-                                  type: type,
-                                  hasDefaultValue: hasDefaultValue)
+        return ParameterSignature(
+            label: label,
+            name: String(name),
+            type: type,
+            defaultValue: hasDefaultValue ? .identifier("default") : nil
+        )
     }
 
     private static func parseDefaultValue(tokenizer: Tokenizer) throws {

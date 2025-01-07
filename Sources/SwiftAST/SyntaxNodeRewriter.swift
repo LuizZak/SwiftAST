@@ -522,6 +522,12 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
     /// - Parameter stmt: A `LocalFunctionStatement` to visit
     /// - Returns: Result of visiting the local function statement node
     open func visitLocalFunction(_ stmt: LocalFunctionStatement) -> Statement {
+        for (i, parameter) in stmt.function.parameters.enumerated() {
+            if let defaultValue = parameter.defaultValue {
+                stmt.function.parameters[i].defaultValue = visitExpression(defaultValue)
+            }
+        }
+
         stmt.function.body = _visitCompound(stmt.function.body)
 
         return stmt

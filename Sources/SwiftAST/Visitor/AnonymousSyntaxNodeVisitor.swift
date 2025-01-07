@@ -450,6 +450,12 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
     public func visitLocalFunction(_ stmt: LocalFunctionStatement) {
         listener(stmt)
 
+        for parameter in stmt.function.parameters {
+            if let defaultValue = parameter.defaultValue {
+                visitExpression(defaultValue)
+            }
+        }
+
         stmt.function.body.accept(self)
     }
 

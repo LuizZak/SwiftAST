@@ -6,13 +6,17 @@ public class LocalFunctionStatement: Statement, StatementKindType {
     /// Gets or sets the function for this local function statement.
     public var function: LocalFunction {
         didSet {
-            oldValue.body.parent = nil
-            function.body.parent = self
+            oldValue.setParent(nil)
+            function.setParent(self)
         }
     }
 
     public override var children: [SyntaxNode] {
-        [function.body]
+        var result: [SyntaxNode] = function.parameters.compactMap(\.defaultValue)
+
+        result.append(function.body)
+
+        return result
     }
 
     public init(function: LocalFunction) {
@@ -20,7 +24,7 @@ public class LocalFunctionStatement: Statement, StatementKindType {
 
         super.init()
 
-        function.body.parent = self
+        function.setParent(self)
     }
 
     public required init(from decoder: Decoder) throws {
@@ -30,7 +34,7 @@ public class LocalFunctionStatement: Statement, StatementKindType {
 
         try super.init(from: container.superDecoder())
 
-        function.body.parent = self
+        function.setParent(self)
     }
 
     @inlinable

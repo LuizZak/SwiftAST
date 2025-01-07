@@ -91,13 +91,13 @@ public struct SubscriptSignature: Hashable {
     /// subscript(bar:baz:_:)
     /// ```
     public func possibleIdentifierSignatures() -> Set<SubscriptIdentifier> {
-        if !parameters.contains(where: \.hasDefaultValue) {
+        if !parameters.contains(where: { $0.defaultValue != nil }) {
             return [asIdentifier]
         }
 
         let defaultArgIndices =
             parameters.enumerated()
-                .filter(\.element.hasDefaultValue)
+                .filter({ $0.element.defaultValue != nil })
                 .map(\.offset)
 
         if defaultArgIndices.isEmpty {
@@ -117,7 +117,7 @@ public struct SubscriptSignature: Hashable {
             var nextDefaultArgIndex = 0
 
             for param in parameters {
-                if !param.hasDefaultValue {
+                if param.defaultValue == nil {
                     paramLabels.append(param.label)
                     continue
                 }

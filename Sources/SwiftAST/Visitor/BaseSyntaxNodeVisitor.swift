@@ -393,6 +393,12 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
     ///
     /// - Parameter stmt: A LocalFunctionStatement to visit
     open func visitLocalFunction(_ stmt: LocalFunctionStatement) {
+        for parameter in stmt.function.parameters {
+            if let defaultValue = parameter.defaultValue {
+                visitExpression(defaultValue)
+            }
+        }
+
         visitStatement(stmt.function.body)
     }
 

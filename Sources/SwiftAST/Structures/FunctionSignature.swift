@@ -180,6 +180,12 @@ public struct FunctionSignature: Hashable {
         _asSelector = SelectorSignature(isStatic: isStatic, keywords: [name] + parameters.map(\.label))
     }
 
+    public func setParent(_ node: SyntaxNode?) {
+        for parameter in parameters {
+            parameter.setParent(node)
+        }
+    }
+
     /// Returns a copy of `self` with a given set of traits appended to the
     /// current trait set.
     public func addingTraits(_ traits: Traits) -> Self {
@@ -215,13 +221,13 @@ public struct FunctionSignature: Hashable {
     /// foo(bar:baz:_:)
     /// ```
     public func possibleSelectorSignatures() -> Set<SelectorSignature> {
-        if !parameters.contains(where: \.hasDefaultValue) {
+        if !parameters.contains(where: { $0.defaultValue != nil }) {
             return [asSelector]
         }
 
         let defaultArgIndices =
             parameters.enumerated()
-                .filter(\.element.hasDefaultValue)
+                .filter({ $0.element.defaultValue != nil })
                 .map(\.offset)
 
         if defaultArgIndices.isEmpty {
@@ -241,7 +247,7 @@ public struct FunctionSignature: Hashable {
             var nextDefaultArgIndex = 0
 
             for param in parameters {
-                if !param.hasDefaultValue {
+                if param.defaultValue == nil {
                     keywords.append(param.label)
                     continue
                 }
@@ -278,13 +284,13 @@ public struct FunctionSignature: Hashable {
     /// foo(bar:baz:_:)
     /// ```
     public func possibleIdentifierSignatures() -> Set<FunctionIdentifier> {
-        if !parameters.contains(where: \.hasDefaultValue) {
+        if !parameters.contains(where: { $0.defaultValue != nil }) {
             return [asIdentifier]
         }
 
         let defaultArgIndices =
             parameters.enumerated()
-                .filter(\.element.hasDefaultValue)
+                .filter({ $0.element.defaultValue != nil })
                 .map(\.offset)
 
         if defaultArgIndices.isEmpty {
@@ -304,7 +310,7 @@ public struct FunctionSignature: Hashable {
             var nextDefaultArgIndex = 0
 
             for param in parameters {
-                if !param.hasDefaultValue {
+                if param.defaultValue == nil {
                     paramLabels.append(param.label)
                     continue
                 }

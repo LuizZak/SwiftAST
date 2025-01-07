@@ -68,6 +68,11 @@ public struct LocalFunction: Codable, Equatable, Hashable {
         try container.encodeStatement(body, forKey: .body)
     }
 
+    public func setParent(_ node: SyntaxNode?) {
+        self.signature.setParent(node)
+        self.body.parent = node
+    }
+
     private enum CodingKeys: String, CodingKey {
         case identifier
         case parameters

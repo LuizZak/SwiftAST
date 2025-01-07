@@ -87,7 +87,7 @@ class TypeFormatterTests: XCTestCase {
 
     func testAsStringParameterDefaultValue() {
         let parameters = [
-            ParameterSignature(label: "label", name: "name", type: .int, hasDefaultValue: true)
+            ParameterSignature(label: "label", name: "name", type: .int, defaultValue: .identifier("default"))
         ]
         XCTAssertEqual(
             "(label name: Int = default)",
