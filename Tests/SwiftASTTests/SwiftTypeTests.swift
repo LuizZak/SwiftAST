@@ -214,6 +214,10 @@ class SwiftTypeTests: XCTestCase {
         )
     }
 
+    func testDescriptionOpaqueType() {
+        XCTAssertEqual(SwiftType.opaque(.typeName("Protocol")).description, "some Protocol")
+    }
+
     func testWithSameOptionalityAs() {
         XCTAssertEqual(
             SwiftType.int.withSameOptionalityAs(.any),

@@ -32,6 +32,7 @@ public class SwiftTypeParser {
     ///     | implicitly-unwrapped-optional
     ///     | protocol-composition
     ///     | metatype
+    ///     | opaque
     ///     ;
     ///
     /// tuple
@@ -153,6 +154,8 @@ public class SwiftTypeParser {
             type = try parseArrayOrDictionary(lexer)
         } else if lexer.tokenType(is: .openParens) || lexer.tokenType(is: .at) {
             type = try parseTupleOrBlock(lexer)
+        } else if lexer.tokenType(is: .some) {
+            type = try parseOpaqueType(lexer)
         } else {
             throw unexpectedTokenError(lexer: lexer)
         }
@@ -362,6 +365,20 @@ public class SwiftTypeParser {
         }
 
         return .array(type1)
+    }
+
+    /// Parses an opaque type.
+    ///
+    /// ```
+    /// opaque
+    ///     : 'some' type ;
+    /// ```
+    private static func parseOpaqueType(_ lexer: Tokenizer) throws -> SwiftType {
+        try lexer.advance(overTokenType: .some)
+
+        let type = try parseType(lexer)
+
+        return .opaque(type)
     }
 
     /// Parses a tuple or block type
@@ -768,6 +785,7 @@ enum SwiftTypeToken: String, TokenProtocol {
     /// An arbitrary identifier token
     case identifier
     case `inout`
+    case some
     case questionMark = "?"
     case exclamationMark = "!"
     case colon = ":"
@@ -794,6 +812,8 @@ enum SwiftTypeToken: String, TokenProtocol {
             return 2
         case .ellipsis:
             return 3
+        case .some:
+            return 4
         case .inout:
             return "inout".count
         case .identifier:
@@ -856,6 +876,8 @@ enum SwiftTypeToken: String, TokenProtocol {
 
                 if ident == "inout" {
                     return .inout
+                } else if ident == "some" {
+                    return .some
                 } else {
                     return .identifier
                 }

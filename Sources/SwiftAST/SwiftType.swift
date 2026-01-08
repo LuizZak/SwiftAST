@@ -7,6 +7,7 @@ public indirect enum SwiftType: Hashable {
     case block(BlockSwiftType)
     case metatype(for: SwiftType)
     case optional(SwiftType)
+    case opaque(SwiftType)
     case implicitUnwrappedOptional(SwiftType)
     case nullabilityUnspecified(SwiftType)
     case array(SwiftType)
@@ -680,6 +681,9 @@ extension SwiftType: CustomStringConvertible {
 
         case let .dictionary(key, value):
             return "[\(key): \(value)]"
+
+        case .opaque(let type):
+            return "some \(type)"
         }
     }
 
