@@ -613,6 +613,14 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         return result.then(node)
     }
 
+    func visitAwait(_ exp: AwaitExpression) -> CFGVisitResult {
+        let result = visitExpression(exp.exp).resolvingJumpsToExit(kind: .expressionShortCircuit)
+
+        let node: CFGVisitResult = .init(forSyntaxNode: exp, id: nextId())
+
+        return result.then(node)
+    }
+
     func visitIf(_ expr: IfExpression) -> CFGVisitResult {
         let conditions = expr.conditionalClauses.accept(self)
         let node = CFGVisitResult(forSyntaxNode: expr, id: nextId())

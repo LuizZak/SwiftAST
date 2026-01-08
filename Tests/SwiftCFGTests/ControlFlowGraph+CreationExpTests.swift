@@ -1014,6 +1014,38 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
     }
 
+    func testExpression_await() {
+        let exp: SwiftAST.Expression =
+            .await(.identifier("a"))
+
+        let graph = ControlFlowGraph.forExpression(exp)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="a"]
+                    n3 [fillcolor="#DDDDFF", label="{marker}", style=filled]
+                    n4 [fillcolor="#DDDDFF", label="{marker}", style=filled]
+                    n5 [label="await a"]
+                    n6 [label="exit"]
+                
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                }
+                """
+        )
+        XCTAssert(graph.entry.node === exp)
+        XCTAssert(graph.exit.node === exp)
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
+    }
+
     func testExpression_try_errorFlow() {
         let stmt: CompoundStatement = [
             .do([

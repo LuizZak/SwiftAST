@@ -224,6 +224,16 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         return exp
     }
 
+    /// Visits an await expression node
+    ///
+    /// - Parameter exp: An await expression to visit
+    /// - Returns: Result of visiting the await expression
+    open func visitAwait(_ exp: AwaitExpression) -> Expression {
+        exp.exp = visitExpression(exp.exp)
+
+        return exp
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An `UnknownExpression` to visit

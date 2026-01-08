@@ -22,6 +22,7 @@ public enum ExpressionKind: Codable {
     case typeCheck(TypeCheckExpression)
     case unary(UnaryExpression)
     case tryExpression(TryExpression)
+    case awaitExpression(AwaitExpression)
     case ifExpression(IfExpression)
     case `switch`(SwitchExpression)
     case unknown(UnknownExpression)
@@ -78,6 +79,8 @@ public enum ExpressionKind: Codable {
         case .unary(let e):
             return e
         case .tryExpression(let e):
+            return e
+        case .awaitExpression(let e):
             return e
         case .ifExpression(let e):
             return e

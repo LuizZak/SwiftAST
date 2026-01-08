@@ -130,6 +130,12 @@ public protocol ExpressionVisitor {
     /// - Returns: Result of visiting the try expression
     func visitTry(_ exp: TryExpression) -> ExprResult
 
+    /// Visits an await expression node
+    ///
+    /// - Parameter exp: An await expression to visit
+    /// - Returns: Result of visiting the await expression
+    func visitAwait(_ exp: AwaitExpression) -> ExprResult
+
     /// Visits an `if` expression with this visitor
     ///
     /// - Parameter stmt: An `if` expression to visit

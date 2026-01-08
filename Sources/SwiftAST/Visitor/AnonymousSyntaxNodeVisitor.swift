@@ -201,6 +201,13 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         listener(exp)
     }
 
+    /// Visits an await expression node
+    ///
+    /// - Parameter exp: An await expression to visit
+    public func visitAwait(_ exp: AwaitExpression) {
+        listener(exp)
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An UnknownExpression to visit

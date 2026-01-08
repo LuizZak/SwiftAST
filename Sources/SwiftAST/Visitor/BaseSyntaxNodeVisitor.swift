@@ -177,6 +177,13 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
 
     }
 
+    /// Visits an await expression node
+    ///
+    /// - Parameter exp: An await expression to visit
+    open func visitAwait(_ exp: AwaitExpression) {
+
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An UnknownExpression to visit
