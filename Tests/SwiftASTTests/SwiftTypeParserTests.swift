@@ -513,6 +513,10 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(SwiftTypeParser.parse(from: "some Protocol"), .opaque(.typeName("Protocol")))
     }
 
+    func testParseBoxedType() throws {
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "any Protocol"), .boxed(.typeName("Protocol")))
+    }
+
     // MARK: Error cases
 
     func testProtocolCompositionWithNominalWithBlockOnRightSideError() throws {

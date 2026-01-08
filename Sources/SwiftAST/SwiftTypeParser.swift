@@ -33,6 +33,7 @@ public class SwiftTypeParser {
     ///     | protocol-composition
     ///     | metatype
     ///     | opaque
+    ///     | boxed
     ///     ;
     ///
     /// tuple
@@ -56,6 +57,12 @@ public class SwiftTypeParser {
     ///     : swift-type '.' type-identifier
     ///     | identifier generic-argument-clause?
     ///     ;
+    ///
+    /// opaque
+    ///     : 'some' swift-type ;
+    ///
+    /// boxed
+    ///     : 'any' swift-type ;
     ///
     /// generic-argument-clause
     ///     : '<' swift-type (',' swift-type)* '>'
@@ -156,6 +163,8 @@ public class SwiftTypeParser {
             type = try parseTupleOrBlock(lexer)
         } else if lexer.tokenType(is: .some) {
             type = try parseOpaqueType(lexer)
+        } else if lexer.tokenType(is: .any) {
+            type = try parseBoxedType(lexer)
         } else {
             throw unexpectedTokenError(lexer: lexer)
         }
@@ -379,6 +388,20 @@ public class SwiftTypeParser {
         let type = try parseType(lexer)
 
         return .opaque(type)
+    }
+
+    /// Parses a boxed type.
+    ///
+    /// ```
+    /// boxed
+    ///     : 'any' type ;
+    /// ```
+    private static func parseBoxedType(_ lexer: Tokenizer) throws -> SwiftType {
+        try lexer.advance(overTokenType: .any)
+
+        let type = try parseType(lexer)
+
+        return .boxed(type)
     }
 
     /// Parses a tuple or block type
@@ -786,6 +809,7 @@ enum SwiftTypeToken: String, TokenProtocol {
     case identifier
     case `inout`
     case some
+    case any
     case questionMark = "?"
     case exclamationMark = "!"
     case colon = ":"
@@ -810,7 +834,7 @@ enum SwiftTypeToken: String, TokenProtocol {
             return 1
         case .functionArrow:
             return 2
-        case .ellipsis:
+        case .ellipsis, .any:
             return 3
         case .some:
             return 4
@@ -878,6 +902,8 @@ enum SwiftTypeToken: String, TokenProtocol {
                     return .inout
                 } else if ident == "some" {
                     return .some
+                } else if ident == "any" {
+                    return .any
                 } else {
                     return .identifier
                 }

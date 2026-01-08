@@ -8,6 +8,7 @@ public indirect enum SwiftType: Hashable {
     case metatype(for: SwiftType)
     case optional(SwiftType)
     case opaque(SwiftType)
+    case boxed(SwiftType)
     case implicitUnwrappedOptional(SwiftType)
     case nullabilityUnspecified(SwiftType)
     case array(SwiftType)
@@ -332,7 +333,7 @@ public extension SwiftType {
     /// within an optional or metatype.
     var requiresSurroundingParens: Bool {
         switch self {
-        case .protocolComposition, .block:
+        case .protocolComposition, .block, .opaque, .boxed:
             return true
         default:
             return false
@@ -684,6 +685,9 @@ extension SwiftType: CustomStringConvertible {
 
         case .opaque(let type):
             return "some \(type)"
+
+        case .boxed(let type):
+            return "any \(type)"
         }
     }
 
