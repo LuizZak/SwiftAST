@@ -7,10 +7,12 @@ public struct GenericParameterClause: Equatable, Hashable, Codable {
     }
 
     public struct GenericParameter: Equatable, Hashable, Codable {
+        public var isParameterPack: Bool
         public var typeName: String
         public var typeConstraint: TypeConstraint?
 
-        public init(typeName: String, typeConstraint: TypeConstraint? = nil) {
+        public init(isParameterPack: Bool = false, typeName: String, typeConstraint: TypeConstraint? = nil) {
+            self.isParameterPack = isParameterPack
             self.typeName = typeName
             self.typeConstraint = typeConstraint
         }
@@ -35,11 +37,18 @@ extension GenericParameterClause: ExpressibleByArrayLiteral {
 
 extension GenericParameterClause.GenericParameter: CustomStringConvertible {
     public var description: String {
-        if let typeConstraint {
-            return "\(typeName): \(typeConstraint)"
+        let leadType: String
+        if isParameterPack {
+            leadType = "each \(typeName)"
+        } else {
+            leadType = typeName
         }
 
-        return typeName
+        if let typeConstraint {
+            return "\(leadType): \(typeConstraint)"
+        }
+
+        return leadType
     }
 }
 extension GenericParameterClause.GenericParameter: ExpressibleByStringLiteral {

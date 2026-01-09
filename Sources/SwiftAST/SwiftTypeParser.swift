@@ -38,7 +38,9 @@ public class SwiftTypeParser {
     ///     ;
     ///
     /// tuple
-    ///     : '(' tuple-element (',' tuple-element)* ')' ;
+    ///     : '(' tuple-element (',' tuple-element)* ')'
+    ///     | '(' 'repeat' swift-type ')'
+    ///     ;
     ///
     /// tuple-element
     ///     : swift-type
@@ -438,7 +440,9 @@ public class SwiftTypeParser {
     ///
     /// ```
     /// tuple
-    ///     : '(' tuple-element (',' tuple-element)* ')' ;
+    ///     : '(' tuple-element (',' tuple-element)* ')
+    ///     | '(' 'repeat' swift-type ')'
+    ///     ;
     ///
     /// tuple-element
     ///     : swift-type
@@ -628,6 +632,10 @@ public class SwiftTypeParser {
 
         if parameters.isEmpty {
             return .tuple(.empty)
+        }
+
+        if parameters.count == 1, case .parameterPack(.parameterPackExpansion(let inner)) = parameters[0].1 {
+            return .tuple(.parameterPackExpansion(inner))
         }
 
         if parameters.count == 1 {

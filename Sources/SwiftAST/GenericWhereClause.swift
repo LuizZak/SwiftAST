@@ -11,6 +11,7 @@ public struct GenericWhereClause: Equatable, Hashable, Codable {
         case sameTypeRequirement(TypeConstraint, SwiftType)
 
         public enum TypeConstraint: Equatable, Hashable, Codable {
+            case parameterPack(ParameterPackType)
             case nominal(NominalSwiftType)
             case nested(NestedSwiftType)
         }
@@ -48,6 +49,9 @@ extension GenericWhereClause.Requirement: CustomStringConvertible {
 extension GenericWhereClause.Requirement.TypeConstraint: CustomStringConvertible {
     public var description: String {
         switch self {
+        case .parameterPack(let parameterPack):
+            return parameterPack.description
+
         case .nominal(let nominal):
             return nominal.description
 

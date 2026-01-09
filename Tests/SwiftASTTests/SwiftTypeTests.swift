@@ -72,6 +72,10 @@ class SwiftTypeTests: XCTestCase {
             SwiftType.tuple(.empty).description,
             "Void"
         )
+        XCTAssertEqual(
+            SwiftType.tuple(.parameterPackExpansion(.parameterPack(.each(.typeName("T"))))).description,
+            "(repeat each T)"
+        )
 
         // This is not valid and will crash, since tuples require either 0, or
         // two or more types

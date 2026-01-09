@@ -69,6 +69,9 @@ public enum TupleSwiftType: Hashable {
     /// An empty tuple type, or `Void`.
     case empty
 
+    /// A parameter pack expansion with a given parameter pack.
+    indirect case parameterPackExpansion(SwiftType)
+
     /// A tuple type containing two or more types.
     indirect case types(TwoOrMore<TupleTypeEntry>)
 
@@ -77,6 +80,9 @@ public enum TupleSwiftType: Hashable {
         switch self {
         case .empty:
             return []
+
+        case .parameterPackExpansion(let type):
+            return [type]
 
         case .types(let types):
             return types.map(\.swiftType)
@@ -104,6 +110,8 @@ extension TupleSwiftType: Collection {
         switch self {
         case .empty:
             return 1
+        case .parameterPackExpansion:
+            return 1
         case .types(let types):
             return types.count
         }
@@ -113,6 +121,13 @@ extension TupleSwiftType: Collection {
         switch self {
         case .empty:
             fatalError("Index is out of bounds for TupleSwiftType.empty: \(index)")
+
+        case .parameterPackExpansion(let type):
+            if index != 0 {
+                fatalError("Index is out of bounds for TupleSwiftType.parameterPackExpansion: \(index)")
+            }
+
+            return type
 
         case .types(let types):
             return types[index].swiftType
@@ -699,6 +714,9 @@ extension SwiftType: CustomStringConvertible {
         case .tuple(.empty):
             return "Void"
 
+        case .tuple(.parameterPackExpansion(let inner)):
+            return "(repeat \(inner))"
+
         case let .tuple(.types(inner)):
             return "(" + inner.map(\.description).joined(separator: ", ") + ")"
 
@@ -765,6 +783,7 @@ extension SwiftType: Codable {
 extension NominalSwiftType: Codable { }
 extension NestedSwiftType: Codable { }
 extension ProtocolCompositionComponent: Codable { }
+extension ParameterPackType: Codable { }
 
 // MARK: - Building structures
 public struct OneOrMore<T> {

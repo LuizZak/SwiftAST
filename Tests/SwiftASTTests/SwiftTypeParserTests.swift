@@ -524,6 +524,10 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat Array<each T>"), .parameterPack(.repeat(.generic("Array", parameters: [.parameterPack(.each(.typeName("T")))]))))
     }
 
+    func testParseParameterPackTuple() throws {
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "(repeat each T)"), .tuple(.parameterPackExpansion(.parameterPack(.each(.typeName("T"))))))
+    }
+
     // MARK: Error cases
 
     func testProtocolCompositionWithNominalWithBlockOnRightSideError() throws {
