@@ -26,7 +26,13 @@ class SwiftASTSerializerTests: XCTestCase {
                     .dictionaryLiteral([
                         .prefix(op: .subtract, .constant(.nil)): .sizeof(.identifier("Int"))
                     ])
-                )
+                ),
+                .expression(
+                    .await(.identifier("a").call())
+                ),
+                .expression(
+                    .repeat(.each(.identifier("t")))
+                ),
             ]),
             .if(
                 .typeCheck(.identifier("exp"), type: .string),

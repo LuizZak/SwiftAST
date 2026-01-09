@@ -184,6 +184,20 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
 
     }
 
+    /// Visits a repeat expression node
+    ///
+    /// - Parameter exp: A repeat expression to visit
+    open func visitRepeat(_ exp: RepeatExpression) {
+
+    }
+
+    /// Visits an each expression node
+    ///
+    /// - Parameter exp: An each expression to visit
+    open func visitEach(_ exp: EachExpression) {
+
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An UnknownExpression to visit

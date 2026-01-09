@@ -136,6 +136,18 @@ public protocol ExpressionVisitor {
     /// - Returns: Result of visiting the await expression
     func visitAwait(_ exp: AwaitExpression) -> ExprResult
 
+    /// Visits a repeat expression node
+    ///
+    /// - Parameter exp: A repeat expression to visit
+    /// - Returns: Result of visiting the repeat expression
+    func visitRepeat(_ exp: RepeatExpression) -> ExprResult
+
+    /// Visits an each expression node
+    ///
+    /// - Parameter exp: An each expression to visit
+    /// - Returns: Result of visiting the each expression
+    func visitEach(_ exp: EachExpression) -> ExprResult
+
     /// Visits an `if` expression with this visitor
     ///
     /// - Parameter stmt: An `if` expression to visit

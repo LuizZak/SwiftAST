@@ -1,9 +1,9 @@
-/// A swift `await` expression.
+/// A swift `repeat` expression.
 ///
-/// `await <exp>`
-public class AwaitExpression: Expression, ExpressionKindType {
+/// `repeat <exp>`
+public class RepeatExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
-        .awaitExpression(self)
+        .repeatExpression(self)
     }
 
     public var exp: Expression {
@@ -19,7 +19,7 @@ public class AwaitExpression: Expression, ExpressionKindType {
     }
 
     public override var description: String {
-        "await \(exp)"
+        "repeat \(exp)"
     }
 
     public init(exp: Expression) {
@@ -41,13 +41,13 @@ public class AwaitExpression: Expression, ExpressionKindType {
     }
 
     @inlinable
-    public override func copy() -> AwaitExpression {
-        AwaitExpression(exp: exp.copy()).copyTypeAndMetadata(from: self)
+    public override func copy() -> RepeatExpression {
+        RepeatExpression(exp: exp.copy()).copyTypeAndMetadata(from: self)
     }
 
     @inlinable
     public override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.ExprResult {
-        visitor.visitAwait(self)
+        visitor.visitRepeat(self)
     }
 
     public override func encode(to encoder: Encoder) throws {
@@ -60,7 +60,7 @@ public class AwaitExpression: Expression, ExpressionKindType {
 
     public override func isEqual(to other: Expression) -> Bool {
         switch other {
-        case let rhs as AwaitExpression:
+        case let rhs as RepeatExpression:
             return self == rhs
         default:
             return false
@@ -73,7 +73,7 @@ public class AwaitExpression: Expression, ExpressionKindType {
         hasher.combine(exp)
     }
 
-    public static func == (lhs: AwaitExpression, rhs: AwaitExpression) -> Bool {
+    public static func == (lhs: RepeatExpression, rhs: RepeatExpression) -> Bool {
         if lhs === rhs {
             return true
         }
@@ -87,16 +87,16 @@ public class AwaitExpression: Expression, ExpressionKindType {
 }
 public extension Expression {
     @inlinable
-    var asAwait: AwaitExpression? {
+    var asRepeat: RepeatExpression? {
         cast()
     }
 
     @inlinable
-    var isAwait: Bool {
-        asAwait != nil
+    var isRepeat: Bool {
+        asRepeat != nil
     }
 
-    static func `await`(_ exp: Expression) -> AwaitExpression {
-        AwaitExpression(exp: exp)
+    static func `repeat`(_ exp: Expression) -> RepeatExpression {
+        RepeatExpression(exp: exp)
     }
 }

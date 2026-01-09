@@ -1,9 +1,9 @@
-/// A swift `await` expression.
+/// A swift `each` expression.
 ///
-/// `await <exp>`
-public class AwaitExpression: Expression, ExpressionKindType {
+/// `each <exp>`
+public class EachExpression: Expression, ExpressionKindType {
     public var expressionKind: ExpressionKind {
-        .awaitExpression(self)
+        .eachExpression(self)
     }
 
     public var exp: Expression {
@@ -19,7 +19,7 @@ public class AwaitExpression: Expression, ExpressionKindType {
     }
 
     public override var description: String {
-        "await \(exp)"
+        "each \(exp)"
     }
 
     public init(exp: Expression) {
@@ -41,13 +41,13 @@ public class AwaitExpression: Expression, ExpressionKindType {
     }
 
     @inlinable
-    public override func copy() -> AwaitExpression {
-        AwaitExpression(exp: exp.copy()).copyTypeAndMetadata(from: self)
+    public override func copy() -> EachExpression {
+        EachExpression(exp: exp.copy()).copyTypeAndMetadata(from: self)
     }
 
     @inlinable
     public override func accept<V: ExpressionVisitor>(_ visitor: V) -> V.ExprResult {
-        visitor.visitAwait(self)
+        visitor.visitEach(self)
     }
 
     public override func encode(to encoder: Encoder) throws {
@@ -60,7 +60,7 @@ public class AwaitExpression: Expression, ExpressionKindType {
 
     public override func isEqual(to other: Expression) -> Bool {
         switch other {
-        case let rhs as AwaitExpression:
+        case let rhs as EachExpression:
             return self == rhs
         default:
             return false
@@ -73,7 +73,7 @@ public class AwaitExpression: Expression, ExpressionKindType {
         hasher.combine(exp)
     }
 
-    public static func == (lhs: AwaitExpression, rhs: AwaitExpression) -> Bool {
+    public static func == (lhs: EachExpression, rhs: EachExpression) -> Bool {
         if lhs === rhs {
             return true
         }
@@ -87,16 +87,16 @@ public class AwaitExpression: Expression, ExpressionKindType {
 }
 public extension Expression {
     @inlinable
-    var asAwait: AwaitExpression? {
+    var asEach: EachExpression? {
         cast()
     }
 
     @inlinable
-    var isAwait: Bool {
-        asAwait != nil
+    var isEach: Bool {
+        asEach != nil
     }
 
-    static func `await`(_ exp: Expression) -> AwaitExpression {
-        AwaitExpression(exp: exp)
+    static func `each`(_ exp: Expression) -> EachExpression {
+        EachExpression(exp: exp)
     }
 }

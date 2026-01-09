@@ -234,6 +234,26 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         return exp
     }
 
+    /// Visits a repeat expression node
+    ///
+    /// - Parameter exp: A repeat expression to visit
+    /// - Returns: Result of visiting the repeat expression
+    open func visitRepeat(_ exp: RepeatExpression) -> Expression {
+        exp.exp = visitExpression(exp.exp)
+
+        return exp
+    }
+
+    /// Visits an each expression node
+    ///
+    /// - Parameter exp: An each expression to visit
+    /// - Returns: Result of visiting the each expression
+    open func visitEach(_ exp: EachExpression) -> Expression {
+        exp.exp = visitExpression(exp.exp)
+
+        return exp
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An `UnknownExpression` to visit

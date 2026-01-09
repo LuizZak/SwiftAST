@@ -208,6 +208,20 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         listener(exp)
     }
 
+    /// Visits a repeat expression node
+    ///
+    /// - Parameter exp: A repeat expression to visit
+    public func visitRepeat(_ exp: RepeatExpression) {
+        listener(exp)
+    }
+
+    /// Visits an each expression node
+    ///
+    /// - Parameter exp: An each expression to visit
+    public func visitEach(_ exp: EachExpression) {
+        listener(exp)
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An UnknownExpression to visit
