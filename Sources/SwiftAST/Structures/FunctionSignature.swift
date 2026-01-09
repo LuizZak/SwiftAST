@@ -55,6 +55,20 @@ public struct FunctionSignature: Hashable {
         }
     }
 
+    /// Whether the function is async, i.e. `async` in Swift.
+    public var isAsync: Bool {
+        get {
+            traits.contains(.async)
+        }
+        set {
+            if newValue {
+                traits.insert(.async)
+            } else {
+                traits.remove(.async)
+            }
+        }
+    }
+
     /// The identifier for the function name.
     ///
     /// E.g.:
@@ -464,6 +478,10 @@ extension FunctionSignature: CustomStringConvertible {
         }
 
         result += TypeFormatter.asString(parameters: parameters)
+
+        if isAsync {
+            result += " async"
+        }
 
         if isThrowing {
             result += " throws"
