@@ -517,6 +517,13 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(SwiftTypeParser.parse(from: "any Protocol"), .boxed(.typeName("Protocol")))
     }
 
+    func testParseParameterPack() throws {
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat T"), .parameterPack(.repeat(.typeName("T"))))
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "each T"), .parameterPack(.each(.typeName("T"))))
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat each T"), .parameterPack(.repeat(.parameterPack(.each(.typeName("T"))))))
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat Array<each T>"), .parameterPack(.repeat(.generic("Array", parameters: [.parameterPack(.each(.typeName("T")))]))))
+    }
+
     // MARK: Error cases
 
     func testProtocolCompositionWithNominalWithBlockOnRightSideError() throws {
@@ -699,7 +706,7 @@ class SwiftTypePermutator {
             return addTrailingTypeMaybe(oneOf(nominal, tuple, block))
         }
 
-        let res: SwiftType? = oneOf(biasLeft: 1 - probability, { nil }, self.nominal, tuple, block)
+        let res: SwiftType? = oneOf(biasLeft: 1 - probability, { nil }, self.nominal, tuple, block, parameterPack)
 
         return res.map(addTrailingTypeMaybe)
     }
@@ -749,6 +756,16 @@ class SwiftTypePermutator {
         let ret = randomSubtype() ?? .void
 
         return SwiftType.swiftBlock(returnType: ret, parameters: params)
+    }
+
+    private func parameterPack() -> SwiftType {
+        let type = randomSubtype() ?? .void
+
+        if chanceFromProbability() {
+            return SwiftType.parameterPack(.repeat(type))
+        } else {
+            return SwiftType.parameterPack(.each(type))
+        }
     }
 
     private func generic() -> NominalSwiftType {

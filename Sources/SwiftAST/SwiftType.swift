@@ -9,6 +9,7 @@ public indirect enum SwiftType: Hashable {
     case optional(SwiftType)
     case opaque(SwiftType)
     case boxed(SwiftType)
+    case parameterPack(ParameterPackType)
     case implicitUnwrappedOptional(SwiftType)
     case nullabilityUnspecified(SwiftType)
     case array(SwiftType)
@@ -304,6 +305,33 @@ public struct NestedSwiftType: Hashable, CustomStringConvertible {
 public typealias ProtocolCompositionSwiftType = TwoOrMore<ProtocolCompositionComponent>
 public typealias GenericArgumentSwiftType = OneOrMore<SwiftType>
 
+/// A parameter pack/parameter pack expansion Swift type.
+public enum ParameterPackType: Hashable, CustomStringConvertible {
+    /// `each <type>`
+    case parameterPack(SwiftType)
+    /// `repeat <type>`
+    case parameterPackExpansion(SwiftType)
+
+    /// Alias for `parameterPack`
+    public static func each(_ type: SwiftType) -> ParameterPackType {
+        return .parameterPack(type)
+    }
+
+    /// Alias for `parameterPackExpansion`
+    public static func `repeat`(_ type: SwiftType) -> ParameterPackType {
+        return .parameterPackExpansion(type)
+    }
+
+    public var description: String {
+        switch self {
+        case .parameterPack(let type):
+            return "each \(type)"
+        case .parameterPackExpansion(let type):
+            return "repeat \(type)"
+        }
+    }
+}
+
 public extension SwiftType {
     /// If this Swift type is a nominal typename, returns the inner type name as
     /// a string, otherwise returns nil.
@@ -333,7 +361,7 @@ public extension SwiftType {
     /// within an optional or metatype.
     var requiresSurroundingParens: Bool {
         switch self {
-        case .protocolComposition, .block, .opaque, .boxed:
+        case .protocolComposition, .block, .opaque, .boxed, .parameterPack:
             return true
         default:
             return false
@@ -688,6 +716,9 @@ extension SwiftType: CustomStringConvertible {
 
         case .boxed(let type):
             return "any \(type)"
+
+        case .parameterPack(let type):
+            return type.description
         }
     }
 

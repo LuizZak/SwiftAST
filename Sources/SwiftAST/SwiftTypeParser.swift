@@ -34,6 +34,7 @@ public class SwiftTypeParser {
     ///     | metatype
     ///     | opaque
     ///     | boxed
+    ///     | parameter-pack
     ///     ;
     ///
     /// tuple
@@ -63,6 +64,11 @@ public class SwiftTypeParser {
     ///
     /// boxed
     ///     : 'any' swift-type ;
+    ///
+    /// parameter-pack
+    ///     : 'repeat' swift-type
+    ///     | 'each' swift-type
+    ///     ;
     ///
     /// generic-argument-clause
     ///     : '<' swift-type (',' swift-type)* '>'
@@ -165,6 +171,8 @@ public class SwiftTypeParser {
             type = try parseOpaqueType(lexer)
         } else if lexer.tokenType(is: .any) {
             type = try parseBoxedType(lexer)
+        } else if lexer.tokenType(is: .repeat) || lexer.tokenType(is: .each) {
+            type = try parseParameterPack(lexer)
         } else {
             throw unexpectedTokenError(lexer: lexer)
         }
@@ -402,6 +410,28 @@ public class SwiftTypeParser {
         let type = try parseType(lexer)
 
         return .boxed(type)
+    }
+
+    /// Parses a parameter pack type.
+    ///
+    /// ```
+    /// parameter-pack
+    ///     : 'repeat' swift-type
+    ///     | 'each' swift-type
+    ///     ;
+    /// ```
+    private static func parseParameterPack(_ lexer: Tokenizer) throws -> SwiftType {
+        if lexer.consumeToken(ifTypeIs: .repeat) != nil {
+            let type = try parseType(lexer)
+
+            return .parameterPack(.repeat(type))
+        } else {
+            try lexer.advance(overTokenType: .each)
+
+            let type = try parseType(lexer)
+
+            return .parameterPack(.each(type))
+        }
     }
 
     /// Parses a tuple or block type
@@ -810,6 +840,8 @@ enum SwiftTypeToken: String, TokenProtocol {
     case `inout`
     case some
     case any
+    case `repeat`
+    case each
     case questionMark = "?"
     case exclamationMark = "!"
     case colon = ":"
@@ -836,10 +868,12 @@ enum SwiftTypeToken: String, TokenProtocol {
             return 2
         case .ellipsis, .any:
             return 3
-        case .some:
+        case .some, .each:
             return 4
         case .inout:
-            return "inout".count
+            return 5
+        case .repeat:
+            return 6
         case .identifier:
             return SwiftTypeToken.identifierLexer.maximumLength(in: lexer) ?? 0
         case .eof:
@@ -904,6 +938,10 @@ enum SwiftTypeToken: String, TokenProtocol {
                     return .some
                 } else if ident == "any" {
                     return .any
+                } else if ident == "repeat" {
+                    return .repeat
+                } else if ident == "each" {
+                    return .each
                 } else {
                     return .identifier
                 }
