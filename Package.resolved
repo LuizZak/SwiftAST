@@ -1,5 +1,5 @@
 {
-  "originHash" : "55a9aa4a19e2f7a708998655310c0c8aa85aa04635dd37ad3af86ab250890c5b",
+  "originHash" : "653529c4681dffa9f64707bf168a4802eb775c0c7c4328ac6b5db29b0fa2b7fb",
   "pins" : [
     {
       "identity" : "minidigraph",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/LuizZak/MiniGraphviz.git",
       "state" : {
-        "revision" : "aa15c50cf8027dae6dde860a40987c238070d849",
-        "version" : "0.1.0"
+        "revision" : "c545e50b88fd981c3f07e29efee24c926b0e4812",
+        "version" : "0.2.0"
       }
     },
     {
