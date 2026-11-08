@@ -180,8 +180,8 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
                 .then(head)
                 .then(whereClause, debugLabel: "next")
                 .then(body, debugLabel: "true")
-                .redirectingEntries(for: body.exit, to: pattern.entry)
                 .branching(from: whereClause.exit, to: body.exit, debugLabel: "false")
+                .redirectingEntries(for: body.exit, to: pattern.entry)
         } else {
             result = exp
                 .then(pattern)

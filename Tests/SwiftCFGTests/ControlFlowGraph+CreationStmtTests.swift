@@ -1521,13 +1521,13 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                     n1 -> n2
                     n2 -> n3
                     n3 -> n4
+                    n5 -> n4 [color="#aa3333", label="false", penwidth=0.5]
                     n8 -> n4 [color="#aa3333", penwidth=0.5]
                     n4 -> n5 [label="next"]
                     n5 -> n6 [label="true"]
                     n6 -> n7
                     n7 -> n8
                     n4 -> n9 [label="end"]
-                    n5 -> n9 [label="false"]
                 }
                 """
         )

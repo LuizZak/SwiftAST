@@ -1,6 +1,7 @@
 import Foundation
 import SwiftAST
 import MiniGraphviz
+import MiniDigraph
 
 extension ControlFlowGraph {
     /// Generates a GraphViz representation of this call graph.
