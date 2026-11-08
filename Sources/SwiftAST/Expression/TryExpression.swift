@@ -92,7 +92,7 @@ public class TryExpression: Expression, ExpressionKindType {
     }
 
     /// Defines the mode of the try expression.
-    public enum Mode: String, Codable, CustomStringConvertible {
+    public enum Mode: String, Codable, CustomStringConvertible, Sendable {
         /// A throwable try; `try <exp>`.
         case throwable
 

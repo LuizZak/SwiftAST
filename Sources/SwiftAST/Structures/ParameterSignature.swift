@@ -4,7 +4,6 @@ public struct ParameterSignature: Hashable, Codable {
     public var type: SwiftType
     public var isVariadic: Bool
     public var modifier: Modifier
-    // TODO: Support Expression as a default value.
     public var defaultValue: Expression?
 
     /// Initializes a new parameter signature with a parameter that has a name

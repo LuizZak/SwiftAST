@@ -1,10 +1,10 @@
-public struct UnknownASTContext: CustomStringConvertible {
+public struct UnknownASTContext: CustomStringConvertible, Sendable {
     public var description: String {
         context
     }
-    
+
     public var context: String
-    
+
     public init(context: CustomStringConvertible) {
         self.context = context.description
     }

@@ -1,5 +1,5 @@
 /// Represents a Swift type structure
-public indirect enum SwiftType: Hashable {
+public indirect enum SwiftType: Hashable, Sendable {
     case nested(NestedSwiftType)
     case nominal(NominalSwiftType)
     case protocolComposition(ProtocolCompositionSwiftType)
@@ -23,7 +23,7 @@ extension SwiftType: ExpressibleByStringLiteral {
 }
 
 /// A nominal Swift type, which is either a plain typename or a generic type.
-public enum NominalSwiftType: Hashable {
+public enum NominalSwiftType: Hashable, Sendable {
     case typeName(String)
     indirect case generic(String, parameters: GenericArgumentSwiftType)
 }
@@ -35,13 +35,13 @@ extension NominalSwiftType: ExpressibleByStringLiteral {
 }
 
 /// A component for a protocol composition
-public indirect enum ProtocolCompositionComponent: Hashable {
+public indirect enum ProtocolCompositionComponent: Hashable, Sendable {
     case nominal(NominalSwiftType)
     case nested(NestedSwiftType)
 }
 
 /// An entry for a tuple Swift type.
-public enum TupleTypeEntry: Hashable, CustomStringConvertible {
+public enum TupleTypeEntry: Hashable, CustomStringConvertible, Sendable {
     case labeled(String, SwiftType)
     case unlabeled(SwiftType)
 
@@ -65,7 +65,7 @@ public enum TupleTypeEntry: Hashable, CustomStringConvertible {
 
 /// A tuple swift type, which either represents an empty tuple or two or more
 /// Swift types.
-public enum TupleSwiftType: Hashable {
+public enum TupleSwiftType: Hashable, Sendable {
     /// An empty tuple type, or `Void`.
     case empty
 
@@ -140,7 +140,7 @@ extension TupleSwiftType: Collection {
 }
 
 /// A type that describes a Swift function.
-public struct BlockSwiftType: Hashable, CustomStringConvertible {
+public struct BlockSwiftType: Hashable, CustomStringConvertible, Sendable {
     /// The return type for this block type.
     public var returnType: SwiftType
 
@@ -251,7 +251,7 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
         )
     }
 
-    public struct BlockParameter: Equatable, Hashable, Codable, CustomStringConvertible {
+    public struct BlockParameter: Equatable, Hashable, Codable, CustomStringConvertible, Sendable {
         public var type: SwiftType
         public var modifier: Modifier
 
@@ -268,7 +268,7 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
             self.modifier = modifier
         }
 
-        public enum Modifier: String, Equatable, Hashable, Codable {
+        public enum Modifier: String, Equatable, Hashable, Codable, Sendable {
             case none
             case `inout`
             case borrowing
@@ -278,7 +278,7 @@ public struct BlockSwiftType: Hashable, CustomStringConvertible {
 }
 
 /// An attribute for block types.
-public enum BlockTypeAttribute: Hashable, CustomStringConvertible {
+public enum BlockTypeAttribute: Hashable, CustomStringConvertible, Sendable {
     public var description: String {
         switch self {
         case .autoclosure:
@@ -296,14 +296,14 @@ public enum BlockTypeAttribute: Hashable, CustomStringConvertible {
     case escaping
     case convention(Convention)
 
-    public enum Convention: String, Hashable {
+    public enum Convention: String, Hashable, Sendable {
         case block
         case c
     }
 }
 
 /// A nested Swift type, containing a base type and a nested nominal type accessor.
-public struct NestedSwiftType: Hashable, CustomStringConvertible {
+public struct NestedSwiftType: Hashable, CustomStringConvertible, Sendable {
     public var base: SwiftType
     public var nested: NominalSwiftType
 
@@ -321,7 +321,7 @@ public typealias ProtocolCompositionSwiftType = TwoOrMore<ProtocolCompositionCom
 public typealias GenericArgumentSwiftType = OneOrMore<SwiftType>
 
 /// A parameter pack/parameter pack expansion Swift type.
-public enum ParameterPackType: Hashable, CustomStringConvertible {
+public enum ParameterPackType: Hashable, CustomStringConvertible, Sendable {
     /// `each <type>`
     case parameterPack(SwiftType)
     /// `repeat <type>`
@@ -823,6 +823,7 @@ public struct OneOrMore<T> {
         OneOrMore(first: value, remaining: [])
     }
 }
+extension OneOrMore: Sendable where T: Sendable { }
 
 public struct TwoOrMore<T> {
     public var first: T
@@ -864,6 +865,7 @@ public struct TwoOrMore<T> {
         TwoOrMore(first: value1, second: value2, remaining: [])
     }
 }
+extension TwoOrMore: Sendable where T: Sendable { }
 
 // MARK: Sequence protocol conformances
 extension OneOrMore: Sequence {
@@ -967,7 +969,6 @@ extension TwoOrMore: Equatable where T: Equatable { }
 extension TwoOrMore: Hashable where T: Hashable { }
 
 // MARK: Codable conditional conformance
-
 extension OneOrMore: Encodable where T: Encodable { }
 extension OneOrMore: Decodable where T: Decodable { }
 

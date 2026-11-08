@@ -1,7 +1,7 @@
 // TODO: Add extended `&-` operators that provide overflow-ignoring behavior
 
 /// Specifies an operator across one or two operands
-public enum SwiftOperator: String, Codable {
+public enum SwiftOperator: String, Codable, Sendable {
     /// If `true`, a spacing is suggested to be placed in between operands.
     /// True for most operators except range operators.
     public var requiresSpacing: Bool {
@@ -195,7 +195,7 @@ public enum SwiftOperatorCategory: Equatable {
 }
 
 /// Specifies a precedence for a Swift operator.
-public struct SwiftOperatorPrecedence: Comparable {
+public struct SwiftOperatorPrecedence: Comparable, Sendable {
     /// Precedence value. higher numbers indicate a higher precedence order.
     var value: Int
 

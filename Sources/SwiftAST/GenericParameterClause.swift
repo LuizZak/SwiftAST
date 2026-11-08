@@ -1,12 +1,12 @@
 /// A generic parameter clause for a generic declaration.
-public struct GenericParameterClause: Equatable, Hashable, Codable {
+public struct GenericParameterClause: Equatable, Hashable, Codable, Sendable {
     public var genericParameters: [GenericParameter]
 
     public init(genericParameters: [GenericParameterClause.GenericParameter]) {
         self.genericParameters = genericParameters
     }
 
-    public struct GenericParameter: Equatable, Hashable, Codable {
+    public struct GenericParameter: Equatable, Hashable, Codable, Sendable {
         public var isParameterPack: Bool
         public var typeName: String
         public var typeConstraint: TypeConstraint?
@@ -17,7 +17,7 @@ public struct GenericParameterClause: Equatable, Hashable, Codable {
             self.typeConstraint = typeConstraint
         }
 
-        public enum TypeConstraint: Equatable, Hashable, Codable {
+        public enum TypeConstraint: Equatable, Hashable, Codable, Sendable {
             case nominal(NominalSwiftType)
             case protocolComposition(ProtocolCompositionSwiftType)
         }

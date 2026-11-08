@@ -114,7 +114,7 @@ public class BlockLiteralExpression: Expression, ExpressionKindType {
         case body
     }
 
-    public struct Signature: Equatable, Hashable, Codable, CustomStringConvertible {
+    public struct Signature: Equatable, Hashable, Codable, CustomStringConvertible, Sendable {
         public var parameters: [BlockParameter]
         public var returnType: SwiftType
 
@@ -163,7 +163,7 @@ public extension Expression {
     }
 }
 
-public struct BlockParameter: Codable, Equatable, Hashable {
+public struct BlockParameter: Codable, Equatable, Hashable, Sendable {
     public var name: String
     public var type: SwiftType
 

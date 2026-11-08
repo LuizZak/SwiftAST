@@ -1,22 +1,22 @@
 /// A generic `where` clause for a generic declaration.
-public struct GenericWhereClause: Equatable, Hashable, Codable {
+public struct GenericWhereClause: Equatable, Hashable, Codable, Sendable {
     public var requirements: [Requirement]
 
     public init(requirements: [GenericWhereClause.Requirement]) {
         self.requirements = requirements
     }
 
-    public enum Requirement: Equatable, Hashable, Codable {
+    public enum Requirement: Equatable, Hashable, Codable, Sendable {
         case conformanceRequirement(TypeConstraint, ConformanceBase)
         case sameTypeRequirement(TypeConstraint, SwiftType)
 
-        public enum TypeConstraint: Equatable, Hashable, Codable {
+        public enum TypeConstraint: Equatable, Hashable, Codable, Sendable {
             case parameterPack(ParameterPackType)
             case nominal(NominalSwiftType)
             case nested(NestedSwiftType)
         }
 
-        public enum ConformanceBase: Equatable, Hashable, Codable {
+        public enum ConformanceBase: Equatable, Hashable, Codable, Sendable {
             case nominal(NominalSwiftType)
             case protocolComposition(ProtocolCompositionSwiftType)
         }

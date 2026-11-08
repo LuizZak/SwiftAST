@@ -245,14 +245,14 @@ public enum Constant: Codable, Equatable, Hashable {
     /// Defines how a raw integer value constant is displayed.
     /// Does not affect the stored integer constant value, only the display
     /// format.
-    public enum IntegerType: String, Codable {
+    public enum IntegerType: String, Codable, Sendable {
         case decimal
         case binary
         case octal
         case hexadecimal
     }
 
-    private enum Discriminator: String, Codable {
+    private enum Discriminator: String, Codable, Sendable {
         case float
         case double
         case boolean
@@ -270,7 +270,7 @@ public enum Constant: Codable, Equatable, Hashable {
 }
 
 /// Specifies one of the possible literal types
-public enum LiteralExpressionKind: Hashable {
+public enum LiteralExpressionKind: Hashable, Sendable {
     case integer
     case float
     case string

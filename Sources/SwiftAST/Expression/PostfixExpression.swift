@@ -179,7 +179,7 @@ public class PostfixExpression: Expression, ExpressionKindType {
         case opType
     }
 
-    enum OpType: String, Codable {
+    enum OpType: String, Codable, Sendable {
         case member
         case `subscript`
         case functionCall

@@ -83,7 +83,7 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
         return lhs.identifier == rhs.identifier
     }
 
-    public struct ArgumentName: Equatable, Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral {
+    public struct ArgumentName: Equatable, Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral, Sendable {
         public var identifier: String
 
         public var description: String {

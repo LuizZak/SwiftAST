@@ -103,7 +103,7 @@ public class SelectorExpression: Expression, ExpressionKindType {
         return lhs.kind == rhs.kind
     }
 
-    public enum Kind: Equatable, Hashable, Codable {
+    public enum Kind: Equatable, Hashable, Codable, Sendable {
         case function(type: SwiftType?, identifier: FunctionIdentifier)
         case getter(type: SwiftType?, property: String)
         case setter(type: SwiftType?, property: String)

@@ -1,7 +1,7 @@
 /// Defines common properties for a Swift's variable/constant definition.
 /// Stores information about the storage's type, ownership (strong/weak/unowned/etc.),
 /// and whether it is a constant value.
-public struct ValueStorage: Hashable, Codable {
+public struct ValueStorage: Hashable, Codable, Sendable {
     public var type: SwiftType
     public var ownership: Ownership
     public var isConstant: Bool
