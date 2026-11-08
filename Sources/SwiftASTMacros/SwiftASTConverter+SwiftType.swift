@@ -278,7 +278,7 @@ extension SwiftASTConverter {
 
     /// Returns an expression that resolves to `SwiftType`.
     private static func convertAttributedType(_ attributedType: AttributedTypeSyntax) throws -> ExprSyntax {
-        if let specifier = attributedType.specifier {
+        if let specifier = attributedType.specifiers.first {
             throw specifier.ext_error(message: """
             SwiftType does not support type specifiers.
             """)

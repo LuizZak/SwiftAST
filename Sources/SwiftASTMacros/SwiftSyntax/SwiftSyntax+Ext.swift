@@ -1,5 +1,5 @@
 import SwiftSyntax
-import SwiftSyntaxMacroExpansion
+import SwiftSyntaxMacros
 import SwiftDiagnostics
 
 extension SyntaxProtocol {
