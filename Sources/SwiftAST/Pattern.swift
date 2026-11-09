@@ -285,7 +285,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
     }
 
     /// A type annotation that might appear in a pattern.
-    public struct TypeAnnotation: Equatable, Hashable, Codable, CustomStringConvertible {
+    public struct TypeAnnotation: Equatable, Hashable, Codable, CustomStringConvertible, Sendable {
         public var type: SwiftType
 
         public var description: String {
@@ -345,7 +345,7 @@ extension Pattern: CustomStringConvertible {
 
 /// Allows referencing a location within a pattern for an identifier, an
 /// expression or a tuple-pattern.
-public enum PatternLocation: Hashable {
+public enum PatternLocation: Hashable, Sendable {
     /// The root pattern itself
     case `self`
 
