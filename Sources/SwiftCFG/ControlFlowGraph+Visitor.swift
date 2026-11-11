@@ -720,7 +720,6 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
     }
 
     func visitSwitchCase(_ switchCase: SwitchCase) -> SwitchCaseVisitResult {
-        print()
         var result =
             CFGVisitResult(forSyntaxNode: switchCase, id: nextId())
             .then(
