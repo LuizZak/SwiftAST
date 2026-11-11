@@ -274,17 +274,14 @@ internal extension ControlFlowGraph {
     /// earlier in the graph when visiting the graph in breadth-first fashion
     /// starting from its entry point.
     func markBackEdges() {
-        var visited: Set<Node> = []
-
         breadthFirstVisit(start: entry) { visit in
             for nextEdge in edges(from: visit.node) {
                 let node = endNode(for: nextEdge)
-                if visit.allNodes.contains(node) {
+
+                if visit.containsNode(node) {
                     nextEdge.isBackEdge = true
                 }
             }
-
-            visited.insert(visit.node)
 
             return true
         }
