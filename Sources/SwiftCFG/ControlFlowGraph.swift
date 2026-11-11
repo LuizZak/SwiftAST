@@ -56,10 +56,6 @@ public final class ControlFlowGraph: DirectedGraphBase<ControlFlowGraphNode, Con
 
     // MARK: - Internals
 
-    override func copyMetadata(from node1: Node, to node2: Node) {
-
-    }
-
     override func copyMetadata(from edge1: Edge, to edge2: Edge) {
         edge2.debugLabel = edge1.debugLabel
         edge2.isBackEdge = edge1.isBackEdge
@@ -350,8 +346,7 @@ public class ControlFlowGraphNode: Hashable, CustomStringConvertible {
     }
 
     public static func == (lhs: ControlFlowGraphNode, rhs: ControlFlowGraphNode) -> Bool {
-        //type(of: lhs) == type(of: rhs) && lhs.node === rhs.node
-        lhs === rhs && lhs.id == rhs.id
+        lhs === rhs
     }
 }
 
