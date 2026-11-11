@@ -9,11 +9,15 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
     typealias StmtResult = CFGVisitResult
 
     let options: ControlFlowGraph.GenerationOptions
-    var nextId: () -> Int
+    var _nextId = 1
 
-    init(options: ControlFlowGraph.GenerationOptions, nextId: @escaping () -> Int) {
+    init(options: ControlFlowGraph.GenerationOptions) {
         self.options = options
-        self.nextId = nextId
+    }
+
+    func nextId() -> Int {
+        defer { _nextId += 1 }
+        return _nextId
     }
 
     // MARK: - Statement

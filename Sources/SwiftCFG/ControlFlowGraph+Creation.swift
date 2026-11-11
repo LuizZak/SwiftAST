@@ -51,11 +51,7 @@ public extension ControlFlowGraph {
         options: GenerationOptions = .default
     ) -> ControlFlowGraph {
 
-        var counter = 1
-        let visitor = CFGVisitor(options: options, nextId: {
-            defer { counter += 1 }
-            return counter
-        })
+        let visitor = CFGVisitor(options: options)
         let result = visitor.visitCompound(compoundStatement)
 
         let graph = _finalizeGraph(result, entry: compoundStatement).graph
@@ -80,11 +76,7 @@ public extension ControlFlowGraph {
         options: GenerationOptions = .default
     ) -> CFGVisitResult {
 
-        var counter = 1
-        let visitor = CFGVisitor(options: options, nextId: {
-            defer { counter += 1 }
-            return counter
-        })
+        let visitor = CFGVisitor(options: options)
         var result = visitor.visitCompound(body)
 
         if !keepUnresolvedJumps {
@@ -112,11 +104,7 @@ public extension ControlFlowGraph {
         options: GenerationOptions = .default
     ) -> ControlFlowGraph {
 
-        var counter = 1
-        let visitor = CFGVisitor(options: options, nextId: {
-            defer { counter += 1 }
-            return counter
-        })
+        let visitor = CFGVisitor(options: options)
         let result = visitor.visitExpression(expression)
 
         let graph = _finalizeGraph(result, entry: expression).graph
