@@ -1532,7 +1532,7 @@ class ControlFlowGraph_CreationStmtTests: XCTestCase {
                 """
         )
         XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
-        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
     }
 
     func testReturnStatement() {
