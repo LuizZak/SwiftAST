@@ -8,9 +8,6 @@ public final class ControlFlowGraph: DirectedGraphBase<ControlFlowGraphNode, Con
     /// The exit point of this control flow graph
     internal(set) public var exit: ControlFlowGraphExitNode
 
-    /// Counter used to differentiate nodes in the graph as they are added.
-    var idCounter: Int = 0
-
     /// Returns `true` if the only nodes in this graph are the entry and exit
     /// nodes, and marker nodes.
     var isEmpty: Bool {
@@ -27,12 +24,6 @@ public final class ControlFlowGraph: DirectedGraphBase<ControlFlowGraphNode, Con
 
         addNode(entry)
         addNode(exit)
-    }
-
-    /// Returns the next available node ID and increments the counter by 1.
-    func nextId() -> Int {
-        defer { idCounter += 1 }
-        return idCounter
     }
 
     /// Returns the control flow graph node that represents a given syntax node,
