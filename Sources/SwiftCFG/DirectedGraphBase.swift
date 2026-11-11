@@ -66,10 +66,6 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
 
     // MARK: - Internals
 
-    func copyMetadata(from node1: Node, to node2: Node) {
-
-    }
-
     func copyMetadata(from edge1: Edge, to edge2: Edge) {
 
     }
@@ -88,21 +84,6 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
         )
 
         nodes.insert(node)
-    }
-
-    /// Adds a sequence of nodes to this graph.
-    func addNodes<S: Sequence>(_ nodes: S) where S.Element == Node {
-        nodes.forEach(addNode)
-    }
-
-    /// Adds an edge `start -> end` to this graph, if one doesn't already exists.
-    @discardableResult
-    func ensureEdge(from start: Node, to end: Node) -> Edge {
-        if let existing = edges(from: start, to: end).first {
-            return existing
-        }
-
-        return addEdge(from: start, to: end)
     }
 
     /// Adds an edge `start -> end` to this graph.
@@ -143,12 +124,7 @@ public class DirectedGraphBase<Node, Edge: DirectedGraphBaseEdgeType>: DirectedG
 
     /// Removes a given sequence of edges from this graph.
     func removeEdges<S: Sequence>(_ edgesToRemove: S) where S.Element == Edge {
-        edges = edges.filter({ !edgesToRemove.contains($0) })
-    }
-
-    /// Removes a given sequence of nodes from this graph.
-    func removeNodes<S: Sequence>(_ nodesToRemove: S) where S.Element == Node {
-        nodes = nodes.filter({ !nodesToRemove.contains($0) })
+        edges.subtract(edgesToRemove)
     }
 
     /// Removes the entry edges from a given node.
