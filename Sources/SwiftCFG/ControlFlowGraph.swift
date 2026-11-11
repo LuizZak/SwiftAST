@@ -462,7 +462,6 @@ public final class ControlFlowGraphEdge: DirectedGraphBaseEdgeType {
     }
 
     public static func == (lhs: ControlFlowGraphEdge, rhs: ControlFlowGraphEdge) -> Bool {
-        //type(of: lhs) == type(of: rhs) && lhs.node === rhs.node
         lhs === rhs
     }
 }
