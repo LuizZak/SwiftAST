@@ -457,8 +457,7 @@ public final class ControlFlowGraphEdge: DirectedGraphBaseEdgeType {
     }
 
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(start))
-        hasher.combine(ObjectIdentifier(end))
+        hasher.combine(ObjectIdentifier(self))
     }
 
     public static func == (lhs: ControlFlowGraphEdge, rhs: ControlFlowGraphEdge) -> Bool {
