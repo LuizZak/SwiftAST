@@ -8,24 +8,31 @@ public class CastExpression: Expression, ExpressionKindType {
         didSet { oldValue.parent = nil; exp.parent = self }
     }
     public var type: SwiftType
-    public var isOptionalCast: Bool
+    public var kind: Kind
 
     public override var subExpressions: [Expression] {
         [exp]
     }
 
     public override var description: String {
-        "\(exp) \(isOptionalCast ? "as?" : "as") \(type)"
+        switch kind {
+        case .normal:
+            return "\(exp) as \(type)"
+        case .optional:
+            return "\(exp) as? \(type)"
+        case .forced:
+            return "\(exp) as! \(type)"
+        }
     }
 
     public override var requiresParens: Bool {
         true
     }
 
-    public init(exp: Expression, type: SwiftType, isOptionalCast: Bool = true) {
+    public init(exp: Expression, type: SwiftType, kind: Kind) {
         self.exp = exp
         self.type = type
-        self.isOptionalCast = isOptionalCast
+        self.kind = kind
 
         super.init()
 
@@ -37,7 +44,7 @@ public class CastExpression: Expression, ExpressionKindType {
 
         exp = try container.decodeExpression(forKey: .exp)
         type = try container.decode(SwiftType.self, forKey: .type)
-        isOptionalCast = try container.decode(Bool.self, forKey: .isOptionalCast)
+        kind = try container.decode(Kind.self, forKey: .kind)
 
         try super.init(from: container.superDecoder())
 
@@ -46,7 +53,7 @@ public class CastExpression: Expression, ExpressionKindType {
 
     @inlinable
     public override func copy() -> CastExpression {
-        CastExpression(exp: exp.copy(), type: type).copyTypeAndMetadata(from: self)
+        CastExpression(exp: exp.copy(), type: type, kind: kind).copyTypeAndMetadata(from: self)
     }
 
     @inlinable
@@ -68,7 +75,7 @@ public class CastExpression: Expression, ExpressionKindType {
 
         hasher.combine(exp)
         hasher.combine(type)
-        hasher.combine(isOptionalCast)
+        hasher.combine(kind)
     }
 
     public override func encode(to encoder: Encoder) throws {
@@ -76,7 +83,7 @@ public class CastExpression: Expression, ExpressionKindType {
 
         try container.encodeExpression(exp, forKey: .exp)
         try container.encode(type, forKey: .type)
-        try container.encode(isOptionalCast, forKey: .isOptionalCast)
+        try container.encode(kind, forKey: .kind)
 
         try super.encode(to: container.superEncoder())
     }
@@ -88,13 +95,19 @@ public class CastExpression: Expression, ExpressionKindType {
 
         return lhs.exp == rhs.exp &&
             lhs.type == rhs.type &&
-            lhs.isOptionalCast == rhs.isOptionalCast
+            lhs.kind == rhs.kind
     }
 
     private enum CodingKeys: String, CodingKey {
         case exp
         case type
-        case isOptionalCast
+        case kind
+    }
+
+    public enum Kind: Codable, Sendable {
+        case normal
+        case optional
+        case forced
     }
 }
 public extension Expression {
@@ -109,12 +122,12 @@ public extension Expression {
     }
 
     /// Creates a type-cast expression with this expression
-    func casted(to type: SwiftType, optional: Bool = true) -> CastExpression {
-        .cast(expressionToBuild, type: type, isOptionalCast: optional)
+    func casted(to type: SwiftType, kind: CastExpression.Kind = .optional) -> CastExpression {
+        .cast(expressionToBuild, type: type, kind: kind)
     }
 
-    static func cast(_ exp: Expression, type: SwiftType, isOptionalCast: Bool = true) -> CastExpression {
-        CastExpression(exp: exp, type: type, isOptionalCast: isOptionalCast)
+    static func cast(_ exp: Expression, type: SwiftType, kind: CastExpression.Kind = .optional) -> CastExpression {
+        CastExpression(exp: exp, type: type, kind: kind)
     }
 }
 
@@ -122,7 +135,7 @@ extension CastExpression {
 
     public func copyTypeAndMetadata(from other: CastExpression) -> Self {
         _ = (self as Expression).copyTypeAndMetadata(from: other)
-        self.isOptionalCast = other.isOptionalCast
+        self.kind = other.kind
 
         return self
     }
