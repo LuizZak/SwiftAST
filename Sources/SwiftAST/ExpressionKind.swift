@@ -27,6 +27,7 @@ public enum ExpressionKind: Codable {
     case eachExpression(EachExpression)
     case ifExpression(IfExpression)
     case `switch`(SwitchExpression)
+    case keyPath(KeyPathExpression)
     case unknown(UnknownExpression)
 
     /// Attempts to initialize this expression kind with a given expression.
@@ -91,6 +92,8 @@ public enum ExpressionKind: Codable {
         case .ifExpression(let e):
             return e
         case .switch(let e):
+            return e
+        case .keyPath(let e):
             return e
         case .unknown(let e):
             return e

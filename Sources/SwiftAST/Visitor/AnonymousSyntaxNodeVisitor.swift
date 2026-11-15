@@ -222,6 +222,15 @@ public final class AnonymousSyntaxNodeVisitor: ExpressionVisitor, StatementVisit
         listener(exp)
     }
 
+    /// Visits a key path expression node
+    ///
+    /// - Parameter exp: A key path expression to visit
+    public func visitKeyPath(_ exp: KeyPathExpression) -> Void {
+        listener(exp)
+
+        exp.subExpressions.forEach(visitExpression)
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An UnknownExpression to visit

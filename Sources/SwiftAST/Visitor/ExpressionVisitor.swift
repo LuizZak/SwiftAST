@@ -184,6 +184,12 @@ public protocol ExpressionVisitor {
     /// - Returns: Result of visiting the switch default case block
     func visitSwitchDefaultCase(_ defaultCase: SwitchDefaultCase) -> SwitchDefaultCaseResult
 
+    /// Visits a key path expression.
+    ///
+    /// - Parameter keyPath: A key path expression to visit
+    /// - Returns: Result of visiting the key path expression
+    func visitKeyPath(_ exp: KeyPathExpression) -> ExprResult
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An unknown expression to visit

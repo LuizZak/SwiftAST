@@ -1,5 +1,9 @@
 /// `\[<type>].<keyPathComponents>`
-public class KeyPathExpression: Expression {
+public class KeyPathExpression: Expression, ExpressionKindType {
+    public var expressionKind: ExpressionKind {
+        .keyPath(self)
+    }
+
     public var baseType: SwiftType?
     public var keyPathComponents: KeyPathComponents {
         didSet { keyPathComponents.setParent(nil); keyPathComponents.setParent(self) }
@@ -29,12 +33,16 @@ public class KeyPathExpression: Expression {
     public required init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        baseType = try container.decode(SwiftType.self, forKey: .baseType)
+        baseType = try container.decodeIfPresent(SwiftType.self, forKey: .baseType)
         keyPathComponents = try container.decode(KeyPathComponents.self, forKey: .keyPathComponents)
 
         try super.init(from: container.superDecoder())
 
         keyPathComponents.setParent(self)
+    }
+
+    public override func accept<V>(_ visitor: V) -> V.ExprResult where V : ExpressionVisitor {
+        visitor.visitKeyPath(self)
     }
 
     @inlinable
@@ -50,6 +58,22 @@ public class KeyPathExpression: Expression {
         default:
             return false
         }
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        super.hash(into: &hasher)
+
+        hasher.combine(baseType)
+        hasher.combine(keyPathComponents)
+    }
+
+    public override func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encodeIfPresent(baseType, forKey: .baseType)
+        try container.encode(keyPathComponents, forKey: .keyPathComponents)
+
+        try super.encode(to: container.superEncoder())
     }
 
     public static func == (lhs: KeyPathExpression, rhs: KeyPathExpression) -> Bool {
@@ -103,6 +127,16 @@ public class KeyPathExpression: Expression {
 
             case .nested(let inner, let item):
                 return .nested(inner.copy(), item.copy())
+            }
+        }
+
+        public func accept<Visitor: ExpressionVisitor>(_ visitor: Visitor) -> KeyPathComponents where Visitor.ExprResult: Expression {
+            switch self {
+            case .base(let item):
+                return .base(item.accept(visitor))
+
+            case .nested(let inner, let item):
+                return .nested(inner.accept(visitor), item.accept(visitor))
             }
         }
     }
@@ -162,6 +196,19 @@ public class KeyPathExpression: Expression {
                 return .postfixes(postfixes.copy())
             }
         }
+
+        public func accept<Visitor: ExpressionVisitor>(_ visitor: Visitor) -> KeyPathComponent where Visitor.ExprResult: Expression {
+            switch self {
+            case .identifier(let identifier, let postfixes?):
+                return .identifier(identifier, postfixes.accept(visitor))
+
+            case .identifier(let identifier, nil):
+                return .identifier(identifier)
+
+            case .postfixes(let postfixes):
+                return .postfixes(postfixes.accept(visitor))
+            }
+        }
     }
 
     public indirect enum KeyPathPostfixes: Codable, Hashable, CustomStringConvertible, ExpressionComponent {
@@ -206,6 +253,16 @@ public class KeyPathExpression: Expression {
 
             case .nested(let inner, let item):
                 return .nested(inner.copy(), item.copy())
+            }
+        }
+
+        public func accept<Visitor: ExpressionVisitor>(_ visitor: Visitor) -> KeyPathPostfixes where Visitor.ExprResult: Expression {
+            switch self {
+            case .base(let item):
+                return .base(item.accept(visitor))
+
+            case .nested(let inner, let item):
+                return .nested(inner.accept(visitor), item.accept(visitor))
             }
         }
     }
@@ -264,6 +321,24 @@ public class KeyPathExpression: Expression {
 
             case .subscript(let arguments):
                 return .subscript(arguments.map({ $0.copy() }))
+            }
+        }
+
+        public func accept<Visitor: ExpressionVisitor>(_ visitor: Visitor) -> KeyPathPostfix where Visitor.ExprResult: Expression {
+            switch self {
+            case .forceUnwrap:
+                return .forceUnwrap
+
+            case .safeUnwrap:
+                return .safeUnwrap
+
+            case .subscript(let arguments):
+                return .subscript(arguments.map({ arg in
+                    var arg = arg
+                    arg.expression = visitor.visitExpression(arg.expression)
+
+                    return arg
+                }))
             }
         }
     }

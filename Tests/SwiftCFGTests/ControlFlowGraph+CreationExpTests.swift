@@ -3286,6 +3286,87 @@ class ControlFlowGraph_CreationExpTests: XCTestCase {
         XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
     }
 
+    func testExpression_keyPath_noSubExpressions() {
+        let exp = KeyPathExpression(keyPathComponents: .base(.identifier("self")))
+        let graph = ControlFlowGraph.forExpression(exp)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="\\\\.self"]
+                    n3 [label="exit"]
+
+                    n1 -> n2
+                    n2 -> n3
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
+    }
+
+    func testExpression_keyPath_subExpressions() {
+        let exp = KeyPathExpression(keyPathComponents: .base(.postfixes(.base(.subscript([.unlabeled(.constant(0)), .unlabeled(.constant(1))])).appendingPostfix(.subscript([.unlabeled(.constant(2))])))))
+        let graph = ControlFlowGraph.forExpression(exp)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="0"]
+                    n3 [label="1"]
+                    n4 [label="2"]
+                    n5 [label="\\\\.[0, 1][2]"]
+                    n6 [label="exit"]
+
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 1)
+    }
+
+    func testExpression_keyPath_throws() {
+        let exp = KeyPathExpression(keyPathComponents: .base(.postfixes(.base(.subscript([.unlabeled(.constant(0)), .unlabeled(.try(.constant(1)))])).appendingPostfix(.subscript([.unlabeled(.constant(2))])))))
+        let graph = ControlFlowGraph.forExpression(exp)
+
+        sanitize(graph)
+        assertGraphviz(
+            graph: graph,
+            matches: """
+                digraph flow {
+                    n1 [label="entry"]
+                    n2 [label="0"]
+                    n3 [label="1"]
+                    n4 [label="try 1"]
+                    n5 [label="2"]
+                    n6 [label="\\\\.[0, try 1][2]"]
+                    n7 [label="exit"]
+
+                    n1 -> n2
+                    n2 -> n3
+                    n3 -> n4
+                    n4 -> n5
+                    n5 -> n6
+                    n4 -> n7 [label="throws"]
+                    n6 -> n7
+                }
+                """
+        )
+        XCTAssertEqual(graph.nodesConnected(from: graph.entry).count, 1)
+        XCTAssertEqual(graph.nodesConnected(towards: graph.exit).count, 2)
+    }
+
     func testExpression_unknown() {
         let exp: SwiftAST.Expression =
             .unknown(.init(context: "a"))

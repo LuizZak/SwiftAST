@@ -779,6 +779,18 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
         )
     }
 
+    func visitKeyPath(_ exp: KeyPathExpression) -> CFGVisitResult {
+        var head = CFGVisitResult()
+
+        for expression in exp.subExpressions {
+            head = head.then(visitExpression(expression))
+        }
+
+        let result = CFGVisitResult(forSyntaxNode: exp, id: nextId())
+
+        return head.then(result).finalized()
+    }
+
     func visitUnknown(_ exp: UnknownExpression) -> CFGVisitResult {
         CFGVisitResult(forSyntaxNode: exp, id: nextId())
     }
