@@ -346,14 +346,22 @@ class SwiftTypeParserTests: XCTestCase {
     func testParseGenericType() throws {
         try XCTAssertEqual(
             SwiftTypeParser.parse(from: "Type<A>"),
-            SwiftType.generic("Type", parameters: [.typeName("A")])
+            SwiftType.generic("Type", parameters: [.type(.typeName("A"))])
+        )
+        try XCTAssertEqual(
+            SwiftTypeParser.parse(from: "Type<10>"),
+            SwiftType.generic("Type", parameters: [.literal(10)])
+        )
+        try XCTAssertEqual(
+            SwiftTypeParser.parse(from: "Type<-10>"),
+            SwiftType.generic("Type", parameters: [.literal(-10)])
         )
     }
 
     func testParseGenericTypeWithinGenericType() throws {
         try XCTAssertEqual(
-            SwiftTypeParser.parse(from: "Type<A<B>>"),
-            SwiftType.generic("Type", parameters: [.generic("A", parameters: [.typeName("B")])])
+            SwiftTypeParser.parse(from: "Type<A<B, 11>>"),
+            SwiftType.generic("Type", parameters: [.type(.generic("A", parameters: [.type(.typeName("B")), .literal(11)]))])
         )
     }
 
@@ -362,7 +370,7 @@ class SwiftTypeParserTests: XCTestCase {
             SwiftTypeParser.parse(from: "Type<(A, B)>"),
             SwiftType.generic(
                 "Type",
-                parameters: [.tuple([.typeName("A"), .typeName("B")])]
+                parameters: [.type(.tuple([.typeName("A"), .typeName("B")]))]
             )
         )
     }
@@ -521,11 +529,16 @@ class SwiftTypeParserTests: XCTestCase {
         try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat T"), .parameterPack(.repeat(.typeName("T"))))
         try XCTAssertEqual(SwiftTypeParser.parse(from: "each T"), .parameterPack(.each(.typeName("T"))))
         try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat each T"), .parameterPack(.repeat(.parameterPack(.each(.typeName("T"))))))
-        try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat Array<each T>"), .parameterPack(.repeat(.generic("Array", parameters: [.parameterPack(.each(.typeName("T")))]))))
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "repeat Array<each T>"), .parameterPack(.repeat(.generic("Array", parameters: [.type(.parameterPack(.each(.typeName("T"))))]))))
     }
 
     func testParseParameterPackTuple() throws {
         try XCTAssertEqual(SwiftTypeParser.parse(from: "(repeat each T)"), .tuple(.parameterPackExpansion(.parameterPack(.each(.typeName("T"))))))
+    }
+
+    func testParseInlineArray() throws {
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "[10 of Int]"), .inlineArray(count: 10, .int))
+        try XCTAssertEqual(SwiftTypeParser.parse(from: "[-10 of Int]"), .inlineArray(count: -10, .int))
     }
 
     // MARK: Error cases
@@ -591,6 +604,10 @@ class SwiftTypeParserTests: XCTestCase {
 
     func testParseInvalidTokenAfterPeriodError() throws {
         XCTAssertThrowsError(try SwiftTypeParser.parse(from: "(Int).>"))
+    }
+
+    func testParseMissingOfInInlineArrayError() throws {
+        XCTAssertThrowsError(try SwiftTypeParser.parse(from: "[10 Int]"))
     }
 
     // MARK: - Procedural tests
@@ -778,7 +795,7 @@ class SwiftTypePermutator {
             return .typeName(randomTypeName())
         }
 
-        return .generic(randomTypeName(), parameters: .fromCollection(params))
+        return .generic(randomTypeName(), parameters: .fromCollection(params.map(GenericArgumentSwiftType.type)))
     }
 
     private func addTrailingTypeMaybe(_ type: SwiftType) -> SwiftType {
