@@ -111,6 +111,12 @@ class SwiftASTSerializerTests: XCTestCase {
             .expression(
                 .try(.identifier("a"))
             ),
+            .expression(
+                .keyPath(.base(.identifier("self")))
+            ),
+            .expression(
+                .keyPath(baseType: SwiftType.int, .nested(.base(.postfixes(.base(.subscript([.unlabeled(.constant(0))])))), .identifier("self", .nested(.base(.forceUnwrap), .safeUnwrap))))
+            ),
         ]
 
         let encoder = JSONEncoder()

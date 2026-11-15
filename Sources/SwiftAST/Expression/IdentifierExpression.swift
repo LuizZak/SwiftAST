@@ -80,7 +80,7 @@ public class IdentifierExpression: Expression, ExpressibleByStringLiteral, Expre
             return true
         }
 
-        return lhs.identifier == rhs.identifier
+        return lhs.identifier == rhs.identifier && lhs.argumentNames == rhs.argumentNames
     }
 
     public struct ArgumentName: Equatable, Hashable, Codable, CustomStringConvertible, ExpressibleByStringLiteral, Sendable {

@@ -1124,6 +1124,25 @@ class SyntaxNodeIteratorTests: XCTestCase {
             ]
         )
     }
+
+    func testKeyPath() {
+        let exp: KeyPathExpression = .keyPath(.base(.identifier("String")))
+        assertExpression(
+            exp,
+            iteratesAs: [exp]
+        )
+    }
+
+    func testKeyPath_subscriptComponents() {
+        let exp: KeyPathExpression = .keyPath(.base(.postfixes(.base(.subscript([.unlabeled(.constant(0))])))))
+        assertExpression(
+            exp,
+            iteratesAs: [
+                exp,
+                Expression.constant(0),
+            ]
+        )
+    }
 }
 
 extension SyntaxNodeIteratorTests {

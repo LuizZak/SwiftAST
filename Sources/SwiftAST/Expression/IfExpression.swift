@@ -193,7 +193,7 @@ public extension Expression {
         cast()
     }
 
-    /// Returns `true` if this `Statement` is an instance of `IfExpression`
+    /// Returns `true` if this `Expression` is an instance of `IfExpression`
     /// class.
     @inlinable
     var isIf: Bool {

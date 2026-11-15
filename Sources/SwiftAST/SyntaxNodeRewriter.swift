@@ -254,6 +254,16 @@ open class SyntaxNodeRewriter: ExpressionVisitor, StatementVisitor {
         return exp
     }
 
+    /// Visits a key path expression node
+    ///
+    /// - Parameter exp: A key path expression to visit
+    /// - Returns: Result of visiting the key path expression
+    open func visitKeyPath(_ exp: KeyPathExpression) -> Expression {
+        exp.keyPathComponents = exp.keyPathComponents.accept(self)
+
+        return exp
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An `UnknownExpression` to visit

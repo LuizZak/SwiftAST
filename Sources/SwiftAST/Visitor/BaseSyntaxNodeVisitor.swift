@@ -198,6 +198,11 @@ open class BaseSyntaxNodeVisitor: ExpressionVisitor, StatementVisitor {
 
     }
 
+    /// Visits a key path expression
+    open func visitKeyPath(_ exp: KeyPathExpression) {
+        exp.subExpressions.forEach(visitExpression)
+    }
+
     /// Visits an unknown expression node
     ///
     /// - Parameter exp: An UnknownExpression to visit

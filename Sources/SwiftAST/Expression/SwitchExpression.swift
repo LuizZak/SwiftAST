@@ -186,7 +186,7 @@ public extension Statement {
         return expressions.expressions[0].asSwitch
     }
 
-    /// Returns `true` if this `Statement` is an instance of `SwitchExpression`
+    /// Returns `true` if this `Expression` is an instance of `SwitchExpression`
     /// class.
     @inlinable
     var isSwitch: Bool {
