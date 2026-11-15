@@ -47,7 +47,7 @@ public class KeyPathExpression: Expression, ExpressionKindType {
 
     @inlinable
     public override func copy() -> KeyPathExpression {
-        KeyPathExpression(baseType: baseType, keyPathComponents: keyPathComponents.copy())
+        KeyPathExpression(baseType: baseType, keyPathComponents: keyPathComponents.copy()).copyTypeAndMetadata(from: self)
     }
 
     public override func isEqual(to other: Expression) -> Bool {
