@@ -13,6 +13,7 @@ public indirect enum SwiftType: Hashable, Sendable {
     case implicitUnwrappedOptional(SwiftType)
     case nullabilityUnspecified(SwiftType)
     case array(SwiftType)
+    case inlineArray(count: Int, SwiftType)
     case dictionary(key: SwiftType, value: SwiftType)
 }
 
@@ -25,7 +26,7 @@ extension SwiftType: ExpressibleByStringLiteral {
 /// A nominal Swift type, which is either a plain typename or a generic type.
 public enum NominalSwiftType: Hashable, Sendable {
     case typeName(String)
-    indirect case generic(String, parameters: GenericArgumentSwiftType)
+    indirect case generic(String, parameters: GenericArgumentsSwiftType)
 }
 
 extension NominalSwiftType: ExpressibleByStringLiteral {
@@ -317,8 +318,23 @@ public struct NestedSwiftType: Hashable, CustomStringConvertible, Sendable {
     }
 }
 
+public enum GenericArgumentSwiftType: Hashable, CustomStringConvertible, Sendable {
+    case literal(Int)
+    case type(SwiftType)
+
+    public var description: String {
+        switch self {
+        case .literal(let value):
+            return value.description
+
+        case .type(let type):
+            return type.description
+        }
+    }
+}
+
 public typealias ProtocolCompositionSwiftType = TwoOrMore<ProtocolCompositionComponent>
-public typealias GenericArgumentSwiftType = OneOrMore<SwiftType>
+public typealias GenericArgumentsSwiftType = OneOrMore<GenericArgumentSwiftType>
 
 /// A parameter pack/parameter pack expansion Swift type.
 public enum ParameterPackType: Hashable, CustomStringConvertible, Sendable {
@@ -600,7 +616,7 @@ public extension SwiftType {
     }
 
     /// Convenience for `SwiftType.nominal(.generic(name, parameters: parameters))`
-    static func generic(_ name: String, parameters: GenericArgumentSwiftType) -> SwiftType {
+    static func generic(_ name: String, parameters: GenericArgumentsSwiftType) -> SwiftType {
         .nominal(.generic(name, parameters: parameters))
     }
 
@@ -737,6 +753,9 @@ extension SwiftType: CustomStringConvertible {
 
         case .parameterPack(let type):
             return type.description
+
+        case .inlineArray(let count, let type):
+            return "[\(count) of \(type)]"
         }
     }
 
@@ -780,6 +799,7 @@ extension SwiftType: Codable {
     }
 }
 
+extension GenericArgumentSwiftType: Codable { }
 extension NominalSwiftType: Codable { }
 extension NestedSwiftType: Codable { }
 extension ProtocolCompositionComponent: Codable { }

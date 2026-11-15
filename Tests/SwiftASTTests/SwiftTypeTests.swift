@@ -11,12 +11,16 @@ class SwiftTypeTests: XCTestCase {
 
     func testDescriptionGeneric() {
         XCTAssertEqual(
-            SwiftType.generic("A", parameters: [.typeName("B")]).description,
+            SwiftType.generic("A", parameters: [.type(.typeName("B"))]).description,
             "A<B>"
         )
         XCTAssertEqual(
-            SwiftType.generic("A", parameters: [.typeName("B"), .typeName("C")]).description,
+            SwiftType.generic("A", parameters: [.type(.typeName("B")), .type(.typeName("C"))]).description,
             "A<B, C>"
+        )
+        XCTAssertEqual(
+            SwiftType.generic("A", parameters: [.literal(-1), .literal(1)]).description,
+            "A<-1, 1>"
         )
     }
 
@@ -46,7 +50,7 @@ class SwiftTypeTests: XCTestCase {
             "A.B"
         )
         XCTAssertEqual(
-            SwiftType.generic("A", parameters: [.typeName("B")]).nested(.typeName("C"))
+            SwiftType.generic("A", parameters: [.type(.typeName("B"))]).nested(.typeName("C"))
                 .description,
             "A<B>.C"
         )
@@ -163,7 +167,7 @@ class SwiftTypeTests: XCTestCase {
     func testDescriptionOptionalWithGenericType() {
         XCTAssertEqual(
             SwiftType.optional(
-                .generic("A", parameters: .fromCollection([.typeName("B"), .typeName("C")]))
+                .generic("A", parameters: .fromCollection([.type(.typeName("B")), .type(.typeName("C"))]))
             ).description,
             "A<B, C>?"
         )
@@ -319,10 +323,12 @@ class SwiftTypeTests: XCTestCase {
                         .generic(
                             "C",
                             parameters: [
-                                .optional(
+                                .type(
+                                    .optional(
                                     .typeName("D")
-                                    .nested(
-                                        .generic("E", parameters: [.typeName("D")])
+                                        .nested(
+                                            .generic("E", parameters: [.type(.typeName("D"))])
+                                        )
                                     )
                                 )
                             ]

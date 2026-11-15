@@ -27,6 +27,7 @@ public class SwiftTypeParser {
     ///     | block
     ///     | array
     ///     | dictionary
+    ///     | inline-array
     ///     | type-identifier
     ///     | optional
     ///     | implicitly-unwrapped-optional
@@ -56,6 +57,9 @@ public class SwiftTypeParser {
     /// dictionary
     ///     : '[' type ':' type ']' ;
     ///
+    /// line-array
+    ///     : '[' signed-integer 'of' type ']' ;
+    ///
     /// type-identifier
     ///     : swift-type '.' type-identifier
     ///     | identifier generic-argument-clause?
@@ -73,7 +77,12 @@ public class SwiftTypeParser {
     ///     ;
     ///
     /// generic-argument-clause
-    ///     : '<' swift-type (',' swift-type)* '>'
+    ///     : '<' generic-argument-type (',' generic-argument-type)* '>'
+    ///
+    /// generic-argument-type
+    ///     : signed-identifier
+    ///     | swift-type
+    ///     ;
     ///
     /// optional
     ///     : swift-type '?' ;
@@ -115,9 +124,11 @@ public class SwiftTypeParser {
     /// identifier
     ///     : (letter | '_') (letter | '_' | digit)+ ;
     ///
-    /// letter : [a-zA-Z]
+    /// letter : [a-zA-Z] ;
     ///
-    /// digit : [0-9]
+    /// signed-integer : '-'? digit+ ;
+    ///
+    /// digit : [0-9] ;
     /// ```
     public static func parse(from lexer: Lexer) throws -> SwiftType {
         let tokenizer = Tokenizer(lexer: lexer)
@@ -166,7 +177,7 @@ public class SwiftTypeParser {
                 type = .nominal(ident)
             }
         } else if lexer.tokenType(is: .openBrace) {
-            type = try parseArrayOrDictionary(lexer)
+            type = try parseArrayOrInlineArrayOrDictionary(lexer)
         } else if lexer.tokenType(is: .openParens) || lexer.tokenType(is: .at) {
             type = try parseTupleOrBlock(lexer)
         } else if lexer.tokenType(is: .some) {
@@ -339,16 +350,18 @@ public class SwiftTypeParser {
     ///     : '<' swift-type (',' swift-type)* '>'
     /// ```
     private static func verifyGenericArgumentsTrailing(
-        after typeName: String, lexer: Tokenizer) throws -> NominalSwiftType {
+        after typeName: String,
+        lexer: Tokenizer
+    ) throws -> NominalSwiftType {
 
         guard lexer.consumeToken(ifTypeIs: .openBracket) != nil else {
             return .typeName(typeName)
         }
 
-        var types: [SwiftType] = []
+        var types: [GenericArgumentSwiftType] = []
 
         repeat {
-            types.append(try parseType(lexer))
+            types.append(try parseGenericArgument(lexer))
         } while !lexer.isEof && lexer.consumeToken(ifTypeIs: .comma) != nil
 
         try lexer.advance(overTokenType: .closeBracket)
@@ -356,17 +369,49 @@ public class SwiftTypeParser {
         return .generic(typeName, parameters: .fromCollection(types))
     }
 
-    /// Parses an array or dictionary type.
+    /// Parses a generic argument type
+    ///
+    /// ```
+    /// generic-argument-type
+    ///     : signed-integer
+    ///     | swift-type
+    ///     ;
+    /// ```
+    private static func parseGenericArgument(_ lexer: Tokenizer) throws -> GenericArgumentSwiftType {
+        if let integer = lexer.consumeToken(ifTypeIs: .signedInteger), let value = Int(integer.value) {
+            return .literal(value)
+        }
+
+        return .type(try parseType(lexer))
+    }
+
+    /// Parses an array, inline array, or dictionary type.
     ///
     /// ```
     /// array
     ///     : '[' type ']' ;
     ///
+    /// inline-array
+    ///     : '[' signed-integer 'of' type ']' ;
+    ///
     /// dictionary
     ///     : '[' type ':' type ']' ;
     /// ```
-    private static func parseArrayOrDictionary(_ lexer: Tokenizer) throws -> SwiftType {
+    private static func parseArrayOrInlineArrayOrDictionary(_ lexer: Tokenizer) throws -> SwiftType {
         try lexer.advance(overTokenType: .openBrace)
+
+        if let count = lexer.consumeToken(ifTypeIs: .signedInteger), let intCount = Int(count.value) {
+            let ident = try lexer.advance(overTokenType: .identifier)
+            if ident.value != "of" {
+                throw expectedOfTokenError(lexer: lexer)
+            }
+
+            let type = try parseType(lexer)
+
+            try lexer.advance(overTokenType: .closeBrace)
+
+            return .inlineArray(count: intCount, type)
+        }
 
         let type1 = try parseType(lexer)
         var type2: SwiftType?
@@ -785,9 +830,12 @@ public class SwiftTypeParser {
         return .unexpectedToken(lexer.token().tokenType.tokenString, index)
     }
 
-    private static func notProtocolComposableError(
-        type: SwiftType, lexer: Tokenizer) -> Error {
+    private static func expectedOfTokenError(lexer: Tokenizer) -> Error {
+        let index = indexOn(lexer: lexer)
+        return .expectedOfToken(index)
+    }
 
+    private static func notProtocolComposableError(type: SwiftType, lexer: Tokenizer) -> Error {
         let index = indexOn(lexer: lexer)
         return .notProtocolComposable(type, index)
     }
@@ -812,6 +860,7 @@ public class SwiftTypeParser {
         case expectedBlockType(Int)
         case notProtocolComposable(SwiftType, Int)
         case unexpectedToken(String, Int)
+        case expectedOfToken(Int)
 
         public var description: String {
             switch self {
@@ -828,6 +877,8 @@ public class SwiftTypeParser {
                     """
             case let .unexpectedToken(token, offset):
                 return "Unexpected token '\(token)' at column \(offset + 1)"
+            case let .expectedOfToken(offset):
+                return "Expected 'of' at column \(offset + 1)"
             }
         }
     }
@@ -835,6 +886,7 @@ public class SwiftTypeParser {
 
 enum SwiftTypeToken: String, TokenProtocol {
     private static let identifierLexer = (.letter | "_") + (.letter | "_" | .digit)*
+    private static let signedIntegerLexer = ["-"] + .digit+
 
     public static var eofToken: SwiftTypeToken = .eof
 
@@ -845,6 +897,8 @@ enum SwiftTypeToken: String, TokenProtocol {
     case functionArrow = "->"
     /// An arbitrary identifier token
     case identifier
+    /// A signed integer constant
+    case signedInteger
     case `inout`
     case some
     case any
@@ -884,6 +938,8 @@ enum SwiftTypeToken: String, TokenProtocol {
             return 6
         case .identifier:
             return SwiftTypeToken.identifierLexer.maximumLength(in: lexer) ?? 0
+        case .signedInteger:
+            return SwiftTypeToken.signedIntegerLexer.maximumLength(in: lexer) ?? 0
         case .eof:
             return 0
         }
@@ -931,13 +987,18 @@ enum SwiftTypeToken: String, TokenProtocol {
 
                     return .functionArrow
                 }
+
+                let numberRule = GrammarRule.oneOrMore(.digit)
+                if numberRule.passes(in: lexer) {
+                    return .signedInteger
+                }
             default:
                 break
             }
 
             // Identifier
             if identifierLexer.passes(in: lexer) {
-                // Check it's not actually an `inout` keyword
+                // Check it's not actually a keyword
                 let ident = try lexer.withTemporaryIndex { try identifierLexer.consume(from: lexer) }
 
                 if ident == "inout" {
@@ -953,6 +1014,11 @@ enum SwiftTypeToken: String, TokenProtocol {
                 } else {
                     return .identifier
                 }
+            }
+
+            // Signed integer
+            if signedIntegerLexer.passes(in: lexer) {
+                return .signedInteger
             }
 
             return nil
