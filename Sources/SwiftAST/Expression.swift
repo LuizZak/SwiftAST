@@ -9,6 +9,17 @@ public protocol ExpressionComponent {
     /// Returns an array of sub-expressions contained within this expression fragment,
     /// in case it is an expression formed of other expressions.
     var subExpressions: [Expression] { get }
+
+    /// Sets the parent of the immediate `subExpression` to a given `SyntaxNode`.
+    func setParent(_ syntaxNode: SyntaxNode?)
+}
+
+extension ExpressionComponent {
+    public func setParent(_ syntaxNode: SyntaxNode?) {
+        for exp in subExpressions {
+            exp.parent = syntaxNode
+        }
+    }
 }
 
 public class Expression: SyntaxNode, Codable, ExpressionComponent, Equatable, Hashable,

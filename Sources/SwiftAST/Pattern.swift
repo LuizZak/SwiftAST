@@ -209,7 +209,7 @@ public enum Pattern: Codable, Equatable, Hashable, ExpressionComponent {
         }
     }
 
-    internal func setParent(_ node: SyntaxNode?) {
+    public func setParent(_ node: SyntaxNode?) {
         switch self {
         case .expression(let exp):
             exp.parent = node
