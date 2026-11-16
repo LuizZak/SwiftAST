@@ -26,7 +26,7 @@ class KeyPathExpressionTests: XCTestCase {
         )
         assertDescription(
             "\\Array<Int>.count.description",
-            .init(baseType: SwiftType.generic("Array", parameters: [.int]), keyPathComponents: .base(.identifier("count")).appendingComponent(.identifier("description")))
+            .init(baseType: SwiftType.generic("Array", parameters: [.type(.int)]), keyPathComponents: .base(.identifier("count")).appendingComponent(.identifier("description")))
         )
     }
 
