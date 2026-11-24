@@ -61,13 +61,11 @@ class CFGVisitor: ExpressionVisitor, StatementVisitor {
             let stmtResult = visitStatement(stmt)
 
             if let stmt = stmt as? DeferStatement {
-                endEntries.append(.defer(stmt))
+                endEntries.insert(.defer(stmt), at: 0)
             } else {
                 result = result.then(stmtResult)
             }
         }
-
-        endEntries.reverse()
 
         if options.generateEndScopes {
             endEntries.append(.endOfScope(stmt))
