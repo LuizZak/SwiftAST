@@ -145,18 +145,18 @@ class Expression_MatcherTests: XCTestCase {
     }
 
     func testMatchFunctionArgumentIsLabeled() {
-        let sut = ValueMatcher<FunctionArgument>.isLabeled(as: "label")
+        let sut = ValueMatcher<FunctionCallArgument>.isLabeled(as: "label")
 
-        XCTAssert(sut.matches(FunctionArgument(label: "label", expression: .identifier("a"))))
-        XCTAssertFalse(sut.matches(FunctionArgument(label: nil, expression: .identifier("a"))))
+        XCTAssert(sut.matches(FunctionCallArgument(label: "label", expression: .identifier("a"))))
+        XCTAssertFalse(sut.matches(FunctionCallArgument(label: nil, expression: .identifier("a"))))
     }
 
     func testMatchFunctionArgumentIsNotLabeled() {
-        let sut = ValueMatcher<FunctionArgument>.isNotLabeled
+        let sut = ValueMatcher<FunctionCallArgument>.isNotLabeled
 
-        XCTAssertFalse(sut.matches(FunctionArgument(label: "", expression: .identifier("a"))))
-        XCTAssertFalse(sut.matches(FunctionArgument(label: "label", expression: .identifier("a"))))
-        XCTAssert(sut.matches(FunctionArgument(label: nil, expression: .identifier("a"))))
+        XCTAssertFalse(sut.matches(FunctionCallArgument(label: "", expression: .identifier("a"))))
+        XCTAssertFalse(sut.matches(FunctionCallArgument(label: "label", expression: .identifier("a"))))
+        XCTAssert(sut.matches(FunctionCallArgument(label: nil, expression: .identifier("a"))))
     }
 
     func testMatchNilCheck() {

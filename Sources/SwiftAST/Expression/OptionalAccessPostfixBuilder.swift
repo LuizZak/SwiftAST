@@ -21,7 +21,7 @@ public struct OptionalAccessPostfixBuilder: ExpressionPostfixBuildable {
     }
 
     public func call(
-        _ arguments: [FunctionArgument],
+        _ arguments: [FunctionCallArgument],
         type: SwiftType?,
         callableSignature: BlockSwiftType?
     ) -> PostfixExpression {
@@ -42,7 +42,7 @@ public struct OptionalAccessPostfixBuilder: ExpressionPostfixBuildable {
 
         let op = Postfix
             .functionCall(
-                arguments: unlabeledArguments.map(FunctionArgument.unlabeled)
+                arguments: unlabeledArguments.map(FunctionCallArgument.unlabeled)
             )
 
         op.returnType = type
@@ -84,7 +84,7 @@ public struct OptionalAccessPostfixBuilder: ExpressionPostfixBuildable {
         return .postfix(expressionToBuild, op)
     }
 
-    public func sub(_ arguments: [FunctionArgument], type: SwiftType?) -> PostfixExpression {
+    public func sub(_ arguments: [FunctionCallArgument], type: SwiftType?) -> PostfixExpression {
         let op = Postfix.subscript(arguments: arguments)
         op.returnType = type
         op.optionalAccessKind = isForceUnwrap ? .forceUnwrap : .safeUnwrap

@@ -87,7 +87,7 @@ public extension ValueMatcher where T: Expression {
     }
 
     @inlinable
-    func subscribe(arguments matchers: [ValueMatcher<FunctionArgument>]) -> SyntaxMatcher<PostfixExpression> {
+    func subscribe(arguments matchers: [ValueMatcher<FunctionCallArgument>]) -> SyntaxMatcher<PostfixExpression> {
 
         SyntaxMatcher<PostfixExpression>()
             .match(.closure { postfix -> Bool in
@@ -98,7 +98,7 @@ public extension ValueMatcher where T: Expression {
                 return self.matches(exp)
             })
             .keyPath(\.op.asSubscription?.arguments.count, equals: matchers.count)
-            .keyPath(\.op.asSubscription?.arguments) { args -> ValueMatcher<[FunctionArgument]> in
+            .keyPath(\.op.asSubscription?.arguments) { args -> ValueMatcher<[FunctionCallArgument]> in
                 args.match(closure: { args -> Bool in
                     for (matcher, arg) in zip(matchers, args) {
                         if !matcher(matches: arg) {
@@ -112,7 +112,7 @@ public extension ValueMatcher where T: Expression {
     }
 
     @inlinable
-    func call(_ args: [FunctionArgument]) -> SyntaxMatcher<PostfixExpression> {
+    func call(_ args: [FunctionCallArgument]) -> SyntaxMatcher<PostfixExpression> {
         SyntaxMatcher<PostfixExpression>()
             .match { postfix -> Bool in
                 guard let exp = postfix.exp as? T else {
@@ -125,7 +125,7 @@ public extension ValueMatcher where T: Expression {
     }
 
     @inlinable
-    func call(arguments matchers: [ValueMatcher<FunctionArgument>]) -> SyntaxMatcher<PostfixExpression> {
+    func call(arguments matchers: [ValueMatcher<FunctionCallArgument>]) -> SyntaxMatcher<PostfixExpression> {
         SyntaxMatcher<PostfixExpression>()
             .match { postfix -> Bool in
                 guard let exp = postfix.exp as? T else {
@@ -135,7 +135,7 @@ public extension ValueMatcher where T: Expression {
                 return self.matches(exp)
             }
             .keyPath(\.op.asFunctionCall?.arguments.count, equals: matchers.count)
-            .keyPath(\.op.asFunctionCall?.arguments) { args -> ValueMatcher<[FunctionArgument]> in
+            .keyPath(\.op.asFunctionCall?.arguments) { args -> ValueMatcher<[FunctionCallArgument]> in
                 args.match(closure: { args -> Bool in
                     for (matcher, arg) in zip(matchers, args) {
                         if !matcher(matches: arg) {
@@ -172,7 +172,7 @@ public extension ValueMatcher where T: Expression {
     }
 }
 
-public extension ValueMatcher where T == FunctionArgument {
+public extension ValueMatcher where T == FunctionCallArgument {
     @inlinable
     static func isLabeled(as label: String) -> ValueMatcher {
         ValueMatcher().keyPath(\.label, equals: label)

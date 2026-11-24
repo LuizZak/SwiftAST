@@ -1,7 +1,7 @@
 /// Postfix access that invokes an expression as a function.
 public final class FunctionCallPostfix: Postfix {
     private let _subExpressions: [Expression]
-    public let arguments: [FunctionArgument]
+    public let arguments: [FunctionCallArgument]
 
     public override var description: String {
         "\(super.description)(\(arguments.map(\.description).joined(separator: ", ")))"
@@ -19,7 +19,7 @@ public final class FunctionCallPostfix: Postfix {
     /// A block Swift type signature for this function call postfix.
     public var callableSignature: BlockSwiftType?
 
-    public init(arguments: [FunctionArgument]) {
+    public init(arguments: [FunctionCallArgument]) {
         self.arguments = arguments
         self._subExpressions = arguments.map(\.expression)
 
@@ -29,7 +29,7 @@ public final class FunctionCallPostfix: Postfix {
     public required convenience init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        try self.init(arguments: container.decode([FunctionArgument].self, forKey: .arguments))
+        try self.init(arguments: container.decode([FunctionCallArgument].self, forKey: .arguments))
     }
 
     public override func copy() -> FunctionCallPostfix {
@@ -50,11 +50,11 @@ public final class FunctionCallPostfix: Postfix {
     public func replacingArguments(_ expressions: [Expression]) -> FunctionCallPostfix {
         precondition(expressions.count == arguments.count)
 
-        let newArgs: [FunctionArgument] =
+        let newArgs: [FunctionCallArgument] =
             zip(arguments, expressions).map { tuple in
                 let (arg, exp) = tuple
 
-                return FunctionArgument(label: arg.label, expression: exp)
+                return FunctionCallArgument(label: arg.label, expression: exp)
             }
 
         let new =
@@ -102,7 +102,7 @@ public final class FunctionCallPostfix: Postfix {
     }
 }
 public extension Postfix {
-    static func functionCall(arguments: [FunctionArgument] = []) -> FunctionCallPostfix {
+    static func functionCall(arguments: [FunctionCallArgument] = []) -> FunctionCallPostfix {
         FunctionCallPostfix(arguments: arguments)
     }
 
@@ -129,9 +129,8 @@ public extension PostfixExpression {
     }
 }
 
-// TODO: Rename to `FunctionCallArgument`
 /// A function argument kind from a function call expression
-public struct FunctionArgument: Codable, Equatable, Hashable {
+public struct FunctionCallArgument: Codable, Equatable, Hashable {
     public var label: String?
     public var expression: Expression
 
@@ -152,16 +151,16 @@ public struct FunctionArgument: Codable, Equatable, Hashable {
     }
 
     @inlinable
-    public func copy() -> FunctionArgument {
-        FunctionArgument(label: label, expression: expression.copy())
+    public func copy() -> FunctionCallArgument {
+        FunctionCallArgument(label: label, expression: expression.copy())
     }
 
-    public static func unlabeled(_ exp: Expression) -> FunctionArgument {
-        FunctionArgument(label: nil, expression: exp)
+    public static func unlabeled(_ exp: Expression) -> FunctionCallArgument {
+        FunctionCallArgument(label: nil, expression: exp)
     }
 
-    public static func labeled(_ label: String, _ exp: Expression) -> FunctionArgument {
-        FunctionArgument(label: label, expression: exp)
+    public static func labeled(_ label: String, _ exp: Expression) -> FunctionCallArgument {
+        FunctionCallArgument(label: label, expression: exp)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -177,7 +176,7 @@ public struct FunctionArgument: Codable, Equatable, Hashable {
     }
 }
 
-extension FunctionArgument: CustomStringConvertible {
+extension FunctionCallArgument: CustomStringConvertible {
     public var description: String {
         if let label = label {
             return "\(label): \(expression)"

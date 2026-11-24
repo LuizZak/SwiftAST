@@ -53,8 +53,8 @@ public final class PostfixChainInverter {
     public enum Postfix: Equatable {
         case root(Expression)
         case member(String, original: MemberPostfix, PostfixExpression)
-        case `subscript`([FunctionArgument], original: SubscriptPostfix, PostfixExpression)
-        case call([FunctionArgument], original: FunctionCallPostfix, PostfixExpression)
+        case `subscript`([FunctionCallArgument], original: SubscriptPostfix, PostfixExpression)
+        case call([FunctionCallArgument], original: FunctionCallPostfix, PostfixExpression)
         
         public var postfix: SwiftAST.Postfix? {
             switch self {

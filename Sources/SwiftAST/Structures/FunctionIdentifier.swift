@@ -20,7 +20,7 @@ public struct FunctionIdentifier: Hashable, Equatable, Codable, CustomStringConv
 
     /// Initializes a function identifier based on a function name and all of the
     /// argument labels provided by `arguments`.
-    public init(name: String, arguments: [FunctionArgument]) {
+    public init(name: String, arguments: [FunctionCallArgument]) {
         self.init(name: name, argumentLabels: arguments.map(\.label))
     }
 

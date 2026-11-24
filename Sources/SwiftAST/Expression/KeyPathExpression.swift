@@ -270,7 +270,7 @@ public class KeyPathExpression: Expression, ExpressionKindType {
     public enum KeyPathPostfix: Codable, Hashable, CustomStringConvertible, ExpressionComponent {
         case forceUnwrap
         case safeUnwrap
-        case `subscript`([FunctionArgument])
+        case `subscript`([FunctionCallArgument])
 
         public var description: String {
             switch self {

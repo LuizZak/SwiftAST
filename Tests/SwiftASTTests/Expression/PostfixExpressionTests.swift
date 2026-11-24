@@ -51,7 +51,7 @@ class SubscriptPostfixTests: XCTestCase {
 
 class FunctionCallPostfixTests: XCTestCase {
     func testDescription() {
-        let arguments: [FunctionArgument] = [
+        let arguments: [FunctionCallArgument] = [
             .init(label: "foo", expression: .constant(0)),
             .init(label: nil, expression: .constant(1)),
         ]
@@ -60,7 +60,7 @@ class FunctionCallPostfixTests: XCTestCase {
     }
 
     func testSafeOptionalDescription() {
-        let arguments: [FunctionArgument] = [
+        let arguments: [FunctionCallArgument] = [
             .init(label: "foo", expression: .constant(0)),
             .init(label: nil, expression: .constant(1)),
         ]
@@ -70,7 +70,7 @@ class FunctionCallPostfixTests: XCTestCase {
     }
 
     func testForceUnwrapOptionalDescription() {
-        let arguments: [FunctionArgument] = [
+        let arguments: [FunctionCallArgument] = [
             .init(label: "foo", expression: .constant(0)),
             .init(label: nil, expression: .constant(1)),
         ]

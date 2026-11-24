@@ -5,9 +5,9 @@ public struct DeclarationAttribute {
 
     /// The arguments for the attribute. Can be nil, if the attribute should have
     /// no arguments.
-    public var arguments: [FunctionArgument]?
+    public var arguments: [FunctionCallArgument]?
 
-    public init(name: String, arguments: [FunctionArgument]? = nil) {
+    public init(name: String, arguments: [FunctionCallArgument]? = nil) {
         self.name = name
         self.arguments = arguments
     }

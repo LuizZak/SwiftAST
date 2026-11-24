@@ -1,7 +1,7 @@
 /// Postfix access that invokes a subscription into a value or type.
 public final class SubscriptPostfix: Postfix {
     private let _subExpressions: [Expression]
-    public let arguments: [FunctionArgument]
+    public let arguments: [FunctionCallArgument]
 
     public override var description: String {
         "\(super.description)[\(arguments.map(\.description).joined(separator: ", "))]"
@@ -16,7 +16,7 @@ public final class SubscriptPostfix: Postfix {
         arguments.map(\.label)
     }
 
-    public init(arguments: [FunctionArgument]) {
+    public init(arguments: [FunctionCallArgument]) {
         self.arguments = arguments
         self._subExpressions = arguments.map(\.expression)
 
@@ -25,20 +25,20 @@ public final class SubscriptPostfix: Postfix {
 
     public convenience init(expressions: [Expression]) {
         self.init(arguments: expressions.map {
-            FunctionArgument(label: nil, expression: $0)
+            FunctionCallArgument(label: nil, expression: $0)
         })
     }
 
     public convenience init(expression: Expression) {
         self.init(arguments: [
-            FunctionArgument(label: nil, expression: expression)
+            FunctionCallArgument(label: nil, expression: expression)
         ])
     }
 
     public required convenience init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        try self.init(arguments: container.decode([FunctionArgument].self, forKey: .arguments))
+        try self.init(arguments: container.decode([FunctionCallArgument].self, forKey: .arguments))
     }
 
     public override func copy() -> SubscriptPostfix {
@@ -57,11 +57,11 @@ public final class SubscriptPostfix: Postfix {
     public func replacingArguments(_ expressions: [Expression]) -> SubscriptPostfix {
         precondition(expressions.count == arguments.count)
 
-        let newArgs: [FunctionArgument] =
+        let newArgs: [FunctionCallArgument] =
             zip(arguments, expressions).map { tuple in
                 let (arg, exp) = tuple
 
-                return FunctionArgument(label: arg.label, expression: exp)
+                return FunctionCallArgument(label: arg.label, expression: exp)
             }
 
         let new =
@@ -116,7 +116,7 @@ public extension Postfix {
         SubscriptPostfix(expressions: expressions)
     }
 
-    static func `subscript`(arguments: [FunctionArgument]) -> SubscriptPostfix {
+    static func `subscript`(arguments: [FunctionCallArgument]) -> SubscriptPostfix {
         SubscriptPostfix(arguments: arguments)
     }
 

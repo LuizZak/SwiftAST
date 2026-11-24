@@ -68,7 +68,7 @@ public extension ValueTransformer where U == [Expression] {
             
             let arguments =
                 zip(labels, exp.dropFirst().map { $0.copy() })
-                    .map(FunctionArgument.init)
+                    .map(FunctionCallArgument.init)
             
             return PostfixExpression(exp: exp[0].copy(),
                                      op: .functionCall(arguments: arguments))
