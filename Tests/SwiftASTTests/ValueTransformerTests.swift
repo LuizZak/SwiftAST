@@ -320,7 +320,7 @@ class ValueTransformerTests: XCTestCase {
 
         let sut =
             ValueTransformer<Int, String>(keyPath: \.description)
-            .transformingResult { value -> Result<String> in
+            .transformingResult { value -> TransformResult<String> in
                 return .failure(message: message)
             }
 
