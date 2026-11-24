@@ -57,7 +57,7 @@ public class SwiftTypeParser {
     /// dictionary
     ///     : '[' type ':' type ']' ;
     ///
-    /// line-array
+    /// inline-array
     ///     : '[' signed-integer 'of' type ']' ;
     ///
     /// type-identifier
